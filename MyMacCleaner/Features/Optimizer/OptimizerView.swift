@@ -3,6 +3,7 @@ import SwiftUI
 struct OptimizerView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = OptimizerViewModel()
+    @State private var appearId = UUID()
 
     var body: some View {
         ScrollView {
@@ -23,6 +24,7 @@ struct OptimizerView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 24)
+                .slideIn(from: .top, delay: 0)
 
                 // Memory Section with glass effect
                 GlassMemoryCard(
@@ -31,6 +33,7 @@ struct OptimizerView: View {
                     onPurge: { Task { await viewModel.purgeMemory() } }
                 )
                 .padding(.horizontal, 24)
+                .cardAppear(index: 0)
 
                 // Launch Agents Section
                 GlassLaunchAgentsCard(
@@ -40,13 +43,16 @@ struct OptimizerView: View {
                     }
                 )
                 .padding(.horizontal, 24)
+                .cardAppear(index: 1)
 
                 // Login Items Section
                 GlassLoginItemsCard()
                     .padding(.horizontal, 24)
+                    .cardAppear(index: 2)
 
                 Spacer(minLength: 24)
             }
+            .id(appearId)
         }
         .task {
             // Use preloaded data if available
@@ -57,6 +63,9 @@ struct OptimizerView: View {
                 await viewModel.loadData()
             }
         }
+        .onAppear {
+            appearId = UUID()
+        }
     }
 }
 
@@ -66,6 +75,9 @@ struct GlassMemoryCard: View {
     let memoryStats: MemoryDisplayStats?
     let isPurging: Bool
     let onPurge: () -> Void
+
+    @State private var animatedProgress: CGFloat = 0
+    @State private var isHovering = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -112,6 +124,7 @@ struct GlassMemoryCard: View {
                     }
                     .font(.system(size: 14, weight: .semibold))
                 }
+                .buttonStyle(BounceButtonStyle())
                 .buttonStyle(LiquidGlassButtonStyle(isProminent: true))
                 .disabled(memoryStats == nil || isPurging)
             }
@@ -119,14 +132,14 @@ struct GlassMemoryCard: View {
             if let stats = memoryStats {
                 // Memory visualization
                 VStack(spacing: 14) {
-                    // Memory bar with glass effect
+                    // Memory bar with glass effect - animated
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             // Background
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
                                 .fill(.ultraThinMaterial)
 
-                            // Segments
+                            // Segments - animated width
                             HStack(spacing: 0) {
                                 Rectangle()
                                     .fill(
@@ -136,7 +149,7 @@ struct GlassMemoryCard: View {
                                             endPoint: .bottom
                                         )
                                     )
-                                    .frame(width: geo.size.width * stats.wiredPercentage)
+                                    .frame(width: geo.size.width * stats.wiredPercentage * animatedProgress)
 
                                 Rectangle()
                                     .fill(
@@ -146,7 +159,7 @@ struct GlassMemoryCard: View {
                                             endPoint: .bottom
                                         )
                                     )
-                                    .frame(width: geo.size.width * stats.activePercentage)
+                                    .frame(width: geo.size.width * stats.activePercentage * animatedProgress)
 
                                 Rectangle()
                                     .fill(
@@ -156,7 +169,7 @@ struct GlassMemoryCard: View {
                                             endPoint: .bottom
                                         )
                                     )
-                                    .frame(width: geo.size.width * stats.compressedPercentage)
+                                    .frame(width: geo.size.width * stats.compressedPercentage * animatedProgress)
 
                                 Rectangle()
                                     .fill(
@@ -166,7 +179,7 @@ struct GlassMemoryCard: View {
                                             endPoint: .bottom
                                         )
                                     )
-                                    .frame(width: geo.size.width * stats.inactivePercentage)
+                                    .frame(width: geo.size.width * stats.inactivePercentage * animatedProgress)
 
                                 Rectangle()
                                     .fill(
@@ -182,12 +195,21 @@ struct GlassMemoryCard: View {
                     }
                     .frame(height: 28)
 
-                    // Legend with glass pill badges
+                    // Legend with glass pill badges - staggered
                     HStack(spacing: 12) {
                         GlassMemoryLegendItem(color: .cleanRed, label: "Wired", value: stats.wiredText)
+                            .staggeredAppear(index: 0, baseDelay: 0.08)
                         GlassMemoryLegendItem(color: .cleanOrange, label: "Active", value: stats.activeText)
+                            .staggeredAppear(index: 1, baseDelay: 0.08)
                         GlassMemoryLegendItem(color: .yellow, label: "Compressed", value: stats.compressedText)
+                            .staggeredAppear(index: 2, baseDelay: 0.08)
                         GlassMemoryLegendItem(color: .cleanGreen, label: "Free", value: stats.freeText)
+                            .staggeredAppear(index: 3, baseDelay: 0.08)
+                    }
+                }
+                .onAppear {
+                    withAnimation(.easeOut(duration: 0.8).delay(0.2)) {
+                        animatedProgress = 1
                     }
                 }
             } else {
@@ -202,6 +224,15 @@ struct GlassMemoryCard: View {
             }
         }
         .liquidGlassCard(cornerRadius: 20, style: .thin, padding: 20)
+        .scaleEffect(isHovering ? 1.01 : 1)
+        .shadow(color: .black.opacity(isHovering ? 0.1 : 0.05), radius: isHovering ? 12 : 6, x: 0, y: isHovering ? 6 : 3)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isHovering)
+        .onHover { hovering in
+            isHovering = hovering
+        }
+        .onDisappear {
+            animatedProgress = 0
+        }
     }
 }
 
@@ -235,6 +266,8 @@ struct GlassMemoryLegendItem: View {
 struct GlassLaunchAgentsCard: View {
     let agents: [LaunchAgentInfo]
     let onToggle: (LaunchAgentInfo) -> Void
+
+    @State private var isHovering = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -277,18 +310,26 @@ struct GlassLaunchAgentsCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.vertical, 20)
+                .appearAnimation(delay: 0.1)
             } else {
                 VStack(spacing: 10) {
-                    ForEach(agents) { agent in
+                    ForEach(Array(agents.enumerated()), id: \.element.id) { index, agent in
                         GlassLaunchAgentRow(
                             agent: agent,
                             onToggle: { onToggle(agent) }
                         )
+                        .staggeredAppear(index: index, baseDelay: 0.05)
                     }
                 }
             }
         }
         .liquidGlassCard(cornerRadius: 20, style: .thin, padding: 20)
+        .scaleEffect(isHovering ? 1.01 : 1)
+        .shadow(color: .black.opacity(isHovering ? 0.1 : 0.05), radius: isHovering ? 12 : 6, x: 0, y: isHovering ? 6 : 3)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isHovering)
+        .onHover { hovering in
+            isHovering = hovering
+        }
     }
 }
 
@@ -343,6 +384,8 @@ struct GlassLaunchAgentRow: View {
 // MARK: - Glass Login Items Card
 
 struct GlassLoginItemsCard: View {
+    @State private var isHovering = false
+
     var body: some View {
         HStack(spacing: 16) {
             HStack(spacing: 12) {
@@ -379,9 +422,16 @@ struct GlassLoginItemsCard: View {
                 }
                 .font(.system(size: 14, weight: .medium))
             }
+            .buttonStyle(BounceButtonStyle())
             .buttonStyle(LiquidGlassButtonStyle(isProminent: false))
         }
         .liquidGlassCard(cornerRadius: 20, style: .thin, padding: 20)
+        .scaleEffect(isHovering ? 1.01 : 1)
+        .shadow(color: .black.opacity(isHovering ? 0.1 : 0.05), radius: isHovering ? 12 : 6, x: 0, y: isHovering ? 6 : 3)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isHovering)
+        .onHover { hovering in
+            isHovering = hovering
+        }
     }
 }
 
