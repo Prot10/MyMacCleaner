@@ -3,6 +3,7 @@ import SwiftUI
 struct UninstallerView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = UninstallerViewModel()
+    @State private var appearId = UUID()
 
     var body: some View {
         HSplitView {
@@ -27,6 +28,7 @@ struct UninstallerView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 16)
+                .slideIn(from: .top, delay: 0)
 
                 Divider()
 
@@ -40,10 +42,11 @@ struct UninstallerView: View {
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .appearAnimation(delay: 0.1)
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 8) {
-                            ForEach(viewModel.filteredApps) { app in
+                            ForEach(Array(viewModel.filteredApps.enumerated()), id: \.element.id) { index, app in
                                 GlassAppListRow(
                                     app: app,
                                     isSelected: viewModel.selectedApp?.id == app.id
@@ -52,10 +55,12 @@ struct UninstallerView: View {
                                         viewModel.selectedApp = app
                                     }
                                 }
+                                .staggeredAppear(index: index, baseDelay: 0.02)
                             }
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 12)
+                        .id(appearId)
                     }
                 }
             }
@@ -70,6 +75,10 @@ struct UninstallerView: View {
                     isScanning: viewModel.isScanningLeftovers,
                     onUninstall: { Task { await viewModel.uninstallSelectedApp() } }
                 )
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .opacity
+                ))
             } else {
                 // Placeholder with glass effect
                 VStack(spacing: 24) {
@@ -116,6 +125,7 @@ struct UninstallerView: View {
                         }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .appearAnimation(delay: 0.2)
             }
         }
         .task {
@@ -127,6 +137,9 @@ struct UninstallerView: View {
             if viewModel.apps.isEmpty {
                 await viewModel.loadInstalledApps()
             }
+        }
+        .onAppear {
+            appearId = UUID()
         }
     }
 }
@@ -206,6 +219,8 @@ struct GlassAppDetailView: View {
     let isScanning: Bool
     let onUninstall: () -> Void
 
+    @State private var isButtonHovering = false
+
     var body: some View {
         VStack(spacing: 0) {
             // App Header with glass card
@@ -251,6 +266,7 @@ struct GlassAppDetailView: View {
                 .padding(20)
             }
             .background(.ultraThinMaterial)
+            .slideIn(from: .top, delay: 0)
 
             Divider()
 
@@ -292,11 +308,13 @@ struct GlassAppDetailView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 40)
+                    .appearAnimation(delay: 0.1)
                 } else {
                     ScrollView {
                         VStack(spacing: 8) {
-                            ForEach(leftovers) { leftover in
+                            ForEach(Array(leftovers.enumerated()), id: \.element.id) { index, leftover in
                                 GlassLeftoverRow(leftover: leftover)
+                                    .staggeredAppear(index: index, baseDelay: 0.04)
                             }
                         }
                         .padding(.horizontal, 16)
@@ -322,6 +340,7 @@ struct GlassAppDetailView: View {
                         Text(ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file))
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundStyle(.primary)
+                            .contentTransition(.numericText())
                     }
 
                     Spacer()
@@ -343,14 +362,21 @@ struct GlassAppDetailView: View {
                             ),
                             in: RoundedRectangle(cornerRadius: 12, style: .continuous)
                         )
-                        .shadow(color: .cleanRed.opacity(0.4), radius: 8, x: 0, y: 4)
+                        .shadow(color: .cleanRed.opacity(isButtonHovering ? 0.6 : 0.4), radius: isButtonHovering ? 12 : 8, x: 0, y: isButtonHovering ? 6 : 4)
+                        .scaleEffect(isButtonHovering ? 1.03 : 1)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(BounceButtonStyle())
+                    .onHover { hovering in
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            isButtonHovering = hovering
+                        }
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 18)
                 .background(.ultraThinMaterial)
             }
+            .slideIn(from: .bottom, delay: 0.1)
         }
     }
 }

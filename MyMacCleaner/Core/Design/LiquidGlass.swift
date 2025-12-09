@@ -207,13 +207,15 @@ struct GlassSidebarItem: View {
     var isLoading: Bool = false
     let action: () -> Void
 
+    @State private var isHovering = false
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
                 ZStack {
                     Image(systemName: icon)
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(isSelected ? .white : color)
+                        .foregroundStyle(isSelected ? .white : (isHovering ? color : color.opacity(0.85)))
                         .opacity(isLoading ? 0.5 : 1)
 
                     if isLoading {
@@ -229,13 +231,14 @@ struct GlassSidebarItem: View {
                             .fill(color.gradient)
                     } else {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(color.opacity(0.15))
+                            .fill(color.opacity(isHovering ? 0.25 : 0.15))
                     }
                 }
+                .scaleEffect(isHovering && !isSelected ? 1.08 : 1.0)
 
                 Text(title)
                     .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
-                    .foregroundStyle(isSelected ? .primary : .secondary)
+                    .foregroundStyle(isSelected ? .primary : (isHovering ? .primary : .secondary))
 
                 Spacer()
 
@@ -245,18 +248,46 @@ struct GlassSidebarItem: View {
                         .fill(Color.cleanOrange)
                         .frame(width: 6, height: 6)
                 }
+
+                // Hover chevron indicator
+                if isHovering && !isSelected {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(color.opacity(0.6))
+                        .transition(.opacity.combined(with: .move(edge: .trailing)))
+                }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
             .background {
-                if isSelected {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(isSelected ? AnyShapeStyle(.ultraThinMaterial) : (isHovering ? AnyShapeStyle(color.opacity(0.08)) : AnyShapeStyle(.clear)))
+                    .shadow(color: .black.opacity(isSelected ? 0.05 : 0), radius: 4, x: 0, y: 2)
+            }
+            .overlay {
+                if isHovering && !isSelected {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+                        .strokeBorder(color.opacity(0.2), lineWidth: 1)
                 }
             }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(SidebarButtonStyle())
+        .onHover { hovering in
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                isHovering = hovering
+            }
+        }
+    }
+}
+
+// MARK: - Sidebar Button Style
+
+struct SidebarButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .opacity(configuration.isPressed ? 0.9 : 1)
+            .animation(.spring(response: 0.2, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
 

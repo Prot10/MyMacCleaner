@@ -3,6 +3,7 @@ import SwiftUI
 struct CleanerView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = CleanerViewModel()
+    @State private var appearId = UUID()
 
     var body: some View {
         content
@@ -10,6 +11,8 @@ struct CleanerView: View {
                 // Load preloaded data if available
                 let preloadedData = appState.loadingState.cleaner.data
                 viewModel.loadData(from: preloadedData)
+                // Trigger animations
+                appearId = UUID()
             }
     }
 
@@ -51,12 +54,14 @@ struct CleanerView: View {
                             }
                             .font(.system(size: 14, weight: .semibold))
                         }
+                        .buttonStyle(BounceButtonStyle())
                         .buttonStyle(LiquidGlassButtonStyle(isProminent: true))
                     }
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 20)
             }
+            .slideIn(from: .top, delay: 0)
 
             // Category List
             if viewModel.categories.isEmpty && !viewModel.isScanning {
@@ -89,15 +94,18 @@ struct CleanerView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .appearAnimation(delay: 0.2)
             } else {
                 ScrollView {
                     VStack(spacing: 12) {
-                        ForEach($viewModel.categories) { $category in
+                        ForEach(Array($viewModel.categories.enumerated()), id: \.element.id) { index, $category in
                             GlassCleanerCategoryRow(category: $category)
+                                .staggeredAppear(index: index, baseDelay: 0.06)
                         }
                     }
                     .padding(.horizontal, 24)
                     .padding(.vertical, 16)
+                    .id(appearId)
                 }
             }
 
@@ -138,6 +146,7 @@ struct CleanerView: View {
                             .padding(.horizontal, 28)
                             .padding(.vertical, 14)
                         }
+                        .buttonStyle(BounceButtonStyle())
                         .buttonStyle(LiquidGlassButtonStyle(isProminent: true))
                         .disabled(viewModel.isCleaning)
                     }

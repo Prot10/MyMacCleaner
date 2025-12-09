@@ -4,6 +4,7 @@ import Charts
 struct DashboardView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = DashboardViewModel()
+    @State private var appearId = UUID() // Forces re-animation on page switch
 
     /// Check if disk categories are still loading
     private var isDiskCategoriesLoading: Bool {
@@ -20,6 +21,7 @@ struct DashboardView: View {
                     cleanableSize: viewModel.totalCleanableSize,
                     onScanTap: { Task { await viewModel.startScan() } }
                 )
+                .appearAnimation(delay: 0)
 
                 // Quick Stats Cards - show immediately when available
                 if viewModel.memoryStats != nil {
@@ -31,6 +33,7 @@ struct DashboardView: View {
                             icon: "memorychip.fill",
                             color: viewModel.memoryColor
                         )
+                        .cardAppear(index: 0)
 
                         GlassStatsCard(
                             title: "Storage",
@@ -39,6 +42,7 @@ struct DashboardView: View {
                             icon: "internaldrive.fill",
                             color: viewModel.storageColor
                         )
+                        .cardAppear(index: 1)
 
                         GlassStatsCard(
                             title: "CPU",
@@ -47,9 +51,9 @@ struct DashboardView: View {
                             icon: "cpu.fill",
                             color: viewModel.cpuColor
                         )
+                        .cardAppear(index: 2)
                     }
                     .padding(.horizontal, 24)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 } else {
                     // Stats skeleton
                     HStack(spacing: 16) {
@@ -69,14 +73,14 @@ struct DashboardView: View {
                         onViewDetails: { appState.selectedNavigation = .cleaner }
                     )
                     .padding(.horizontal, 24)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    .slideIn(from: .bottom, delay: 0.2)
                 }
 
                 // Storage Breakdown Chart - show skeleton while loading
                 if !viewModel.diskCategories.isEmpty {
                     GlassStorageCard(categories: viewModel.diskCategories)
                         .padding(.horizontal, 24)
-                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                        .slideIn(from: .bottom, delay: 0.3)
                 } else if isDiskCategoriesLoading {
                     StorageCardSkeleton()
                         .padding(.horizontal, 24)
@@ -85,8 +89,7 @@ struct DashboardView: View {
                 Spacer(minLength: 20)
             }
             .padding(.vertical, 24)
-            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.memoryStats != nil)
-            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.diskCategories.isEmpty)
+            .id(appearId) // Re-triggers animations
         }
         .task {
             // Use preloaded data if available
@@ -98,6 +101,10 @@ struct DashboardView: View {
             if let categories = newValue {
                 viewModel.diskCategories = categories
             }
+        }
+        .onAppear {
+            // Trigger re-animation when switching to this page
+            appearId = UUID()
         }
     }
 }
@@ -277,6 +284,9 @@ struct GlassStatsCard: View {
     let icon: String
     let color: Color
 
+    @State private var animatedPercentage: Double = 0
+    @State private var isHovering = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             // Header
@@ -293,20 +303,24 @@ struct GlassStatsCard: View {
             }
 
             HStack(spacing: 14) {
-                // Circular Gauge with glass effect
-                GlassCircularProgress(
+                // Animated Circular Gauge with glass effect
+                AnimatedProgressRing(
                     progress: percentage,
-                    size: 56,
                     lineWidth: 6,
-                    color: color,
-                    showPercentage: false
+                    gradient: LinearGradient(
+                        colors: [color, color.opacity(0.7)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                 )
+                .frame(width: 56, height: 56)
 
-                // Value
+                // Value with animated number
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(Int(percentage * 100))%")
+                    Text("\(Int(animatedPercentage * 100))%")
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundStyle(.primary)
+                        .contentTransition(.numericText())
 
                     Text(value)
                         .font(.system(size: 11, weight: .medium))
@@ -318,6 +332,22 @@ struct GlassStatsCard: View {
             }
         }
         .liquidGlassCard(cornerRadius: 18, style: .thin, padding: 16)
+        .scaleEffect(isHovering ? 1.02 : 1)
+        .shadow(color: color.opacity(isHovering ? 0.3 : 0), radius: 15, x: 0, y: 8)
+        .animation(AppAnimation.springFast, value: isHovering)
+        .onHover { hovering in
+            isHovering = hovering
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.8).delay(0.3)) {
+                animatedPercentage = percentage
+            }
+        }
+        .onChange(of: percentage) { _, newValue in
+            withAnimation(.easeOut(duration: 0.5)) {
+                animatedPercentage = newValue
+            }
+        }
     }
 }
 
@@ -437,6 +467,9 @@ struct GlassCleanupCard: View {
 struct GlassStorageCard: View {
     let categories: [DiskCategory]
 
+    @State private var chartAnimationProgress: CGFloat = 0
+    @State private var legendVisible: [Bool] = []
+
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             // Header
@@ -445,7 +478,7 @@ struct GlassStorageCard: View {
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 28) {
-                // Pie Chart with glass background
+                // Animated Pie Chart with glass background
                 ZStack {
                     Circle()
                         .fill(.ultraThinMaterial)
@@ -459,13 +492,16 @@ struct GlassStorageCard: View {
                         )
                         .cornerRadius(4)
                         .foregroundStyle(colorForCategory(category.colorName).gradient)
+                        .opacity(Double(chartAnimationProgress))
                     }
                     .frame(width: 130, height: 130)
+                    .rotationEffect(.degrees(-90 + (90 * Double(chartAnimationProgress))))
+                    .scaleEffect(0.8 + (0.2 * Double(chartAnimationProgress)))
                 }
 
-                // Legend
+                // Legend with staggered animation
                 VStack(alignment: .leading, spacing: 10) {
-                    ForEach(categories.prefix(5)) { category in
+                    ForEach(Array(categories.prefix(5).enumerated()), id: \.element.id) { index, category in
                         HStack(spacing: 10) {
                             RoundedRectangle(cornerRadius: 3)
                                 .fill(colorForCategory(category.colorName).gradient)
@@ -481,12 +517,30 @@ struct GlassStorageCard: View {
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
                                 .foregroundStyle(.secondary)
                         }
+                        .opacity(legendVisible.indices.contains(index) && legendVisible[index] ? 1 : 0)
+                        .offset(x: legendVisible.indices.contains(index) && legendVisible[index] ? 0 : 20)
                     }
                 }
                 .frame(maxWidth: .infinity)
             }
         }
         .liquidGlassCard(cornerRadius: 20, style: .thin, padding: 20)
+        .onAppear {
+            // Initialize legend visibility
+            legendVisible = Array(repeating: false, count: min(categories.count, 5))
+
+            // Animate chart
+            withAnimation(.easeOut(duration: 0.8).delay(0.2)) {
+                chartAnimationProgress = 1
+            }
+
+            // Stagger legend items
+            for index in legendVisible.indices {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.4 + Double(index) * 0.1)) {
+                    legendVisible[index] = true
+                }
+            }
+        }
     }
 
     private func colorForCategory(_ name: String) -> Color {
