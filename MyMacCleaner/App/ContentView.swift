@@ -22,13 +22,13 @@ struct GlassSidebar: View {
         @Bindable var state = appState
 
         VStack(spacing: 0) {
-            // App Title
+            // App Title with futuristic gradient
             HStack {
                 Image(systemName: "sparkles")
                     .font(.title2)
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.blue, .purple],
+                            colors: [Color.cleanPurple, Color.electricBlue],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -88,11 +88,12 @@ struct GlassSidebar: View {
                 Color(nsColor: .windowBackgroundColor)
                     .opacity(0.5)
 
-                // Subtle gradient overlay
+                // Futuristic violet-cyan gradient overlay
                 LinearGradient(
                     colors: [
-                        .blue.opacity(0.05),
-                        .purple.opacity(0.03),
+                        Color.neonViolet.opacity(0.06),
+                        Color.cleanPurple.opacity(0.04),
+                        Color.electricBlue.opacity(0.03),
                         .clear
                     ],
                     startPoint: .topLeading,

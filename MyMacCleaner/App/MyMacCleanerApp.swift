@@ -76,11 +76,11 @@ enum NavigationItem: String, CaseIterable, Identifiable {
 
     var accentColor: Color {
         switch self {
-        case .dashboard: return .blue
-        case .cleaner: return .green
-        case .uninstaller: return .orange
-        case .optimizer: return .purple
-        case .settings: return .gray
+        case .dashboard: return .cleanPurple      // Electric Violet - primary action
+        case .cleaner: return .cleanGreen         // Neon Lime - cleanup/success
+        case .uninstaller: return .cleanRed       // Hot Pink - removal/danger
+        case .optimizer: return .cleanBlue        // Electric Cyan - performance
+        case .settings: return .slate400          // Neutral slate
         }
     }
 }

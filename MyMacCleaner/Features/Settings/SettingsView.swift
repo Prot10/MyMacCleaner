@@ -418,7 +418,7 @@ struct GlassAboutSettingsView: View {
         VStack(spacing: 28) {
             Spacer()
 
-            // App icon with glass effect
+            // App icon with futuristic glass effect
             ZStack {
                 Circle()
                     .fill(.ultraThinMaterial)
@@ -427,7 +427,11 @@ struct GlassAboutSettingsView: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [.cleanBlue.opacity(0.3), .cleanPurple.opacity(0.3)],
+                            colors: [
+                                Color.cleanPurple.opacity(0.4),
+                                Color.neonViolet.opacity(0.3),
+                                Color.electricBlue.opacity(0.25)
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -438,13 +442,13 @@ struct GlassAboutSettingsView: View {
                     .font(.system(size: 48, weight: .medium))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.cleanBlue, .cleanPurple],
+                            colors: [Color.cleanPurple, Color.electricBlue],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
             }
-            .shadow(color: .cleanBlue.opacity(0.3), radius: 20, x: 0, y: 10)
+            .shadow(color: Color.cleanPurple.opacity(0.4), radius: 25, x: 0, y: 12)
 
             VStack(spacing: 8) {
                 Text("MyMacCleaner")

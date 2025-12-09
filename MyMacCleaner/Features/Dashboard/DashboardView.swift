@@ -138,13 +138,14 @@ struct GlassHeroButton: View {
                     .fill(.ultraThinMaterial)
                     .frame(width: buttonSize, height: buttonSize)
 
-                // Gradient overlay
+                // Gradient overlay - Electric Violet to Deep Purple
                 Circle()
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color.accentColor.opacity(0.8),
-                                Color.accentColor.opacity(0.6)
+                                Color.cleanPurple,
+                                Color.neonViolet,
+                                Color.electricBlue.opacity(0.8)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -168,13 +169,13 @@ struct GlassHeroButton: View {
                     )
                     .frame(width: buttonSize, height: buttonSize)
 
-                // Pulse animation ring (when idle)
+                // Pulse animation ring (when idle) - Electric violet glow
                 if !isScanning {
                     Circle()
-                        .stroke(Color.accentColor.opacity(0.4), lineWidth: 2)
+                        .stroke(Color.cleanPurple.opacity(0.5), lineWidth: 2)
                         .frame(width: buttonSize + 24, height: buttonSize + 24)
                         .scaleEffect(pulseAnimation ? 1.15 : 1.0)
-                        .opacity(pulseAnimation ? 0 : 0.6)
+                        .opacity(pulseAnimation ? 0 : 0.7)
                 }
 
                 // Progress ring (when scanning)
@@ -212,7 +213,7 @@ struct GlassHeroButton: View {
                         .foregroundStyle(.white)
                 }
             }
-            .shadow(color: Color.accentColor.opacity(0.4), radius: isHovering ? 30 : 20, x: 0, y: 8)
+            .shadow(color: Color.cleanPurple.opacity(0.5), radius: isHovering ? 35 : 25, x: 0, y: 10)
         }
         .buttonStyle(.plain)
         .scaleEffect(isHovering ? 1.05 : 1.0)

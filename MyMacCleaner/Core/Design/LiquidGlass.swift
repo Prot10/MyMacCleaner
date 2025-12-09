@@ -71,14 +71,14 @@ struct LiquidGlassButtonStyle: ButtonStyle {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color.accentColor,
-                                    Color.accentColor.opacity(0.8)
+                                    Color.cleanPurple,
+                                    Color.neonViolet
                                 ],
-                                startPoint: .top,
-                                endPoint: .bottom
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
                             )
                         )
-                        .shadow(color: Color.accentColor.opacity(0.4), radius: 8, x: 0, y: 4)
+                        .shadow(color: Color.cleanPurple.opacity(0.5), radius: 12, x: 0, y: 6)
                 } else {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .fill(.ultraThinMaterial)
@@ -89,18 +89,19 @@ struct LiquidGlassButtonStyle: ButtonStyle {
                     .strokeBorder(
                         LinearGradient(
                             colors: [
-                                .white.opacity(isProminent ? 0.4 : 0.2),
-                                .clear
+                                .white.opacity(isProminent ? 0.5 : 0.2),
+                                .white.opacity(isProminent ? 0.1 : 0.05)
                             ],
-                            startPoint: .top,
-                            endPoint: .bottom
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         ),
                         lineWidth: 1
                     )
             }
             .foregroundStyle(isProminent ? .white : .primary)
-            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .opacity(configuration.isPressed ? 0.9 : 1.0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
 
@@ -119,14 +120,23 @@ struct AnimatedMeshGradient: View {
                 [0.0, 1.0], [0.5, 1.0], [1.0, 1.0]
             ],
             colors: [
-                .blue.opacity(0.3), .purple.opacity(0.2), .blue.opacity(0.3),
-                .cyan.opacity(0.2), .clear, .pink.opacity(0.2),
-                .blue.opacity(0.2), .purple.opacity(0.3), .cyan.opacity(0.2)
+                // Top row - violet to cyan gradient
+                Color.neonViolet.opacity(0.25),
+                Color.cleanPurple.opacity(0.15),
+                Color.electricBlue.opacity(0.20),
+                // Middle row - cyan accent to pink
+                Color.cleanBlue.opacity(0.15),
+                .clear,
+                Color.softPink.opacity(0.15),
+                // Bottom row - blue to violet
+                Color.electricBlue.opacity(0.18),
+                Color.mintCyan.opacity(0.12),
+                Color.neonViolet.opacity(0.20)
             ]
         )
         .ignoresSafeArea()
         .onAppear {
-            withAnimation(.easeInOut(duration: 5).repeatForever(autoreverses: true)) {
+            withAnimation(.easeInOut(duration: 6).repeatForever(autoreverses: true)) {
                 animate = true
             }
         }
@@ -261,12 +271,37 @@ extension Color {
     static let glassBackground = Color(nsColor: .windowBackgroundColor).opacity(0.8)
     static let glassBorder = Color.white.opacity(0.2)
 
-    // CleanMyMac-inspired colors
-    static let cleanGreen = Color(red: 0.2, green: 0.8, blue: 0.4)
-    static let cleanBlue = Color(red: 0.3, green: 0.5, blue: 1.0)
-    static let cleanPurple = Color(red: 0.6, green: 0.3, blue: 0.9)
-    static let cleanOrange = Color(red: 1.0, green: 0.6, blue: 0.2)
-    static let cleanRed = Color(red: 1.0, green: 0.3, blue: 0.3)
+    // MARK: - 2025 Futuristic Color Palette
+    // Inspired by cyberpunk aesthetics, glassmorphism, and modern tech UI trends
+
+    // Primary Action - Electric Violet (tech innovation, futuristic)
+    static let cleanPurple = Color(hue: 0.75, saturation: 0.85, brightness: 0.95)  // #A855F7 Electric Violet
+
+    // Success - Neon Lime (cyberpunk energy, completion)
+    static let cleanGreen = Color(hue: 0.38, saturation: 0.90, brightness: 0.95)   // #84CC16 Neon Lime
+
+    // Info/Memory - Electric Cyan (tech, data, cool)
+    static let cleanBlue = Color(hue: 0.52, saturation: 0.85, brightness: 0.98)    // #06B6D4 Electric Cyan
+
+    // Warning - Amber Glow (warm, attention)
+    static let cleanOrange = Color(hue: 0.09, saturation: 0.85, brightness: 0.98)  // #F59E0B Amber Glow
+
+    // Danger - Hot Pink/Magenta (modern, striking)
+    static let cleanRed = Color(hue: 0.93, saturation: 0.80, brightness: 0.95)     // #EC4899 Hot Pink
+
+    // MARK: - Extended Palette
+
+    // Accent gradients for depth
+    static let neonViolet = Color(hue: 0.78, saturation: 0.90, brightness: 0.90)   // #8B5CF6 Deep Violet
+    static let electricBlue = Color(hue: 0.58, saturation: 0.90, brightness: 0.95) // #3B82F6 Electric Blue
+    static let mintCyan = Color(hue: 0.47, saturation: 0.70, brightness: 0.90)     // #2DD4BF Mint Cyan
+    static let softPink = Color(hue: 0.90, saturation: 0.50, brightness: 0.95)     // #F472B6 Soft Pink
+    static let neonYellow = Color(hue: 0.15, saturation: 0.85, brightness: 1.0)    // #FACC15 Neon Yellow
+
+    // Neutral tones with subtle color tints
+    static let slate50 = Color(hue: 0.62, saturation: 0.05, brightness: 0.98)      // Near white with blue tint
+    static let slate400 = Color(hue: 0.62, saturation: 0.10, brightness: 0.60)     // Medium gray-blue
+    static let slate800 = Color(hue: 0.62, saturation: 0.15, brightness: 0.20)     // Dark slate
 }
 
 // MARK: - Shimmer Effect
