@@ -156,16 +156,11 @@ struct GlassAppListRow: View {
     var body: some View {
         Button(action: onSelect) {
             HStack(spacing: 12) {
-                // App icon with glass background
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(isSelected ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.1))
-                        .frame(width: 44, height: 44)
-
-                    Image(systemName: "app.fill")
-                        .font(.system(size: 22))
-                        .foregroundStyle(isSelected ? Color.accentColor : .secondary)
-                }
+                // App icon
+                Image(nsImage: app.icon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 40, height: 40)
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(app.name)
@@ -227,25 +222,12 @@ struct GlassAppDetailView: View {
             VStack(spacing: 0) {
                 HStack(spacing: 18) {
                     // App icon
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(.ultraThinMaterial)
-                            .frame(width: 72, height: 72)
-
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.accentColor.opacity(0.3), Color.accentColor.opacity(0.1)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 64, height: 64)
-
-                        Image(systemName: "app.fill")
-                            .font(.system(size: 32))
-                            .foregroundStyle(.secondary)
-                    }
+                    Image(nsImage: app.icon)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 64, height: 64)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 3)
 
                     VStack(alignment: .leading, spacing: 6) {
                         Text(app.name)

@@ -251,7 +251,7 @@ struct AnimatedNumber: View {
     }
 }
 
-// MARK: - Card Flip Animation
+// MARK: - Card Appear Animation
 
 struct CardAppearModifier: ViewModifier {
     let index: Int
@@ -261,14 +261,10 @@ struct CardAppearModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .opacity(isVisible ? 1 : 0)
-            .scaleEffect(isVisible ? 1 : 0.8)
-            .rotation3DEffect(
-                .degrees(isVisible ? 0 : -15),
-                axis: (x: 1, y: 0, z: 0),
-                perspective: 0.3
-            )
+            .scaleEffect(isVisible ? 1 : 0.92)
+            .offset(y: isVisible ? 0 : 15)
             .onAppear {
-                withAnimation(AppAnimation.springBouncy.delay(Double(index) * 0.08)) {
+                withAnimation(AppAnimation.spring.delay(Double(index) * 0.08)) {
                     isVisible = true
                 }
             }
