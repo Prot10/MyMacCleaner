@@ -469,6 +469,7 @@ struct GlassStorageCard: View {
 
     @State private var chartAnimationProgress: CGFloat = 0
     @State private var legendVisible: [Bool] = []
+    @State private var showFDASheet = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -486,12 +487,12 @@ struct GlassStorageCard: View {
 
                     Chart(categories) { category in
                         SectorMark(
-                            angle: .value("Size", category.sizeBytes),
+                            angle: .value("Size", max(category.sizeBytes, category.needsPermission ? 1_000_000_000 : 0)),
                             innerRadius: .ratio(0.55),
                             angularInset: 2
                         )
                         .cornerRadius(4)
-                        .foregroundStyle(colorForCategory(category.colorName).gradient)
+                        .foregroundStyle(category.needsPermission ? AnyShapeStyle(Color.gray.opacity(0.3)) : AnyShapeStyle(colorForCategory(category.colorName).gradient))
                         .opacity(Double(chartAnimationProgress))
                     }
                     .frame(width: 130, height: 130)
@@ -504,18 +505,36 @@ struct GlassStorageCard: View {
                     ForEach(Array(categories.prefix(5).enumerated()), id: \.element.id) { index, category in
                         HStack(spacing: 10) {
                             RoundedRectangle(cornerRadius: 3)
-                                .fill(colorForCategory(category.colorName).gradient)
+                                .fill(category.needsPermission ? AnyShapeStyle(Color.gray.opacity(0.3)) : AnyShapeStyle(colorForCategory(category.colorName).gradient))
                                 .frame(width: 12, height: 12)
 
                             Text(category.name)
                                 .font(.system(size: 13))
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(category.needsPermission ? .secondary : .primary)
 
                             Spacer()
 
-                            Text(category.formattedSize)
-                                .font(.system(size: 12, weight: .medium, design: .monospaced))
-                                .foregroundStyle(.secondary)
+                            if category.needsPermission {
+                                Button {
+                                    showFDASheet = true
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "lock.fill")
+                                            .font(.system(size: 9))
+                                        Text("Grant Access")
+                                            .font(.system(size: 10, weight: .medium))
+                                    }
+                                    .foregroundStyle(.orange)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(Color.orange.opacity(0.15), in: Capsule())
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                Text(category.formattedSize)
+                                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         .opacity(legendVisible.indices.contains(index) && legendVisible[index] ? 1 : 0)
                         .offset(x: legendVisible.indices.contains(index) && legendVisible[index] ? 0 : 20)
@@ -540,6 +559,9 @@ struct GlassStorageCard: View {
                     legendVisible[index] = true
                 }
             }
+        }
+        .sheet(isPresented: $showFDASheet) {
+            FDAPermissionSheet()
         }
     }
 

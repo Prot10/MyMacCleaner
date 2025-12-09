@@ -132,39 +132,55 @@ final class SystemStatsRepository: Sendable {
     /// Get disk usage breakdown by category
     func getDiskUsageBreakdown() async -> [DiskCategory] {
         let home = NSHomeDirectory()
-        let fm = FileManager.default
 
         var categories: [DiskCategory] = []
 
-        // Calculate sizes for each category (this can be slow)
-        let paths: [(name: String, path: String, color: String)] = [
-            ("Applications", "/Applications", "blue"),
-            ("Documents", "\(home)/Documents", "orange"),
-            ("Downloads", "\(home)/Downloads", "green"),
-            ("Library", "\(home)/Library", "purple"),
-            ("System", "/System", "gray"),
+        // Calculate sizes for each category
+        // Mark directories that typically need FDA when they return 0
+        let paths: [(name: String, path: String, color: String, likelyNeedsFDA: Bool)] = [
+            ("Applications", "/Applications", "blue", false),
+            ("Documents", "\(home)/Documents", "orange", true),  // User data - needs FDA
+            ("Downloads", "\(home)/Downloads", "green", true),   // User data - needs FDA
+            ("Library", "\(home)/Library", "purple", false),
+            ("System", "/System", "gray", false),
         ]
 
-        for (name, path, color) in paths {
-            if let size = try? calculateDirectorySize(at: path) {
-                categories.append(DiskCategory(name: name, sizeBytes: size, colorName: color))
-            }
+        for (name, path, color, likelyNeedsFDA) in paths {
+            let (size, encounteredError) = calculateDirectorySizeWithPermissionCheck(at: path)
+            // Mark as needing FDA if: we got an error, OR if it's a user directory with 0 size
+            let needsFDA = encounteredError || (likelyNeedsFDA && size == 0)
+            categories.append(DiskCategory(name: name, sizeBytes: size, colorName: color, needsPermission: needsFDA))
         }
 
         return categories.sorted { $0.sizeBytes > $1.sizeBytes }
     }
 
-    private func calculateDirectorySize(at path: String) throws -> Int64 {
+    /// Calculate directory size and check if we have permission issues
+    private func calculateDirectorySizeWithPermissionCheck(at path: String) -> (size: Int64, encounteredError: Bool) {
         let fm = FileManager.default
         var totalSize: Int64 = 0
+        var encounteredPermissionError = false
 
-        guard fm.fileExists(atPath: path) else { return 0 }
+        guard fm.fileExists(atPath: path) else { return (0, false) }
+
+        // First check if we can even read the directory
+        guard fm.isReadableFile(atPath: path) else {
+            return (0, true)
+        }
 
         // Use a shallow enumeration for performance
         if let enumerator = fm.enumerator(
             at: URL(fileURLWithPath: path),
             includingPropertiesForKeys: [.fileSizeKey, .isDirectoryKey],
-            options: [.skipsHiddenFiles]
+            options: [.skipsHiddenFiles],
+            errorHandler: { _, error in
+                // Check if it's a permission error
+                if (error as NSError).code == NSFileReadNoPermissionError ||
+                   (error as NSError).code == 257 { // Operation not permitted
+                    encounteredPermissionError = true
+                }
+                return true // Continue enumeration
+            }
         ) {
             for case let fileURL as URL in enumerator {
                 if let values = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey]),
@@ -176,7 +192,7 @@ final class SystemStatsRepository: Sendable {
             }
         }
 
-        return totalSize
+        return (totalSize, encounteredPermissionError)
     }
 }
 
@@ -210,16 +226,21 @@ struct DiskCategory: Identifiable, Sendable, Equatable {
     let name: String
     let sizeBytes: Int64
     let colorName: String
+    let needsPermission: Bool
 
-    init(name: String, sizeBytes: Int64, colorName: String) {
+    init(name: String, sizeBytes: Int64, colorName: String, needsPermission: Bool = false) {
         self.id = UUID()
         self.name = name
         self.sizeBytes = sizeBytes
         self.colorName = colorName
+        self.needsPermission = needsPermission
     }
 
     var formattedSize: String {
-        ByteCountFormatter.string(fromByteCount: sizeBytes, countStyle: .file)
+        if needsPermission && sizeBytes == 0 {
+            return "Needs FDA"
+        }
+        return ByteCountFormatter.string(fromByteCount: sizeBytes, countStyle: .file)
     }
 
     static func == (lhs: DiskCategory, rhs: DiskCategory) -> Bool {

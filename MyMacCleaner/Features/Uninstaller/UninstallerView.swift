@@ -1,9 +1,11 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct UninstallerView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = UninstallerViewModel()
     @State private var appearId = UUID()
+    @State private var isDragOver = false
 
     var body: some View {
         HSplitView {
@@ -80,26 +82,28 @@ struct UninstallerView: View {
                     removal: .opacity
                 ))
             } else {
-                // Placeholder with glass effect
+                // Placeholder with glass effect and drop zone
                 VStack(spacing: 24) {
                     ZStack {
                         Circle()
                             .fill(.ultraThinMaterial)
                             .frame(width: 100, height: 100)
 
-                        Image(systemName: "app.badge.checkmark")
+                        Image(systemName: isDragOver ? "arrow.down.app.fill" : "app.badge.checkmark")
                             .font(.system(size: 44))
                             .foregroundStyle(
                                 LinearGradient(
-                                    colors: [.cleanBlue, .cleanPurple],
+                                    colors: isDragOver ? [.cleanGreen, .cleanBlue] : [.cleanBlue, .cleanPurple],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
                             )
+                            .scaleEffect(isDragOver ? 1.1 : 1.0)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isDragOver)
                     }
 
                     VStack(spacing: 10) {
-                        Text("Select an app to uninstall")
+                        Text(isDragOver ? "Drop to analyze" : "Select an app to uninstall")
                             .font(.system(size: 18, weight: .semibold, design: .rounded))
                             .foregroundStyle(.primary)
 
@@ -110,22 +114,36 @@ struct UninstallerView: View {
 
                     // Drop zone indicator
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8, 6]))
-                        .foregroundStyle(.secondary.opacity(0.3))
+                        .strokeBorder(
+                            style: StrokeStyle(lineWidth: 2, dash: [8, 6]),
+                            antialiased: true
+                        )
+                        .foregroundStyle(isDragOver ? Color.cleanGreen.opacity(0.6) : .secondary.opacity(0.3))
                         .frame(width: 200, height: 100)
+                        .background {
+                            if isDragOver {
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .fill(Color.cleanGreen.opacity(0.1))
+                            }
+                        }
                         .overlay {
                             VStack(spacing: 8) {
                                 Image(systemName: "arrow.down.doc")
                                     .font(.system(size: 24))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(isDragOver ? Color.cleanGreen : .secondary)
                                 Text("Drop .app here")
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(isDragOver ? Color.cleanGreen : .secondary)
                             }
                         }
+                        .scaleEffect(isDragOver ? 1.05 : 1.0)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isDragOver)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .appearAnimation(delay: 0.2)
+                .onDrop(of: [.fileURL], isTargeted: $isDragOver) { providers in
+                    handleDrop(providers: providers)
+                }
             }
         }
         .task {
@@ -141,6 +159,78 @@ struct UninstallerView: View {
         .onAppear {
             appearId = UUID()
         }
+    }
+
+    // MARK: - Drag and Drop
+
+    private func handleDrop(providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first else { return false }
+
+        provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, error in
+            guard let data = item as? Data,
+                  let url = URL(dataRepresentation: data, relativeTo: nil),
+                  url.pathExtension == "app" else {
+                return
+            }
+
+            Task { @MainActor in
+                await handleDroppedApp(at: url.path)
+            }
+        }
+
+        return true
+    }
+
+    @MainActor
+    private func handleDroppedApp(at path: String) async {
+        let fm = FileManager.default
+        let infoPlistPath = (path as NSString).appendingPathComponent("Contents/Info.plist")
+
+        guard fm.fileExists(atPath: infoPlistPath),
+              let plist = NSDictionary(contentsOfFile: infoPlistPath),
+              let bundleId = plist["CFBundleIdentifier"] as? String else {
+            return
+        }
+
+        let name = ((path as NSString).lastPathComponent as NSString).deletingPathExtension
+        let size = (try? getDirectorySize(at: path)) ?? 0
+
+        let droppedApp = AppInfo(
+            name: name,
+            bundleId: bundleId,
+            path: path,
+            sizeBytes: size
+        )
+
+        // Add to list if not already present
+        if !viewModel.apps.contains(where: { $0.bundleId == bundleId }) {
+            viewModel.apps.insert(droppedApp, at: 0)
+        }
+
+        // Select the dropped app
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            viewModel.selectedApp = droppedApp
+        }
+
+        // Scan for leftovers
+        await viewModel.scanLeftovers(for: droppedApp)
+    }
+
+    private func getDirectorySize(at path: String) throws -> Int64 {
+        let fm = FileManager.default
+        var totalSize: Int64 = 0
+
+        guard let enumerator = fm.enumerator(atPath: path) else { return 0 }
+
+        for case let file as String in enumerator {
+            let filePath = (path as NSString).appendingPathComponent(file)
+            if let attrs = try? fm.attributesOfItem(atPath: filePath),
+               let size = attrs[.size] as? Int64 {
+                totalSize += size
+            }
+        }
+
+        return totalSize
     }
 }
 
