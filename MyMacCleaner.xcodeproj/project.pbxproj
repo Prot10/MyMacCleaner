@@ -1,0 +1,546 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		650DE2AA2EE843C200C84519 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 650DE2932EE843C000C84519 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 650DE29A2EE843C000C84519;
+			remoteInfo = MyMacCleaner;
+		};
+		650DE2B42EE843C200C84519 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 650DE2932EE843C000C84519 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 650DE29A2EE843C000C84519;
+			remoteInfo = MyMacCleaner;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		650DE29B2EE843C000C84519 /* MyMacCleaner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyMacCleaner.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		650DE2A92EE843C200C84519 /* MyMacCleanerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MyMacCleanerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		650DE2B32EE843C200C84519 /* MyMacCleanerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MyMacCleanerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		650DE29D2EE843C000C84519 /* MyMacCleaner */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MyMacCleaner;
+			sourceTree = "<group>";
+		};
+		650DE2AC2EE843C200C84519 /* MyMacCleanerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MyMacCleanerTests;
+			sourceTree = "<group>";
+		};
+		650DE2B62EE843C200C84519 /* MyMacCleanerUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MyMacCleanerUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		650DE2982EE843C000C84519 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		650DE2A62EE843C200C84519 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		650DE2B02EE843C200C84519 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		650DE2922EE843C000C84519 = {
+			isa = PBXGroup;
+			children = (
+				650DE29D2EE843C000C84519 /* MyMacCleaner */,
+				650DE2AC2EE843C200C84519 /* MyMacCleanerTests */,
+				650DE2B62EE843C200C84519 /* MyMacCleanerUITests */,
+				650DE29C2EE843C000C84519 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		650DE29C2EE843C000C84519 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				650DE29B2EE843C000C84519 /* MyMacCleaner.app */,
+				650DE2A92EE843C200C84519 /* MyMacCleanerTests.xctest */,
+				650DE2B32EE843C200C84519 /* MyMacCleanerUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		650DE29A2EE843C000C84519 /* MyMacCleaner */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 650DE2BD2EE843C200C84519 /* Build configuration list for PBXNativeTarget "MyMacCleaner" */;
+			buildPhases = (
+				650DE2972EE843C000C84519 /* Sources */,
+				650DE2982EE843C000C84519 /* Frameworks */,
+				650DE2992EE843C000C84519 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				650DE29D2EE843C000C84519 /* MyMacCleaner */,
+			);
+			name = MyMacCleaner;
+			packageProductDependencies = (
+			);
+			productName = MyMacCleaner;
+			productReference = 650DE29B2EE843C000C84519 /* MyMacCleaner.app */;
+			productType = "com.apple.product-type.application";
+		};
+		650DE2A82EE843C200C84519 /* MyMacCleanerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 650DE2C02EE843C200C84519 /* Build configuration list for PBXNativeTarget "MyMacCleanerTests" */;
+			buildPhases = (
+				650DE2A52EE843C200C84519 /* Sources */,
+				650DE2A62EE843C200C84519 /* Frameworks */,
+				650DE2A72EE843C200C84519 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				650DE2AB2EE843C200C84519 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				650DE2AC2EE843C200C84519 /* MyMacCleanerTests */,
+			);
+			name = MyMacCleanerTests;
+			packageProductDependencies = (
+			);
+			productName = MyMacCleanerTests;
+			productReference = 650DE2A92EE843C200C84519 /* MyMacCleanerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		650DE2B22EE843C200C84519 /* MyMacCleanerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 650DE2C32EE843C200C84519 /* Build configuration list for PBXNativeTarget "MyMacCleanerUITests" */;
+			buildPhases = (
+				650DE2AF2EE843C200C84519 /* Sources */,
+				650DE2B02EE843C200C84519 /* Frameworks */,
+				650DE2B12EE843C200C84519 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				650DE2B52EE843C200C84519 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				650DE2B62EE843C200C84519 /* MyMacCleanerUITests */,
+			);
+			name = MyMacCleanerUITests;
+			packageProductDependencies = (
+			);
+			productName = MyMacCleanerUITests;
+			productReference = 650DE2B32EE843C200C84519 /* MyMacCleanerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		650DE2932EE843C000C84519 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					650DE29A2EE843C000C84519 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					650DE2A82EE843C200C84519 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 650DE29A2EE843C000C84519;
+					};
+					650DE2B22EE843C200C84519 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 650DE29A2EE843C000C84519;
+					};
+				};
+			};
+			buildConfigurationList = 650DE2962EE843C000C84519 /* Build configuration list for PBXProject "MyMacCleaner" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 650DE2922EE843C000C84519;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 650DE29C2EE843C000C84519 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				650DE29A2EE843C000C84519 /* MyMacCleaner */,
+				650DE2A82EE843C200C84519 /* MyMacCleanerTests */,
+				650DE2B22EE843C200C84519 /* MyMacCleanerUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		650DE2992EE843C000C84519 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		650DE2A72EE843C200C84519 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		650DE2B12EE843C200C84519 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		650DE2972EE843C000C84519 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		650DE2A52EE843C200C84519 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		650DE2AF2EE843C200C84519 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		650DE2AB2EE843C200C84519 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 650DE29A2EE843C000C84519 /* MyMacCleaner */;
+			targetProxy = 650DE2AA2EE843C200C84519 /* PBXContainerItemProxy */;
+		};
+		650DE2B52EE843C200C84519 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 650DE29A2EE843C000C84519 /* MyMacCleaner */;
+			targetProxy = 650DE2B42EE843C200C84519 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		650DE2BB2EE843C200C84519 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		650DE2BC2EE843C200C84519 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		650DE2BE2EE843C200C84519 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MyMacCleaner/MyMacCleaner.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mymaccleaner.MyMacCleaner;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		650DE2BF2EE843C200C84519 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MyMacCleaner/MyMacCleaner.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mymaccleaner.MyMacCleaner;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		650DE2C12EE843C200C84519 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mymaccleaner.MyMacCleanerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MyMacCleaner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MyMacCleaner";
+			};
+			name = Debug;
+		};
+		650DE2C22EE843C200C84519 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mymaccleaner.MyMacCleanerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MyMacCleaner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MyMacCleaner";
+			};
+			name = Release;
+		};
+		650DE2C42EE843C200C84519 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mymaccleaner.MyMacCleanerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = MyMacCleaner;
+			};
+			name = Debug;
+		};
+		650DE2C52EE843C200C84519 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mymaccleaner.MyMacCleanerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = MyMacCleaner;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		650DE2962EE843C000C84519 /* Build configuration list for PBXProject "MyMacCleaner" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				650DE2BB2EE843C200C84519 /* Debug */,
+				650DE2BC2EE843C200C84519 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		650DE2BD2EE843C200C84519 /* Build configuration list for PBXNativeTarget "MyMacCleaner" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				650DE2BE2EE843C200C84519 /* Debug */,
+				650DE2BF2EE843C200C84519 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		650DE2C02EE843C200C84519 /* Build configuration list for PBXNativeTarget "MyMacCleanerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				650DE2C12EE843C200C84519 /* Debug */,
+				650DE2C22EE843C200C84519 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		650DE2C32EE843C200C84519 /* Build configuration list for PBXNativeTarget "MyMacCleanerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				650DE2C42EE843C200C84519 /* Debug */,
+				650DE2C52EE843C200C84519 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 650DE2932EE843C000C84519 /* Project object */;
+}
