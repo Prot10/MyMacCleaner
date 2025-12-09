@@ -49,7 +49,13 @@ struct OptimizerView: View {
             }
         }
         .task {
-            await viewModel.loadData()
+            // Use preloaded data if available
+            let preloadedData = appState.loadingState.optimizer.data
+            if preloadedData != nil {
+                viewModel.loadData(from: preloadedData)
+            } else {
+                await viewModel.loadData()
+            }
         }
     }
 }

@@ -204,30 +204,47 @@ struct GlassSidebarItem: View {
     let icon: String
     let color: Color
     let isSelected: Bool
+    var isLoading: Bool = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(isSelected ? .white : color)
-                    .frame(width: 32, height: 32)
-                    .background {
-                        if isSelected {
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(color.gradient)
-                        } else {
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(color.opacity(0.15))
-                        }
+                ZStack {
+                    Image(systemName: icon)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundStyle(isSelected ? .white : color)
+                        .opacity(isLoading ? 0.5 : 1)
+
+                    if isLoading {
+                        ProgressView()
+                            .controlSize(.mini)
+                            .tint(isSelected ? .white : color)
                     }
+                }
+                .frame(width: 32, height: 32)
+                .background {
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(color.gradient)
+                    } else {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(color.opacity(0.15))
+                    }
+                }
 
                 Text(title)
                     .font(.system(size: 14, weight: isSelected ? .semibold : .medium))
                     .foregroundStyle(isSelected ? .primary : .secondary)
 
                 Spacer()
+
+                // Small loading dot indicator
+                if isLoading {
+                    Circle()
+                        .fill(Color.cleanOrange)
+                        .frame(width: 6, height: 6)
+                }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)

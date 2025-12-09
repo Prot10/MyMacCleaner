@@ -74,18 +74,39 @@ final class DashboardViewModel {
 
     // MARK: - Data Loading
 
+    /// Loads data from preloaded cache or fetches fresh if not available
+    /// Supports progressive loading - will use partial data if available
     @MainActor
-    func loadData() async {
-        // Load system stats
-        memoryStats = systemStatsRepo.getMemoryStats()
-        diskUsage = systemStatsRepo.getDiskUsage()
-        cpuUsage = systemStatsRepo.getCPUUsage()
-
-        // Load disk breakdown (async because it can be slow)
-        diskCategories = await systemStatsRepo.getDiskUsageBreakdown()
+    func loadData(from preloadedData: DashboardData? = nil) async {
+        if let data = preloadedData {
+            // Use preloaded data (progressive - some fields may be nil)
+            if let memory = data.memoryStats {
+                memoryStats = memory
+            }
+            if let disk = data.diskUsage {
+                diskUsage = disk
+            }
+            if let cpu = data.cpuUsage {
+                cpuUsage = cpu
+            }
+            if let categories = data.diskCategories {
+                diskCategories = categories
+            }
+        } else {
+            // Fetch fresh data
+            memoryStats = systemStatsRepo.getMemoryStats()
+            diskUsage = systemStatsRepo.getDiskUsage()
+            cpuUsage = systemStatsRepo.getCPUUsage()
+            diskCategories = await systemStatsRepo.getDiskUsageBreakdown()
+        }
 
         // Start monitoring for updates
         startMonitoring()
+    }
+
+    @MainActor
+    func loadData() async {
+        await loadData(from: nil)
     }
 
     private var monitoringTask: Task<Void, Never>?

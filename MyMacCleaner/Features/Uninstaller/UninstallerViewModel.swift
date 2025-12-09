@@ -20,6 +20,14 @@ final class UninstallerViewModel {
         }
     }
 
+    /// Load apps from preloaded data if available
+    @MainActor
+    func loadData(from preloadedData: UninstallerData?) {
+        if let data = preloadedData {
+            apps = data.apps.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+        }
+    }
+
     @MainActor
     func loadInstalledApps() async {
         isLoading = true

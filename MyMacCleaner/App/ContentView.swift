@@ -10,6 +10,11 @@ struct ContentView: View {
             DetailView()
         }
         .navigationSplitViewStyle(.balanced)
+        .toastContainer(appState.toastManager)
+        .task {
+            // Start background preloading when app launches
+            await appState.startBackgroundPreloading()
+        }
     }
 }
 
@@ -52,7 +57,8 @@ struct GlassSidebar: View {
                         title: item.rawValue,
                         icon: item.systemImage,
                         color: item.accentColor,
-                        isSelected: state.selectedNavigation == item
+                        isSelected: state.selectedNavigation == item,
+                        isLoading: !state.loadingState.state(for: item)
                     ) {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                             state.selectedNavigation = item
@@ -115,13 +121,30 @@ struct DetailView: View {
         Group {
             switch appState.selectedNavigation {
             case .dashboard:
-                DashboardView()
+                // Show dashboard as soon as we have any data (progressive)
+                if appState.loadingState.dashboard.data != nil {
+                    DashboardView()
+                } else {
+                    DashboardSkeletonView()
+                }
             case .cleaner:
-                CleanerView()
+                if appState.loadingState.cleaner.isLoaded {
+                    CleanerView()
+                } else {
+                    CleanerSkeletonView()
+                }
             case .uninstaller:
-                UninstallerView()
+                if appState.loadingState.uninstaller.isLoaded {
+                    UninstallerView()
+                } else {
+                    UninstallerSkeletonView()
+                }
             case .optimizer:
-                OptimizerView()
+                if appState.loadingState.optimizer.isLoaded {
+                    OptimizerView()
+                } else {
+                    OptimizerSkeletonView()
+                }
             case .settings:
                 SettingsView()
             }

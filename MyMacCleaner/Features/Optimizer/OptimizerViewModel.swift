@@ -8,6 +8,22 @@ final class OptimizerViewModel {
 
     private let systemStatsRepo = SystemStatsRepository()
 
+    /// Load from preloaded data if available
+    @MainActor
+    func loadData(from preloadedData: OptimizerData?) {
+        if let data = preloadedData {
+            memoryStats = MemoryDisplayStats(from: data.memoryStats)
+            launchAgents = data.launchAgents.map { agent in
+                LaunchAgentInfo(
+                    label: agent.label,
+                    path: agent.path,
+                    isEnabled: agent.isEnabled
+                )
+            }
+            startMonitoring()
+        }
+    }
+
     @MainActor
     func loadData() async {
         // Load memory stats

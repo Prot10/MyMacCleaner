@@ -11,6 +11,35 @@ final class CleanerViewModel {
         categories.filter(\.isSelected).reduce(0) { $0 + $1.sizeBytes }
     }
 
+    /// Initialize with preloaded data if available
+    @MainActor
+    func loadData(from preloadedData: CleanerData?) {
+        if let data = preloadedData {
+            // Convert preloaded CleanerCategoryData to CleanerCategory
+            categories = data.categories.map { categoryData in
+                CleanerCategory(
+                    name: categoryData.name,
+                    icon: categoryData.icon,
+                    color: colorForCategory(categoryData.name),
+                    sizeBytes: categoryData.sizeBytes,
+                    itemCount: categoryData.itemCount
+                )
+            }
+        }
+    }
+
+    private func colorForCategory(_ name: String) -> Color {
+        switch name.lowercased() {
+        case let n where n.contains("cache"): return .cleanBlue
+        case let n where n.contains("log"): return .cleanOrange
+        case let n where n.contains("xcode"): return .cleanPurple
+        case let n where n.contains("homebrew"): return .brown
+        case let n where n.contains("npm"): return .cleanRed
+        case let n where n.contains("trash"): return .gray
+        default: return .gray
+        }
+    }
+
     @MainActor
     func scan() async {
         isScanning = true
@@ -24,28 +53,28 @@ final class CleanerViewModel {
             CleanerCategory(
                 name: "System Caches",
                 icon: "folder.badge.gearshape",
-                color: .blue,
+                color: .cleanBlue,
                 sizeBytes: 1_234_567_890,
                 itemCount: 156
             ),
             CleanerCategory(
                 name: "User Caches",
                 icon: "folder",
-                color: .cyan,
+                color: .cleanBlue,
                 sizeBytes: 876_543_210,
                 itemCount: 89
             ),
             CleanerCategory(
                 name: "Application Logs",
                 icon: "doc.text",
-                color: .orange,
+                color: .cleanOrange,
                 sizeBytes: 234_567_890,
                 itemCount: 42
             ),
             CleanerCategory(
                 name: "Xcode Derived Data",
                 icon: "hammer",
-                color: .purple,
+                color: .cleanPurple,
                 sizeBytes: 3_456_789_012,
                 itemCount: 23
             ),
@@ -59,7 +88,7 @@ final class CleanerViewModel {
             CleanerCategory(
                 name: "npm Cache",
                 icon: "shippingbox",
-                color: .red,
+                color: .cleanRed,
                 sizeBytes: 345_678_901,
                 itemCount: 67
             ),

@@ -205,14 +205,25 @@ struct DiskUsage: Sendable {
     }
 }
 
-struct DiskCategory: Identifiable, Sendable {
-    let id = UUID()
+struct DiskCategory: Identifiable, Sendable, Equatable {
+    let id: UUID
     let name: String
     let sizeBytes: Int64
     let colorName: String
 
+    init(name: String, sizeBytes: Int64, colorName: String) {
+        self.id = UUID()
+        self.name = name
+        self.sizeBytes = sizeBytes
+        self.colorName = colorName
+    }
+
     var formattedSize: String {
         ByteCountFormatter.string(fromByteCount: sizeBytes, countStyle: .file)
+    }
+
+    static func == (lhs: DiskCategory, rhs: DiskCategory) -> Bool {
+        lhs.name == rhs.name && lhs.sizeBytes == rhs.sizeBytes
     }
 }
 

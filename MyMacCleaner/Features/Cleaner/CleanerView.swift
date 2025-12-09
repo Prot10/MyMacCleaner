@@ -5,6 +5,15 @@ struct CleanerView: View {
     @State private var viewModel = CleanerViewModel()
 
     var body: some View {
+        content
+            .onAppear {
+                // Load preloaded data if available
+                let preloadedData = appState.loadingState.cleaner.data
+                viewModel.loadData(from: preloadedData)
+            }
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
             // Header with glass effect
             VStack(spacing: 0) {

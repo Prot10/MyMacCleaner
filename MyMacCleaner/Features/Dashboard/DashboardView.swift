@@ -5,6 +5,11 @@ struct DashboardView: View {
     @Environment(AppState.self) private var appState
     @State private var viewModel = DashboardViewModel()
 
+    /// Check if disk categories are still loading
+    private var isDiskCategoriesLoading: Bool {
+        appState.loadingState.dashboard.data?.diskCategories == nil
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 28) {
@@ -16,33 +21,44 @@ struct DashboardView: View {
                     onScanTap: { Task { await viewModel.startScan() } }
                 )
 
-                // Quick Stats Cards
-                HStack(spacing: 16) {
-                    GlassStatsCard(
-                        title: "Memory",
-                        value: viewModel.memoryUsageText,
-                        percentage: viewModel.memoryUsagePercentage,
-                        icon: "memorychip.fill",
-                        color: viewModel.memoryColor
-                    )
+                // Quick Stats Cards - show immediately when available
+                if viewModel.memoryStats != nil {
+                    HStack(spacing: 16) {
+                        GlassStatsCard(
+                            title: "Memory",
+                            value: viewModel.memoryUsageText,
+                            percentage: viewModel.memoryUsagePercentage,
+                            icon: "memorychip.fill",
+                            color: viewModel.memoryColor
+                        )
 
-                    GlassStatsCard(
-                        title: "Storage",
-                        value: viewModel.storageUsageText,
-                        percentage: viewModel.storageUsagePercentage,
-                        icon: "internaldrive.fill",
-                        color: viewModel.storageColor
-                    )
+                        GlassStatsCard(
+                            title: "Storage",
+                            value: viewModel.storageUsageText,
+                            percentage: viewModel.storageUsagePercentage,
+                            icon: "internaldrive.fill",
+                            color: viewModel.storageColor
+                        )
 
-                    GlassStatsCard(
-                        title: "CPU",
-                        value: viewModel.cpuUsageText,
-                        percentage: viewModel.cpuUsagePercentage,
-                        icon: "cpu.fill",
-                        color: viewModel.cpuColor
-                    )
+                        GlassStatsCard(
+                            title: "CPU",
+                            value: viewModel.cpuUsageText,
+                            percentage: viewModel.cpuUsagePercentage,
+                            icon: "cpu.fill",
+                            color: viewModel.cpuColor
+                        )
+                    }
+                    .padding(.horizontal, 24)
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                } else {
+                    // Stats skeleton
+                    HStack(spacing: 16) {
+                        ForEach(0..<3, id: \.self) { _ in
+                            StatsCardSkeleton()
+                        }
+                    }
+                    .padding(.horizontal, 24)
                 }
-                .padding(.horizontal, 24)
 
                 // Cleanup Summary
                 if viewModel.totalCleanableSize > 0 {
@@ -53,20 +69,35 @@ struct DashboardView: View {
                         onViewDetails: { appState.selectedNavigation = .cleaner }
                     )
                     .padding(.horizontal, 24)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
 
-                // Storage Breakdown Chart
+                // Storage Breakdown Chart - show skeleton while loading
                 if !viewModel.diskCategories.isEmpty {
                     GlassStorageCard(categories: viewModel.diskCategories)
+                        .padding(.horizontal, 24)
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                } else if isDiskCategoriesLoading {
+                    StorageCardSkeleton()
                         .padding(.horizontal, 24)
                 }
 
                 Spacer(minLength: 20)
             }
             .padding(.vertical, 24)
+            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.memoryStats != nil)
+            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.diskCategories.isEmpty)
         }
         .task {
-            await viewModel.loadData()
+            // Use preloaded data if available
+            let preloadedData = appState.loadingState.dashboard.data
+            await viewModel.loadData(from: preloadedData)
+        }
+        .onChange(of: appState.loadingState.dashboard.data?.diskCategories) { _, newValue in
+            // Update when disk categories finish loading
+            if let categories = newValue {
+                viewModel.diskCategories = categories
+            }
         }
     }
 }

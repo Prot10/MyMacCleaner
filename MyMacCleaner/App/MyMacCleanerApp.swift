@@ -41,15 +41,35 @@ final class AppState {
     var helperService: HelperConnectionService
     var permissionsService: PermissionsService
     var updateService: UpdateService
+    var dataPreloader: DataPreloader
+    var toastManager: ToastManager
 
     var selectedNavigation: NavigationItem = .dashboard
     var isScanning = false
     var scanProgress: Double = 0
 
+    /// Convenience accessor for loading states
+    var loadingState: PageLoadingState {
+        dataPreloader.loadingState
+    }
+
     init() {
         self.helperService = HelperConnectionService()
         self.permissionsService = PermissionsService()
         self.updateService = UpdateService()
+        self.dataPreloader = DataPreloader()
+        self.toastManager = ToastManager()
+    }
+
+    /// Starts background preloading of all page data with toast notifications
+    @MainActor
+    func startBackgroundPreloading() async {
+        toastManager.showLoading("Preparing your Mac analysis...")
+        await dataPreloader.startPreloading(toastManager: toastManager)
+
+        if loadingState.isFullyLoaded {
+            toastManager.show("Ready! All data loaded.", type: .success, duration: 2.0)
+        }
     }
 }
 

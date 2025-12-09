@@ -119,7 +119,14 @@ struct UninstallerView: View {
             }
         }
         .task {
-            await viewModel.loadInstalledApps()
+            // Use preloaded data if available, otherwise load fresh
+            let preloadedData = appState.loadingState.uninstaller.data
+            viewModel.loadData(from: preloadedData)
+
+            // If no preloaded data, load fresh
+            if viewModel.apps.isEmpty {
+                await viewModel.loadInstalledApps()
+            }
         }
     }
 }
