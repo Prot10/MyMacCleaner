@@ -164,6 +164,11 @@ struct AppInfo: Identifiable, Hashable {
         ByteCountFormatter.string(fromByteCount: sizeBytes, countStyle: .file)
     }
 
+    /// Get the app icon from the file system
+    var icon: NSImage {
+        NSWorkspace.shared.icon(forFile: path)
+    }
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(bundleId)
     }
