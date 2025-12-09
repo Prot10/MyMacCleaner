@@ -6,236 +6,381 @@ struct OptimizerView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                // Memory Section
-                MemoryOptimizerCard(
+            VStack(spacing: 20) {
+                // Header
+                HStack {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Optimizer")
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                            .foregroundStyle(.primary)
+
+                        Text("Optimize your Mac's performance")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 24)
+
+                // Memory Section with glass effect
+                GlassMemoryCard(
                     memoryStats: viewModel.memoryStats,
                     isPurging: viewModel.isPurging,
                     onPurge: { Task { await viewModel.purgeMemory() } }
                 )
+                .padding(.horizontal, 24)
 
                 // Launch Agents Section
-                LaunchAgentsCard(
+                GlassLaunchAgentsCard(
                     agents: viewModel.launchAgents,
                     onToggle: { agent in
                         Task { await viewModel.toggleAgent(agent) }
                     }
                 )
+                .padding(.horizontal, 24)
 
                 // Login Items Section
-                LoginItemsCard()
+                GlassLoginItemsCard()
+                    .padding(.horizontal, 24)
+
+                Spacer(minLength: 24)
             }
-            .padding()
         }
-        .background(Color(nsColor: .windowBackgroundColor))
         .task {
             await viewModel.loadData()
         }
     }
 }
 
-// MARK: - Memory Optimizer Card
+// MARK: - Glass Memory Card
 
-struct MemoryOptimizerCard: View {
+struct GlassMemoryCard: View {
     let memoryStats: MemoryDisplayStats?
     let isPurging: Bool
     let onPurge: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
+            // Header
             HStack {
-                Image(systemName: "memorychip")
-                    .font(.title2)
-                    .foregroundStyle(.blue)
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(.blue.opacity(0.15))
+                            .frame(width: 44, height: 44)
 
-                Text("Memory")
-                    .font(.title3)
-                    .fontWeight(.semibold)
+                        Image(systemName: "memorychip.fill")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(Color.cleanBlue)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Memory")
+                            .font(.system(size: 18, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.primary)
+
+                        if let stats = memoryStats {
+                            Text("\(stats.freeText) available")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
 
                 Spacer()
 
-                if isPurging {
-                    ProgressView()
-                        .controlSize(.small)
-                } else {
-                    Button("Free Up RAM") {
-                        onPurge()
+                Button {
+                    onPurge()
+                } label: {
+                    HStack(spacing: 8) {
+                        if isPurging {
+                            ProgressView()
+                                .controlSize(.small)
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "bolt.fill")
+                        }
+                        Text(isPurging ? "Freeing..." : "Free Up RAM")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(memoryStats == nil)
+                    .font(.system(size: 14, weight: .semibold))
                 }
+                .buttonStyle(LiquidGlassButtonStyle(isProminent: true))
+                .disabled(memoryStats == nil || isPurging)
             }
 
             if let stats = memoryStats {
-                // Memory bar
-                VStack(alignment: .leading, spacing: 8) {
+                // Memory visualization
+                VStack(spacing: 14) {
+                    // Memory bar with glass effect
                     GeometryReader { geo in
-                        HStack(spacing: 0) {
-                            Rectangle()
-                                .fill(Color.red)
-                                .frame(width: geo.size.width * stats.wiredPercentage)
+                        ZStack(alignment: .leading) {
+                            // Background
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(.ultraThinMaterial)
 
-                            Rectangle()
-                                .fill(Color.orange)
-                                .frame(width: geo.size.width * stats.activePercentage)
+                            // Segments
+                            HStack(spacing: 0) {
+                                Rectangle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.cleanRed, .cleanRed.opacity(0.8)],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                                    .frame(width: geo.size.width * stats.wiredPercentage)
 
-                            Rectangle()
-                                .fill(Color.yellow)
-                                .frame(width: geo.size.width * stats.compressedPercentage)
+                                Rectangle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.cleanOrange, .cleanOrange.opacity(0.8)],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                                    .frame(width: geo.size.width * stats.activePercentage)
 
-                            Rectangle()
-                                .fill(Color.green.opacity(0.5))
-                                .frame(width: geo.size.width * stats.inactivePercentage)
+                                Rectangle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.yellow, .yellow.opacity(0.8)],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                                    .frame(width: geo.size.width * stats.compressedPercentage)
 
-                            Rectangle()
-                                .fill(Color.green)
+                                Rectangle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.cleanGreen.opacity(0.5), .cleanGreen.opacity(0.3)],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                                    .frame(width: geo.size.width * stats.inactivePercentage)
+
+                                Rectangle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.cleanGreen, .cleanGreen.opacity(0.8)],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         }
-                        .cornerRadius(4)
                     }
-                    .frame(height: 20)
+                    .frame(height: 28)
 
-                    // Legend
-                    HStack(spacing: 16) {
-                        LegendItem(color: .red, label: "Wired", value: stats.wiredText)
-                        LegendItem(color: .orange, label: "Active", value: stats.activeText)
-                        LegendItem(color: .yellow, label: "Compressed", value: stats.compressedText)
-                        LegendItem(color: .green, label: "Free", value: stats.freeText)
+                    // Legend with glass pill badges
+                    HStack(spacing: 12) {
+                        GlassMemoryLegendItem(color: .cleanRed, label: "Wired", value: stats.wiredText)
+                        GlassMemoryLegendItem(color: .cleanOrange, label: "Active", value: stats.activeText)
+                        GlassMemoryLegendItem(color: .yellow, label: "Compressed", value: stats.compressedText)
+                        GlassMemoryLegendItem(color: .cleanGreen, label: "Free", value: stats.freeText)
                     }
-                    .font(.caption)
                 }
             } else {
-                Text("Loading memory information...")
-                    .foregroundStyle(.secondary)
+                HStack {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Loading memory information...")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 20)
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
-        )
+        .liquidGlassCard(cornerRadius: 20, style: .thin, padding: 20)
     }
 }
 
-struct LegendItem: View {
+struct GlassMemoryLegendItem: View {
     let color: Color
     let label: String
     let value: String
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 6) {
             Circle()
-                .fill(color)
-                .frame(width: 8, height: 8)
+                .fill(color.gradient)
+                .frame(width: 10, height: 10)
+
             Text(label)
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
+
             Text(value)
-                .fontWeight(.medium)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.primary)
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(.ultraThinMaterial, in: Capsule())
     }
 }
 
-// MARK: - Launch Agents Card
+// MARK: - Glass Launch Agents Card
 
-struct LaunchAgentsCard: View {
+struct GlassLaunchAgentsCard: View {
     let agents: [LaunchAgentInfo]
     let onToggle: (LaunchAgentInfo) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 18) {
+            // Header
             HStack {
-                Image(systemName: "play.circle")
-                    .font(.title2)
-                    .foregroundStyle(.purple)
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(.purple.opacity(0.15))
+                            .frame(width: 44, height: 44)
 
-                Text("Launch Agents")
-                    .font(.title3)
-                    .fontWeight(.semibold)
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(Color.cleanPurple)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Launch Agents")
+                            .font(.system(size: 18, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.primary)
+
+                        Text("\(agents.count) background services")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                }
 
                 Spacer()
-
-                Text("\(agents.count) items")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
             if agents.isEmpty {
-                Text("No launch agents found")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding()
-            } else {
-                VStack(spacing: 8) {
-                    ForEach(agents) { agent in
-                        HStack {
-                            Toggle(isOn: Binding(
-                                get: { agent.isEnabled },
-                                set: { _ in onToggle(agent) }
-                            )) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(agent.label)
-                                        .font(.body)
-                                    Text(agent.path)
-                                        .font(.caption)
-                                        .foregroundStyle(.tertiary)
-                                        .lineLimit(1)
-                                }
-                            }
-                            .toggleStyle(.switch)
-                        }
-                        .padding(.vertical, 4)
+                HStack {
+                    Image(systemName: "checkmark.circle")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Color.cleanGreen)
 
-                        if agent.id != agents.last?.id {
-                            Divider()
-                        }
+                    Text("No launch agents found")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, 20)
+            } else {
+                VStack(spacing: 10) {
+                    ForEach(agents) { agent in
+                        GlassLaunchAgentRow(
+                            agent: agent,
+                            onToggle: { onToggle(agent) }
+                        )
                     }
                 }
             }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
-        )
+        .liquidGlassCard(cornerRadius: 20, style: .thin, padding: 20)
     }
 }
 
-// MARK: - Login Items Card
+struct GlassLaunchAgentRow: View {
+    let agent: LaunchAgentInfo
+    let onToggle: () -> Void
 
-struct LoginItemsCard: View {
+    @State private var isHovering = false
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Image(systemName: "person.crop.circle.badge.checkmark")
-                    .font(.title2)
-                    .foregroundStyle(.green)
+        HStack(spacing: 14) {
+            // Status indicator
+            Circle()
+                .fill(agent.isEnabled ? Color.cleanGreen : Color.gray)
+                .frame(width: 10, height: 10)
 
-                Text("Login Items")
-                    .font(.title3)
-                    .fontWeight(.semibold)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(agent.label)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.primary)
 
-                Spacer()
-
-                Button("Open System Settings") {
-                    let url = URL(string: "x-apple.systempreferences:com.apple.LoginItems-Settings.extension")!
-                    NSWorkspace.shared.open(url)
-                }
-                .buttonStyle(.bordered)
+                Text(agent.path)
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
             }
 
-            Text("Manage apps that open at login in System Settings.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            Spacer()
+
+            Toggle("", isOn: Binding(
+                get: { agent.isEnabled },
+                set: { _ in onToggle() }
+            ))
+            .toggleStyle(.switch)
+            .controlSize(.small)
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(.ultraThinMaterial)
-        )
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background {
+            if isHovering {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            }
+        }
+        .onHover { hovering in
+            isHovering = hovering
+        }
+    }
+}
+
+// MARK: - Glass Login Items Card
+
+struct GlassLoginItemsCard: View {
+    var body: some View {
+        HStack(spacing: 16) {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(.green.opacity(0.15))
+                        .frame(width: 44, height: 44)
+
+                    Image(systemName: "person.crop.circle.badge.checkmark")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(Color.cleanGreen)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Login Items")
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.primary)
+
+                    Text("Manage apps that open at login")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Spacer()
+
+            Button {
+                let url = URL(string: "x-apple.systempreferences:com.apple.LoginItems-Settings.extension")!
+                NSWorkspace.shared.open(url)
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.up.right.square")
+                    Text("Open Settings")
+                }
+                .font(.system(size: 14, weight: .medium))
+            }
+            .buttonStyle(LiquidGlassButtonStyle(isProminent: false))
+        }
+        .liquidGlassCard(cornerRadius: 20, style: .thin, padding: 20)
     }
 }
 
 #Preview {
     OptimizerView()
         .environment(AppState())
-        .frame(width: 600, height: 700)
+        .frame(width: 650, height: 750)
 }

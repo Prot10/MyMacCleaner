@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 @Observable
 final class UninstallerViewModel {
@@ -86,12 +87,16 @@ final class UninstallerViewModel {
                         let fullPath = (searchPath.path as NSString).appendingPathComponent(item)
                         let size = (try? getDirectorySize(at: fullPath)) ?? 0
 
+                        // Determine confidence based on match type
+                        let confidence: LeftoverConfidence = item.localizedCaseInsensitiveContains(app.bundleId) ? .high : .medium
+
                         leftovers.append(LeftoverInfo(
                             name: item,
                             path: fullPath,
                             category: searchPath.category,
                             icon: searchPath.icon,
-                            sizeBytes: size
+                            sizeBytes: size,
+                            confidence: confidence
                         ))
                     }
                 }
@@ -167,8 +172,17 @@ struct LeftoverInfo: Identifiable {
     let category: String
     let icon: String
     let sizeBytes: Int64
+    let confidence: LeftoverConfidence
 
     var formattedSize: String {
         ByteCountFormatter.string(fromByteCount: sizeBytes, countStyle: .file)
+    }
+
+    var confidenceColor: Color {
+        switch confidence {
+        case .high: return Color.cleanGreen
+        case .medium: return Color.cleanOrange
+        case .low: return Color.cleanRed
+        }
     }
 }

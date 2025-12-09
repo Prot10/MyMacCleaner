@@ -5,7 +5,7 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            SidebarView()
+            GlassSidebar()
         } detail: {
             DetailView()
         }
@@ -13,45 +13,95 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Sidebar
+// MARK: - Glass Sidebar
 
-struct SidebarView: View {
+struct GlassSidebar: View {
     @Environment(AppState.self) private var appState
 
     var body: some View {
         @Bindable var state = appState
 
-        List(selection: $state.selectedNavigation) {
-            Section {
+        VStack(spacing: 0) {
+            // App Title
+            HStack {
+                Image(systemName: "sparkles")
+                    .font(.title2)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.blue, .purple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                Text("MyMacCleaner")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 20)
+
+            Divider()
+                .padding(.horizontal, 16)
+
+            // Navigation Items
+            VStack(spacing: 4) {
                 ForEach([NavigationItem.dashboard, .cleaner, .uninstaller, .optimizer]) { item in
-                    NavigationLink(value: item) {
-                        Label {
-                            Text(item.rawValue)
-                                .font(.system(.body, design: .rounded))
-                        } icon: {
-                            Image(systemName: item.systemImage)
-                                .foregroundStyle(item.accentColor)
+                    GlassSidebarItem(
+                        title: item.rawValue,
+                        icon: item.systemImage,
+                        color: item.accentColor,
+                        isSelected: state.selectedNavigation == item
+                    ) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            state.selectedNavigation = item
                         }
                     }
                 }
             }
+            .padding(.horizontal, 12)
+            .padding(.top, 16)
 
-            Section {
-                NavigationLink(value: NavigationItem.settings) {
-                    Label {
-                        Text("Settings")
-                            .font(.system(.body, design: .rounded))
-                    } icon: {
-                        Image(systemName: "gearshape")
-                            .foregroundStyle(.gray)
-                    }
+            Spacer()
+
+            Divider()
+                .padding(.horizontal, 16)
+
+            // Settings
+            GlassSidebarItem(
+                title: "Settings",
+                icon: "gearshape.fill",
+                color: .gray,
+                isSelected: state.selectedNavigation == .settings
+            ) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    state.selectedNavigation = .settings
                 }
             }
+            .padding(.horizontal, 12)
+            .padding(.bottom, 16)
         }
-        .listStyle(.sidebar)
         .frame(minWidth: 200)
+        .background {
+            ZStack {
+                Color(nsColor: .windowBackgroundColor)
+                    .opacity(0.5)
+
+                // Subtle gradient overlay
+                LinearGradient(
+                    colors: [
+                        .blue.opacity(0.05),
+                        .purple.opacity(0.03),
+                        .clear
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
+        }
         .toolbar(removing: .sidebarToggle)
-        .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
+        .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 260)
     }
 }
 
@@ -76,7 +126,7 @@ struct DetailView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(nsColor: .windowBackgroundColor))
+        .liquidGlassBackground()
     }
 }
 
