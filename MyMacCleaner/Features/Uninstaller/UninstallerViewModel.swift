@@ -123,14 +123,39 @@ final class UninstallerViewModel {
     func uninstallSelectedApp() async {
         guard let app = selectedApp else { return }
 
-        // TODO: Implement actual uninstall via helper service
-        // 1. Move app to Trash
-        // 2. Delete leftover files
+        var uninstallErrors: [String] = []
 
-        // For now, just remove from list
-        apps.removeAll { $0.id == app.id }
-        selectedApp = nil
-        leftovers = []
+        // 1. Move leftover files to Trash first
+        for leftover in leftovers {
+            do {
+                try moveToTrash(path: leftover.path)
+            } catch {
+                uninstallErrors.append("Failed to remove: \(leftover.name)")
+            }
+        }
+
+        // 2. Move the app bundle to Trash
+        do {
+            try moveToTrash(path: app.path)
+        } catch {
+            uninstallErrors.append("Failed to move app to Trash: \(app.name)")
+        }
+
+        // 3. Update UI
+        if uninstallErrors.isEmpty {
+            apps.removeAll { $0.id == app.id }
+            selectedApp = nil
+            leftovers = []
+        } else {
+            // Rescan leftovers to see what's remaining
+            await scanLeftovers(for: app)
+        }
+    }
+
+    private func moveToTrash(path: String) throws {
+        let fileURL = URL(fileURLWithPath: path)
+        var resultingURL: NSURL?
+        try FileManager.default.trashItem(at: fileURL, resultingItemURL: &resultingURL)
     }
 
     private func getDirectorySize(at path: String) throws -> Int64 {
