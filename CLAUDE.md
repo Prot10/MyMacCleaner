@@ -68,7 +68,8 @@ MyMacCleaner/
     │   ├── Design/
     │   │   ├── Theme.swift
     │   │   ├── LiquidGlass.swift
-    │   │   └── Animations.swift
+    │   │   ├── Animations.swift
+    │   │   └── ToastView.swift
     │   ├── Services/
     │   │   ├── FileScanner.swift
     │   │   └── PermissionsService.swift
@@ -83,6 +84,13 @@ MyMacCleaner/
     │   │       ├── ScanResultsCard.swift
     │   │       └── PermissionPromptView.swift
     │   ├── DiskCleaner/
+    │   │   ├── DiskCleanerView.swift
+    │   │   ├── DiskCleanerViewModel.swift
+    │   │   └── Components/
+    │   │       └── CleanupCategoryCard.swift
+    │   ├── SpaceLens/
+    │   │   ├── SpaceLensView.swift
+    │   │   └── SpaceLensViewModel.swift
     │   ├── Performance/
     │   ├── Applications/
     │   ├── PortManagement/
@@ -96,9 +104,9 @@ MyMacCleaner/
 
 ## TODO Tracker
 
-### Current Phase: Phase 4 - Disk Cleaner + Space Lens
+### Current Phase: Phase 5 - Performance
 
-### Overall Progress: 37.5% (3/8 phases complete)
+### Overall Progress: 50% (4/8 phases complete)
 
 ### Phase Status
 
@@ -107,7 +115,7 @@ MyMacCleaner/
 | 1 | Project Setup | COMPLETED | 100% |
 | 2 | UI Shell & Navigation | COMPLETED | 100% |
 | 3 | Home - Smart Scan | COMPLETED | 100% |
-| 4 | Disk Cleaner + Space Lens | NOT STARTED | 0% |
+| 4 | Disk Cleaner + Space Lens | COMPLETED | 100% |
 | 5 | Performance | NOT STARTED | 0% |
 | 6 | Applications Manager | NOT STARTED | 0% |
 | 7 | Port Management | NOT STARTED | 0% |
@@ -149,16 +157,18 @@ MyMacCleaner/
 - [x] Test scanning functionality (build verified)
 
 #### Phase 4: Disk Cleaner + Space Lens
-- [ ] Create DiskCleanerView.swift
-- [ ] Create DiskCleanerViewModel.swift
-- [ ] Create CleanupCategory model
-- [ ] Create CleanupCategoryCard.swift
-- [ ] Implement file scanning for each category
-- [ ] Create SpaceLensView.swift
-- [ ] Create TreemapLayout.swift
-- [ ] Implement treemap visualization
-- [ ] Add safe deletion with confirmation
-- [ ] Test cleanup operations
+- [x] Create DiskCleanerView.swift (with tab picker for Cleaner/Space Lens)
+- [x] Create DiskCleanerViewModel.swift
+- [x] Reuse ScanCategory from Phase 3
+- [x] Create CleanupCategoryCard.swift (expandable with file list)
+- [x] Create CategoryDetailSheet.swift (full file list with search/sort)
+- [x] Create SpaceLensView.swift
+- [x] Create SpaceLensViewModel.swift
+- [x] Implement TreemapLayout squarified algorithm
+- [x] Implement treemap visualization with color coding
+- [x] Add safe deletion with confirmation dialogs
+- [x] Add reveal in Finder context menu
+- [x] Test cleanup operations (build verified)
 
 #### Phase 5: Performance
 - [ ] Create PerformanceView.swift
@@ -431,6 +441,76 @@ MyMacCleaner/
 - Begin Phase 4: Disk Cleaner with Space Lens visualization
 - Create treemap layout for space visualization
 - Implement category-based cleanup interface
+
+---
+
+### 2026-01-03 - Phase 4 Complete
+
+**Session Goal**: Build Disk Cleaner and Space Lens visualization
+
+**Completed**:
+- Created DiskCleanerView.swift with tab picker:
+  - Tab switcher between "Cleaner" and "Space Lens" modes
+  - Initial scan prompt with styled button
+  - Category list with expand/collapse
+  - Selection controls (Select All, Deselect All, Rescan)
+  - Clean button with item count and size
+  - Confirmation dialog before cleaning
+- Created DiskCleanerViewModel.swift:
+  - Category-based scanning
+  - Item selection per category
+  - Batch cleaning with progress
+  - Toast notifications for results
+- Created CleanupCategoryCard.swift:
+  - Expandable card showing files
+  - Checkbox for category/item selection
+  - Shows first 5 items inline
+  - "View all" button for detail sheet
+- Created CategoryDetailSheet.swift:
+  - Full file list with search
+  - Sort by size/date/name
+  - Toggle individual items
+- Created SpaceLensView.swift:
+  - Scan home folder button
+  - Breadcrumb navigation
+  - Treemap visualization
+  - Legend with file type colors
+  - Hover to see file details
+  - Info bar with current selection
+- Created SpaceLensViewModel.swift:
+  - Builds file tree from directory scan
+  - Navigation through folder hierarchy
+  - File node with size, color, icon
+  - Delete and reveal in Finder actions
+- Created TreemapLayout algorithm:
+  - Squarified treemap for better aspect ratios
+  - Dynamic layout based on container size
+  - Top 50 items for performance
+- Added cleaning feedback (from earlier):
+  - Progress overlay with animated ring
+  - Toast notifications (success/error/info)
+  - Auto-dismiss after 3 seconds
+
+**Files Created**:
+- `MyMacCleaner/Features/DiskCleaner/DiskCleanerView.swift`
+- `MyMacCleaner/Features/DiskCleaner/DiskCleanerViewModel.swift`
+- `MyMacCleaner/Features/DiskCleaner/Components/CleanupCategoryCard.swift`
+- `MyMacCleaner/Features/SpaceLens/SpaceLensView.swift`
+- `MyMacCleaner/Features/SpaceLens/SpaceLensViewModel.swift`
+- `MyMacCleaner/Core/Design/ToastView.swift`
+
+**Files Modified**:
+- `MyMacCleaner/App/ContentView.swift` (wired DiskCleanerView)
+- `MyMacCleaner/Features/Home/HomeView.swift` (added cleaning progress)
+- `MyMacCleaner/Features/Home/HomeViewModel.swift` (added toast support)
+
+**Build Status**: SUCCESS
+
+**Next Steps**:
+- Phase 5: Performance (RAM, maintenance scripts)
+- Phase 6: Applications Manager
+- Phase 7: Port Management
+- Phase 8: System Health
 
 ---
 

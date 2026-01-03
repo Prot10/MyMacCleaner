@@ -211,7 +211,7 @@ struct DetailView: View {
                 case .home:
                     HomeView()
                 case .diskCleaner:
-                    ComingSoonView(section: section)
+                    DiskCleanerView()
                 case .performance:
                     ComingSoonView(section: section)
                 case .applications:
