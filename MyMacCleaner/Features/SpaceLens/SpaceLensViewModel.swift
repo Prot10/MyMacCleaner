@@ -170,15 +170,18 @@ class SpaceLensViewModel: ObservableObject {
             return node
         }
 
+        // Phase 1: Enumerate files (0-85%)
         var fileCount = 0
         var directoryContents: [URL: [FileNode]] = [:]
+        let maxFilesForProgress = 50000 // Assume max ~50k files for smooth progress
 
         for case let fileURL as URL in enumerator {
             fileCount += 1
 
-            if fileCount % 100 == 0 {
+            if fileCount % 200 == 0 {
+                let scanProgress = min(0.85, Double(fileCount) / Double(maxFilesForProgress) * 0.85)
                 await MainActor.run {
-                    progress(min(0.99, Double(fileCount) / 10000.0), fileURL.lastPathComponent)
+                    progress(scanProgress, fileURL.lastPathComponent)
                 }
             }
 
@@ -204,7 +207,11 @@ class SpaceLensViewModel: ObservableObject {
             directoryContents[parentURL]?.append(childNode)
         }
 
-        // Build tree structure
+        // Phase 2: Building tree structure (85-100%)
+        await MainActor.run {
+            progress(0.90, "Building folder structure...")
+        }
+
         node = buildTreeFromContents(root: url, contents: directoryContents)
 
         await MainActor.run {
