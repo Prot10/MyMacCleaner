@@ -5,31 +5,71 @@ struct HomeView: View {
     @State private var isVisible = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: Theme.Spacing.lg) {
-                // Header
-                headerSection
-                    .staggeredAnimation(index: 0, isActive: isVisible)
+        ZStack {
+            ScrollView {
+                VStack(spacing: Theme.Spacing.lg) {
+                    // Header
+                    headerSection
+                        .staggeredAnimation(index: 0, isActive: isVisible)
 
-                // Smart Scan Button
-                smartScanSection
-                    .staggeredAnimation(index: 1, isActive: isVisible)
+                    // Permission banner (if needed)
+                    if !viewModel.hasFullDiskAccess && !viewModel.showPermissionPrompt {
+                        PermissionBanner(permissionsService: PermissionsService.shared)
+                            .staggeredAnimation(index: 1, isActive: isVisible)
+                    }
 
-                // Quick Stats
-                quickStatsSection
-                    .staggeredAnimation(index: 2, isActive: isVisible)
+                    // Smart Scan Button
+                    smartScanSection
+                        .staggeredAnimation(index: 2, isActive: isVisible)
 
-                // Quick Actions
-                quickActionsSection
-                    .staggeredAnimation(index: 3, isActive: isVisible)
+                    // Scan Results (if available)
+                    if viewModel.showScanResults {
+                        ScanResultsCard(
+                            results: viewModel.scanResults,
+                            onClean: viewModel.cleanSelectedItems,
+                            onViewDetails: { result in
+                                // TODO: Navigate to detail view
+                                print("View details for \(result.category.rawValue)")
+                            }
+                        )
+                        .staggeredAnimation(index: 3, isActive: isVisible)
+                    }
+
+                    // Quick Stats
+                    quickStatsSection
+                        .staggeredAnimation(index: viewModel.showScanResults ? 4 : 3, isActive: isVisible)
+
+                    // Quick Actions
+                    quickActionsSection
+                        .staggeredAnimation(index: viewModel.showScanResults ? 5 : 4, isActive: isVisible)
+                }
+                .padding(Theme.Spacing.lg)
             }
-            .padding(Theme.Spacing.lg)
+
+            // Permission prompt overlay
+            if viewModel.showPermissionPrompt {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+
+                PermissionPromptView(
+                    permissionsService: PermissionsService.shared,
+                    onDismiss: viewModel.dismissPermissionPrompt,
+                    onContinueWithoutPermission: viewModel.continueWithLimitedScan
+                )
+                .transition(.scale.combined(with: .opacity))
+            }
         }
+        .animation(Theme.Animation.springSmooth, value: viewModel.showPermissionPrompt)
         .navigationTitle("Home")
         .onAppear {
             withAnimation(Theme.Animation.springSmooth) {
                 isVisible = true
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            // Refresh permissions when app becomes active (user might have granted FDA)
+            viewModel.refreshPermissions()
         }
     }
 
@@ -49,10 +89,14 @@ struct HomeView: View {
             Spacer()
 
             // System status indicator
-            SystemHealthPill(
-                status: viewModel.systemHealthStatus,
-                color: viewModel.systemHealthColor
-            )
+            HStack(spacing: Theme.Spacing.sm) {
+                PermissionStatusView(hasFullDiskAccess: viewModel.hasFullDiskAccess)
+
+                SystemHealthPill(
+                    status: viewModel.systemHealthStatus,
+                    color: viewModel.systemHealthColor
+                )
+            }
         }
     }
 
@@ -73,11 +117,31 @@ struct HomeView: View {
                         .progressViewStyle(.linear)
                         .tint(.blue)
 
-                    Text("Scanning system files...")
+                    if let category = viewModel.currentScanCategory {
+                        Text("Scanning \(category.rawValue)...")
+                            .font(Theme.Typography.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Preparing scan...")
+                            .font(Theme.Typography.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            // Error display
+            if let error = viewModel.scanError {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+
+                    Text(error)
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.secondary)
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                .padding(Theme.Spacing.sm)
+                .glassCard()
             }
         }
         .animation(Theme.Animation.spring, value: viewModel.isScanning)
