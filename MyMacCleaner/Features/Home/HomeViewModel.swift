@@ -6,11 +6,19 @@ class HomeViewModel: ObservableObject {
 
     @Published var isScanning = false
     @Published var scanProgress: Double = 0
-    @Published var scanResults: ScanResults?
+    @Published var currentScanCategory: ScanCategory?
+    @Published var scanResults: [ScanResult] = []
+    @Published var showScanResults = false
+    @Published var scanError: String?
+
+    // Permission state
+    @Published var showPermissionPrompt = false
+    @Published var hasFullDiskAccess = false
 
     // System stats
     @Published var storageUsed: String = "0 GB"
     @Published var storageTotal: String = "0 GB"
+    @Published var storageFree: String = "0 GB"
     @Published var memoryUsed: String = "0 GB"
     @Published var junkSize: String = "0 MB"
     @Published var appCount: Int = 0
@@ -19,11 +27,22 @@ class HomeViewModel: ObservableObject {
     @Published var systemHealthStatus: String = "Healthy"
     @Published var systemHealthColor: Color = .green
 
+    // Cleaning state
+    @Published var isCleaning = false
+    @Published var cleaningProgress: Double = 0
+
+    // MARK: - Private Properties
+
+    private let fileScanner = FileScanner.shared
+    private let permissionsService = PermissionsService.shared
+
     // MARK: - Initialization
 
     init() {
         Task {
             await loadSystemStats()
+            await checkPermissions()
+            await performQuickEstimate()
         }
     }
 
@@ -32,53 +51,149 @@ class HomeViewModel: ObservableObject {
     func startSmartScan() {
         guard !isScanning else { return }
 
-        isScanning = true
-        scanProgress = 0
+        // Check if we should prompt for permissions
+        if !hasFullDiskAccess && !showPermissionPrompt {
+            showPermissionPrompt = true
+            return
+        }
 
+        performScan()
+    }
+
+    func continueWithLimitedScan() {
+        showPermissionPrompt = false
+        performScan()
+    }
+
+    func dismissPermissionPrompt() {
+        showPermissionPrompt = false
+    }
+
+    func refreshPermissions() {
         Task {
-            // Simulate scanning progress
-            for i in 1...10 {
-                try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
-                scanProgress = Double(i) / 10.0
-            }
-
-            // Generate mock results
-            scanResults = ScanResults(
-                systemJunk: 1_500_000_000,
-                userCache: 800_000_000,
-                appCache: 500_000_000,
-                logs: 200_000_000,
-                trash: 300_000_000
-            )
-
-            junkSize = formatBytes(scanResults?.totalCleanable ?? 0)
-
-            isScanning = false
+            await checkPermissions()
         }
     }
 
     func emptyTrash() {
-        // TODO: Implement trash emptying
-        print("Empty trash")
+        Task {
+            do {
+                try await fileScanner.emptyTrash()
+                // Refresh stats after emptying
+                await loadSystemStats()
+                await performQuickEstimate()
+            } catch {
+                scanError = "Failed to empty trash: \(error.localizedDescription)"
+            }
+        }
     }
 
     func freeMemory() {
-        // TODO: Implement memory freeing
-        print("Free memory")
+        // Use purge command (requires sudo, so we'll just show a tip)
+        Task {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/purge")
+
+            do {
+                try process.run()
+                process.waitUntilExit()
+                await loadSystemStats()
+            } catch {
+                // purge requires root, show tip instead
+                print("Memory optimization requires elevated privileges")
+            }
+        }
     }
 
     func viewLargeFiles() {
-        // TODO: Navigate to space lens
-        print("View large files")
+        // TODO: Navigate to space lens - will be implemented in Phase 5
+        print("View large files - Space Lens coming soon")
+    }
+
+    func cleanSelectedItems() {
+        guard !isCleaning, !scanResults.isEmpty else { return }
+
+        isCleaning = true
+        cleaningProgress = 0
+
+        Task {
+            var totalFreed: Int64 = 0
+            let allItems = scanResults.flatMap { $0.items }
+            let selectedItems = allItems.filter { $0.isSelected }
+            let totalItems = selectedItems.count
+
+            for (index, item) in selectedItems.enumerated() {
+                do {
+                    let freed = try await fileScanner.trashItems([item])
+                    totalFreed += freed
+                    cleaningProgress = Double(index + 1) / Double(totalItems)
+                } catch {
+                    print("Failed to clean \(item.name): \(error)")
+                }
+            }
+
+            // Refresh after cleaning
+            scanResults = []
+            showScanResults = false
+            isCleaning = false
+
+            await loadSystemStats()
+            await performQuickEstimate()
+        }
     }
 
     // MARK: - Private Methods
+
+    private func performScan() {
+        isScanning = true
+        scanProgress = 0
+        scanResults = []
+        scanError = nil
+
+        Task {
+            do {
+                let results = try await fileScanner.scanAllCategories { [weak self] progress, category in
+                    self?.scanProgress = progress
+                    self?.currentScanCategory = category
+                }
+
+                scanResults = results
+                showScanResults = !results.isEmpty
+
+                // Update junk size with actual results
+                let totalJunk = results.reduce(0) { $0 + $1.totalSize }
+                junkSize = formatBytes(totalJunk)
+
+            } catch {
+                scanError = "Scan failed: \(error.localizedDescription)"
+            }
+
+            isScanning = false
+            currentScanCategory = nil
+        }
+    }
+
+    private func checkPermissions() async {
+        permissionsService.checkFullDiskAccess()
+        hasFullDiskAccess = permissionsService.hasFullDiskAccess
+    }
+
+    private func performQuickEstimate() async {
+        let estimates = await fileScanner.quickEstimate()
+        let total = estimates.values.reduce(0, +)
+        if total > 0 {
+            junkSize = formatBytes(total)
+        } else {
+            junkSize = "Scan to check"
+        }
+    }
 
     private func loadSystemStats() async {
         // Get disk space
         let diskStats = getDiskSpace()
         storageUsed = formatBytes(diskStats.used)
         storageTotal = formatBytes(diskStats.total)
+        storageFree = formatBytes(diskStats.free)
 
         // Get memory stats
         let memoryStats = getMemoryStats()
@@ -86,9 +201,6 @@ class HomeViewModel: ObservableObject {
 
         // Count installed apps
         appCount = countInstalledApps()
-
-        // Initial junk estimate
-        junkSize = "Scan to check"
 
         // Determine system health
         updateSystemHealth(diskStats: diskStats, memoryStats: memoryStats)
@@ -112,11 +224,34 @@ class HomeViewModel: ObservableObject {
         }
     }
 
-    private func getMemoryStats() -> (total: UInt64, used: UInt64) {
+    private func getMemoryStats() -> (total: UInt64, used: UInt64, free: UInt64) {
         let total = ProcessInfo.processInfo.physicalMemory
-        // Simplified: estimate 60% usage as default
+
+        // Get actual memory usage via host_statistics64
+        var stats = vm_statistics64()
+        var count = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.size / MemoryLayout<integer_t>.size)
+
+        let result = withUnsafeMutablePointer(to: &stats) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                host_statistics64(mach_host_self(), HOST_VM_INFO64, $0, &count)
+            }
+        }
+
+        if result == KERN_SUCCESS {
+            let pageSize = UInt64(vm_kernel_page_size)
+            let free = UInt64(stats.free_count) * pageSize
+            let active = UInt64(stats.active_count) * pageSize
+            let inactive = UInt64(stats.inactive_count) * pageSize
+            let wired = UInt64(stats.wire_count) * pageSize
+            let compressed = UInt64(stats.compressor_page_count) * pageSize
+
+            let used = active + wired + compressed
+            return (total, used, free + inactive)
+        }
+
+        // Fallback estimate
         let used = UInt64(Double(total) * 0.6)
-        return (total, used)
+        return (total, used, total - used)
     }
 
     private func countInstalledApps() -> Int {
@@ -133,7 +268,10 @@ class HomeViewModel: ObservableObject {
         }
     }
 
-    private func updateSystemHealth(diskStats: (total: Int64, used: Int64, free: Int64), memoryStats: (total: UInt64, used: UInt64)) {
+    private func updateSystemHealth(
+        diskStats: (total: Int64, used: Int64, free: Int64),
+        memoryStats: (total: UInt64, used: UInt64, free: UInt64)
+    ) {
         let diskUsagePercent = diskStats.total > 0 ? Double(diskStats.used) / Double(diskStats.total) : 0
         let memoryUsagePercent = memoryStats.total > 0 ? Double(memoryStats.used) / Double(memoryStats.total) : 0
 
@@ -150,26 +288,10 @@ class HomeViewModel: ObservableObject {
     }
 
     private func formatBytes(_ bytes: Int64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: bytes)
+        ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
 
     private func formatBytes(_ bytes: UInt64) -> String {
         formatBytes(Int64(bytes))
-    }
-}
-
-// MARK: - Models
-
-struct ScanResults {
-    let systemJunk: Int64
-    let userCache: Int64
-    let appCache: Int64
-    let logs: Int64
-    let trash: Int64
-
-    var totalCleanable: Int64 {
-        systemJunk + userCache + appCache + logs + trash
     }
 }
