@@ -1,0 +1,247 @@
+import SwiftUI
+
+@MainActor
+class DiskCleanerViewModel: ObservableObject {
+    // MARK: - Published Properties
+
+    // Scanning state
+    @Published var isScanning = false
+    @Published var scanProgress: Double = 0
+    @Published var currentScanCategory: ScanCategory?
+
+    // Results
+    @Published var scanResults: [ScanResult] = []
+    @Published var hasScanned = false
+
+    // Selection
+    @Published var expandedCategory: ScanCategory?
+    @Published var selectedCategory: ScanResult?
+    @Published var showCategoryDetail = false
+
+    // Cleaning
+    @Published var isCleaning = false
+    @Published var cleaningProgress: Double = 0
+    @Published var cleaningCategory: String = ""
+    @Published var showCleanConfirmation = false
+    @Published var itemsToClean: [CleanableItem] = []
+
+    // Toast
+    @Published var showToast = false
+    @Published var toastMessage = ""
+    @Published var toastType: ToastType = .success
+
+    // Errors
+    @Published var errorMessage: String?
+
+    enum ToastType {
+        case success, error, info
+    }
+
+    // MARK: - Computed Properties
+
+    var totalCleanableSize: Int64 {
+        scanResults.reduce(0) { $0 + $1.totalSize }
+    }
+
+    var selectedSize: Int64 {
+        scanResults.reduce(0) { $0 + $1.selectedSize }
+    }
+
+    var totalItemCount: Int {
+        scanResults.reduce(0) { $0 + $1.itemCount }
+    }
+
+    var selectedItemCount: Int {
+        scanResults.reduce(0) { result, scanResult in
+            result + scanResult.items.filter { $0.isSelected }.count
+        }
+    }
+
+    var formattedTotalSize: String {
+        ByteCountFormatter.string(fromByteCount: totalCleanableSize, countStyle: .file)
+    }
+
+    var formattedSelectedSize: String {
+        ByteCountFormatter.string(fromByteCount: selectedSize, countStyle: .file)
+    }
+
+    // MARK: - Private Properties
+
+    private let fileScanner = FileScanner.shared
+    private let permissionsService = PermissionsService.shared
+
+    // MARK: - Public Methods
+
+    func startScan() {
+        guard !isScanning else { return }
+
+        isScanning = true
+        scanProgress = 0
+        scanResults = []
+        errorMessage = nil
+
+        Task {
+            do {
+                let results = try await fileScanner.scanAllCategories { [weak self] progress, category in
+                    self?.scanProgress = progress
+                    self?.currentScanCategory = category
+                }
+
+                scanResults = results
+                hasScanned = true
+
+            } catch {
+                errorMessage = "Scan failed: \(error.localizedDescription)"
+            }
+
+            isScanning = false
+            currentScanCategory = nil
+        }
+    }
+
+    func toggleCategoryExpansion(_ category: ScanCategory) {
+        withAnimation(Theme.Animation.spring) {
+            if expandedCategory == category {
+                expandedCategory = nil
+            } else {
+                expandedCategory = category
+            }
+        }
+    }
+
+    func showDetails(for result: ScanResult) {
+        selectedCategory = result
+        showCategoryDetail = true
+    }
+
+    func toggleItemSelection(_ item: CleanableItem, in category: ScanCategory) {
+        guard let resultIndex = scanResults.firstIndex(where: { $0.category == category }),
+              let itemIndex = scanResults[resultIndex].items.firstIndex(where: { $0.id == item.id }) else {
+            return
+        }
+
+        scanResults[resultIndex].items[itemIndex].isSelected.toggle()
+    }
+
+    func toggleCategorySelection(_ category: ScanCategory) {
+        guard let resultIndex = scanResults.firstIndex(where: { $0.category == category }) else {
+            return
+        }
+
+        let allSelected = scanResults[resultIndex].items.allSatisfy { $0.isSelected }
+
+        for i in scanResults[resultIndex].items.indices {
+            scanResults[resultIndex].items[i].isSelected = !allSelected
+        }
+    }
+
+    func selectAll() {
+        for resultIndex in scanResults.indices {
+            for itemIndex in scanResults[resultIndex].items.indices {
+                scanResults[resultIndex].items[itemIndex].isSelected = true
+            }
+        }
+    }
+
+    func deselectAll() {
+        for resultIndex in scanResults.indices {
+            for itemIndex in scanResults[resultIndex].items.indices {
+                scanResults[resultIndex].items[itemIndex].isSelected = false
+            }
+        }
+    }
+
+    func prepareClean() {
+        itemsToClean = scanResults.flatMap { $0.items }.filter { $0.isSelected }
+        if !itemsToClean.isEmpty {
+            showCleanConfirmation = true
+        }
+    }
+
+    func confirmClean() {
+        showCleanConfirmation = false
+        performClean()
+    }
+
+    func cancelClean() {
+        showCleanConfirmation = false
+        itemsToClean = []
+    }
+
+    private func performClean() {
+        guard !isCleaning, !itemsToClean.isEmpty else { return }
+
+        isCleaning = true
+        cleaningProgress = 0
+        cleaningCategory = ""
+
+        Task {
+            var totalFreed: Int64 = 0
+            var failedCount = 0
+            let totalItems = itemsToClean.count
+
+            for (index, item) in itemsToClean.enumerated() {
+                cleaningCategory = item.category.rawValue
+                cleaningProgress = Double(index) / Double(totalItems)
+
+                do {
+                    let freed = try await fileScanner.trashItems([item])
+                    totalFreed += freed
+                } catch {
+                    print("Failed to clean \(item.name): \(error)")
+                    failedCount += 1
+                }
+
+                try? await Task.sleep(nanoseconds: 50_000_000)
+            }
+
+            cleaningProgress = 1.0
+            try? await Task.sleep(nanoseconds: 300_000_000)
+
+            // Remove cleaned items from results
+            for resultIndex in scanResults.indices {
+                scanResults[resultIndex].items.removeAll { item in
+                    itemsToClean.contains { $0.id == item.id } && item.isSelected
+                }
+            }
+
+            // Remove empty categories
+            scanResults.removeAll { $0.items.isEmpty }
+
+            isCleaning = false
+            cleaningCategory = ""
+            itemsToClean = []
+
+            // Show result
+            let freedFormatted = ByteCountFormatter.string(fromByteCount: totalFreed, countStyle: .file)
+            if failedCount == 0 {
+                showToastMessage("Cleaned \(freedFormatted) successfully!", type: .success)
+            } else if failedCount < totalItems {
+                showToastMessage("Cleaned \(freedFormatted) (\(failedCount) items failed)", type: .info)
+            } else {
+                showToastMessage("Failed to clean items", type: .error)
+            }
+        }
+    }
+
+    func showToastMessage(_ message: String, type: ToastType) {
+        toastMessage = message
+        toastType = type
+        showToast = true
+
+        Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            showToast = false
+        }
+    }
+
+    func dismissToast() {
+        showToast = false
+    }
+
+    // MARK: - Helpers
+
+    func result(for category: ScanCategory) -> ScanResult? {
+        scanResults.first { $0.category == category }
+    }
+}
