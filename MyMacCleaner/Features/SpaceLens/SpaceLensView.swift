@@ -8,49 +8,10 @@ struct SpaceLensView: View {
 
     var body: some View {
         ZStack {
-            VStack(spacing: 0) {
-                // Header
-                headerSection
-                    .padding(Theme.Spacing.lg)
-
-                Divider()
-
-                if viewModel.rootNode == nil && !viewModel.isScanning {
-                    // Initial state
-                    startScanSection
-                } else if let current = viewModel.currentNode {
-                    // Treemap view
-                    VStack(spacing: 0) {
-                        // Breadcrumb navigation
-                        breadcrumbSection
-                            .padding(.horizontal, Theme.Spacing.lg)
-                            .padding(.vertical, Theme.Spacing.sm)
-
-                        // Treemap
-                        GeometryReader { geometry in
-                            TreemapView(
-                                nodes: current.children,
-                                totalSize: current.size,
-                                size: geometry.size,
-                                onSelect: { node in
-                                    if node.isDirectory {
-                                        viewModel.navigateTo(node)
-                                    } else {
-                                        viewModel.selectNode(node)
-                                    }
-                                },
-                                onHover: { viewModel.hoverNode($0) },
-                                onContextMenu: { node in
-                                    viewModel.prepareDelete(node)
-                                }
-                            )
-                        }
-                        .padding(Theme.Spacing.md)
-                    }
-
-                    // Info bar
-                    infoBar
-                }
+            if viewModel.rootNode == nil && !viewModel.isScanning {
+                startScanSection
+            } else if let currentNode = viewModel.currentNode {
+                mainContent(currentNode)
             }
 
             // Scanning overlay
@@ -68,18 +29,13 @@ struct SpaceLensView: View {
         }
         .animation(Theme.Animation.springSmooth, value: viewModel.isScanning)
         .alert("Delete Item?", isPresented: $viewModel.showDeleteConfirmation) {
-            Button("Cancel", role: .cancel) {
-                viewModel.cancelDelete()
-            }
-            Button("Move to Trash", role: .destructive) {
-                viewModel.confirmDelete()
-            }
+            Button("Cancel", role: .cancel) { viewModel.cancelDelete() }
+            Button("Move to Trash", role: .destructive) { viewModel.confirmDelete() }
         } message: {
             if let node = viewModel.nodeToDelete {
                 Text("Move \"\(node.name)\" (\(node.formattedSize)) to Trash?")
             }
         }
-        .navigationTitle("Space Lens")
         .onAppear {
             withAnimation(Theme.Animation.springSmooth) {
                 isVisible = true
@@ -87,32 +43,211 @@ struct SpaceLensView: View {
         }
     }
 
-    // MARK: - Header Section
+    // MARK: - Main Content
 
-    private var headerSection: some View {
+    private func mainContent(_ currentNode: FileNode) -> some View {
+        HStack(spacing: 0) {
+            // Sidebar with file list
+            sidebarView(currentNode)
+                .frame(width: 280)
+
+            Divider()
+
+            // Bubble visualization
+            VStack(spacing: 0) {
+                // Header
+                headerBar(currentNode)
+
+                // Bubbles
+                GeometryReader { geometry in
+                    BubblePackingView(
+                        nodes: currentNode.children,
+                        parentSize: currentNode.size,
+                        size: geometry.size,
+                        onSelect: { node in
+                            if node.isDirectory {
+                                viewModel.navigateTo(node)
+                            }
+                        },
+                        onHover: { viewModel.hoverNode($0) },
+                        highlightedNodeId: viewModel.hoveredNode?.id
+                    )
+                }
+                .padding(Theme.Spacing.md)
+
+                // Bottom bar
+                bottomBar
+            }
+        }
+    }
+
+    // MARK: - Sidebar
+
+    private func sidebarView(_ currentNode: FileNode) -> some View {
+        VStack(spacing: 0) {
+            // Current folder info
+            HStack(spacing: Theme.Spacing.md) {
+                Image(systemName: "internaldrive.fill")
+                    .font(.system(size: 32))
+                    .foregroundStyle(.blue)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(currentNode.name)
+                        .font(Theme.Typography.headline)
+                        .lineLimit(1)
+
+                    Text("\(currentNode.formattedSize) · \(currentNode.children.count) items")
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+            }
+            .padding(Theme.Spacing.md)
+            .background(Color.white.opacity(0.03))
+
+            Divider()
+
+            // File list
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(currentNode.children.sorted(by: { $0.size > $1.size })) { child in
+                        SidebarFileRow(
+                            node: child,
+                            isHovered: viewModel.hoveredNode?.id == child.id,
+                            onTap: {
+                                if child.isDirectory {
+                                    viewModel.navigateTo(child)
+                                }
+                            },
+                            onHover: { hovering in
+                                viewModel.hoverNode(hovering ? child : nil)
+                            },
+                            onInfo: {
+                                viewModel.revealInFinder(child)
+                            }
+                        )
+                    }
+                }
+            }
+        }
+        .background(.ultraThinMaterial)
+    }
+
+    // MARK: - Header Bar
+
+    private func headerBar(_ currentNode: FileNode) -> some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Space Lens")
-                    .font(Theme.Typography.largeTitle)
-
-                Text("Visualize what's using your disk space")
-                    .font(Theme.Typography.subheadline)
-                    .foregroundStyle(.secondary)
+            // Navigation buttons
+            HStack(spacing: Theme.Spacing.xs) {
+                Button(action: viewModel.navigateUp) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(viewModel.navigationStack.count > 1 ? .primary : .tertiary)
+                        .frame(width: 28, height: 28)
+                        .background(Color.white.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+                .buttonStyle(.plain)
+                .disabled(viewModel.navigationStack.count <= 1)
             }
 
             Spacer()
 
-            if viewModel.rootNode != nil {
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text(viewModel.formattedCurrentSize)
-                        .font(Theme.Typography.title)
-                        .foregroundStyle(.blue)
+            // Breadcrumb
+            HStack(spacing: Theme.Spacing.xs) {
+                ForEach(Array(viewModel.breadcrumbs.enumerated()), id: \.element.id) { index, node in
+                    if index > 0 {
+                        Image(systemName: "chevron.right")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
 
-                    Text(viewModel.currentNode?.name ?? "")
-                        .font(Theme.Typography.caption)
-                        .foregroundStyle(.secondary)
+                    Button(action: { viewModel.navigateTo(node) }) {
+                        HStack(spacing: 4) {
+                            if index == 0 {
+                                Image(systemName: "internaldrive.fill")
+                                    .font(.caption)
+                            }
+                            Text(node.name)
+                                .font(Theme.Typography.caption)
+                        }
+                        .foregroundStyle(index == viewModel.breadcrumbs.count - 1 ? .primary : .secondary)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
+
+            Spacer()
+
+            // Rescan button
+            Button(action: viewModel.scanHomeDirectory) {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, Theme.Spacing.lg)
+        .padding(.vertical, Theme.Spacing.sm)
+        .background(.ultraThinMaterial)
+    }
+
+    // MARK: - Bottom Bar
+
+    private var bottomBar: some View {
+        HStack {
+            if let hovered = viewModel.hoveredNode {
+                Image(systemName: hovered.icon)
+                    .foregroundStyle(hovered.color)
+
+                Text(hovered.name)
+                    .font(Theme.Typography.subheadline)
+                    .lineLimit(1)
+
+                Text("·")
+                    .foregroundStyle(.tertiary)
+
+                Text(hovered.formattedSize)
+                    .font(Theme.Typography.subheadline.monospacedDigit())
+                    .foregroundStyle(.secondary)
+
+                if let parent = viewModel.currentNode, parent.size > 0 {
+                    Text("(\(Int(Double(hovered.size) / Double(parent.size) * 100))%)")
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.tertiary)
+                }
+            } else {
+                Text("Hover over items to see details")
+                    .font(Theme.Typography.caption)
+                    .foregroundStyle(.tertiary)
+            }
+
+            Spacer()
+
+            // Legend
+            HStack(spacing: Theme.Spacing.md) {
+                legendItem(color: .blue, label: "Folders")
+                legendItem(color: .purple, label: "Apps")
+                legendItem(color: .pink, label: "Videos")
+                legendItem(color: .green, label: "Audio")
+                legendItem(color: .cyan, label: "Images")
+                legendItem(color: .gray, label: "Other")
+            }
+        }
+        .padding(Theme.Spacing.md)
+        .background(.ultraThinMaterial)
+    }
+
+    private func legendItem(color: Color, label: String) -> some View {
+        HStack(spacing: 4) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+
+            Text(label)
+                .font(Theme.Typography.caption)
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -140,10 +275,10 @@ struct SpaceLensView: View {
             }
 
             VStack(spacing: Theme.Spacing.sm) {
-                Text("Visualize Disk Usage")
+                Text("Space Lens")
                     .font(Theme.Typography.title2)
 
-                Text("See a treemap of your files and folders, sized by their disk usage")
+                Text("Visualize what's using your disk space")
                     .font(Theme.Typography.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -175,334 +310,462 @@ struct SpaceLensView: View {
         }
         .padding(Theme.Spacing.xl)
     }
+}
 
-    // MARK: - Breadcrumb Section
+// MARK: - Sidebar File Row
 
-    private var breadcrumbSection: some View {
-        HStack(spacing: Theme.Spacing.xs) {
-            ForEach(Array(viewModel.breadcrumbs.enumerated()), id: \.element.id) { index, node in
-                if index > 0 {
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
+struct SidebarFileRow: View {
+    let node: FileNode
+    let isHovered: Bool
+    let onTap: () -> Void
+    let onHover: (Bool) -> Void
+    let onInfo: () -> Void
 
-                Button(action: { viewModel.navigateTo(node) }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: index == 0 ? "house.fill" : "folder.fill")
-                            .font(.caption)
-
-                        Text(node.name)
-                            .font(Theme.Typography.subheadline)
-                    }
-                    .foregroundStyle(index == viewModel.breadcrumbs.count - 1 ? .primary : .secondary)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Spacer()
-
-            if viewModel.navigationStack.count > 1 {
-                Button(action: viewModel.navigateUp) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.up")
-                        Text("Up")
-                    }
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(.blue)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.vertical, Theme.Spacing.xs)
-    }
-
-    // MARK: - Info Bar
-
-    private var infoBar: some View {
-        HStack {
-            if let hovered = viewModel.hoveredNode {
-                HStack(spacing: Theme.Spacing.md) {
-                    Image(systemName: hovered.icon)
-                        .foregroundStyle(hovered.color)
-
-                    Text(hovered.name)
-                        .font(Theme.Typography.subheadline)
-                        .lineLimit(1)
-
-                    Text("·")
-                        .foregroundStyle(.tertiary)
-
-                    Text(hovered.formattedSize)
-                        .font(Theme.Typography.subheadline.monospacedDigit())
-                        .foregroundStyle(.secondary)
-
-                    if let parent = viewModel.currentNode, parent.size > 0 {
-                        Text("(\(Int(Double(hovered.size) / Double(parent.size) * 100))%)")
-                            .font(Theme.Typography.caption)
-                            .foregroundStyle(.tertiary)
-                    }
-                }
-            } else {
-                Text("Hover over items to see details")
-                    .font(Theme.Typography.caption)
+    var body: some View {
+        HStack(spacing: Theme.Spacing.sm) {
+            // Info button
+            Button(action: onInfo) {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 12))
                     .foregroundStyle(.tertiary)
             }
+            .buttonStyle(.plain)
+
+            // Icon
+            ZStack {
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(node.color.opacity(0.15))
+                    .frame(width: 28, height: 28)
+
+                Image(systemName: node.icon)
+                    .font(.system(size: 12))
+                    .foregroundStyle(node.color)
+            }
+
+            // Name
+            Text(node.name)
+                .font(Theme.Typography.subheadline)
+                .lineLimit(1)
 
             Spacer()
 
-            // Legend
-            HStack(spacing: Theme.Spacing.md) {
-                legendItem(color: .blue, label: "Folders")
-                legendItem(color: .purple, label: "Apps")
-                legendItem(color: .pink, label: "Videos")
-                legendItem(color: .green, label: "Audio")
-                legendItem(color: .cyan, label: "Images")
-                legendItem(color: .gray, label: "Other")
-            }
-        }
-        .padding(Theme.Spacing.md)
-        .background(.ultraThinMaterial)
-    }
-
-    private func legendItem(color: Color, label: String) -> some View {
-        HStack(spacing: 4) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(color)
-                .frame(width: 12, height: 12)
-
-            Text(label)
-                .font(Theme.Typography.caption)
+            // Size
+            Text(node.formattedSize)
+                .font(Theme.Typography.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.sm)
+        .background(isHovered ? Color.white.opacity(0.05) : Color.clear)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onTap)
+        .onHover(perform: onHover)
     }
 }
 
-// MARK: - Treemap View
+// MARK: - Bubble Packing View using AppKit for proper hit testing
 
-struct TreemapView: View {
+struct BubblePackingView: NSViewRepresentable {
     let nodes: [FileNode]
-    let totalSize: Int64
+    let parentSize: Int64
     let size: CGSize
     let onSelect: (FileNode) -> Void
     let onHover: (FileNode?) -> Void
-    let onContextMenu: (FileNode) -> Void
+    let highlightedNodeId: UUID?
 
-    var body: some View {
-        let rects = TreemapLayout.calculate(
-            nodes: nodes,
-            in: CGRect(origin: .zero, size: size),
-            totalSize: totalSize
-        )
+    func makeNSView(context: Context) -> BubbleContainerView {
+        let view = BubbleContainerView()
+        view.onSelect = onSelect
+        view.onHover = onHover
+        return view
+    }
 
-        ZStack(alignment: .topLeading) {
-            ForEach(Array(zip(nodes.prefix(rects.count), rects)), id: \.0.id) { node, rect in
-                TreemapCell(
-                    node: node,
-                    rect: rect,
-                    onSelect: { onSelect(node) },
-                    onHover: { hovering in onHover(hovering ? node : nil) },
-                    onContextMenu: { onContextMenu(node) }
-                )
-            }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.large))
+    func updateNSView(_ nsView: BubbleContainerView, context: Context) {
+        nsView.onSelect = onSelect
+        nsView.onHover = onHover
+        nsView.highlightedNodeId = highlightedNodeId
+        nsView.updateBubbles(nodes: nodes, parentSize: parentSize)
     }
 }
 
-// MARK: - Treemap Cell
+// MARK: - AppKit Container View
 
-struct TreemapCell: View {
-    let node: FileNode
-    let rect: CGRect
-    let onSelect: () -> Void
-    let onHover: (Bool) -> Void
-    let onContextMenu: () -> Void
+class BubbleContainerView: NSView {
+    var onSelect: ((FileNode) -> Void)?
+    var onHover: ((FileNode?) -> Void)?
+    var highlightedNodeId: UUID?
 
-    @State private var isHovered = false
+    private var bubbleViews: [UUID: SingleBubbleView] = [:]
+    private var currentNodes: [FileNode] = []
+    private var lastLayoutSize: CGSize = .zero
+    private var isUpdating = false
 
-    var body: some View {
-        Button(action: onSelect) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(node.color.opacity(isHovered ? 0.9 : 0.7))
+    override var isFlipped: Bool { true }
 
-                RoundedRectangle(cornerRadius: 4)
-                    .strokeBorder(Color.white.opacity(0.2), lineWidth: 1)
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        translatesAutoresizingMaskIntoConstraints = true
+        autoresizingMask = [.width, .height]
+    }
 
-                if rect.width > 60 && rect.height > 40 {
-                    VStack(spacing: 2) {
-                        if rect.width > 40 && rect.height > 50 {
-                            Image(systemName: node.icon)
-                                .font(.system(size: min(rect.width, rect.height) * 0.2))
-                                .foregroundStyle(.white.opacity(0.9))
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func updateBubbles(nodes: [FileNode], parentSize: Int64) {
+        guard !isUpdating else { return }
+
+        currentNodes = nodes
+
+        // Update highlight state only
+        for (id, view) in bubbleViews {
+            view.isHighlighted = (id == highlightedNodeId)
+        }
+
+        // Rebuild if nodes changed or first time
+        let nodeIds = Set(nodes.map { $0.id })
+        let existingIds = Set(bubbleViews.keys)
+
+        if nodeIds != existingIds {
+            rebuildBubblesIfNeeded()
+        }
+    }
+
+    private func rebuildBubblesIfNeeded() {
+        guard !isUpdating else { return }
+        guard bounds.width > 100, bounds.height > 100 else { return }
+        guard !currentNodes.isEmpty else { return }
+
+        isUpdating = true
+        defer { isUpdating = false }
+
+        // Remove old views
+        for view in bubbleViews.values {
+            view.removeFromSuperview()
+        }
+        bubbleViews.removeAll()
+
+        let positions = computePositions(nodes: currentNodes, parentSize: 1, in: bounds.size)
+
+        for (node, pos) in positions {
+            let bubbleView = SingleBubbleView(
+                frame: NSRect(
+                    x: pos.x - pos.radius,
+                    y: pos.y - pos.radius,
+                    width: pos.radius * 2,
+                    height: pos.radius * 2
+                )
+            )
+            bubbleView.node = node
+            bubbleView.radius = pos.radius
+            bubbleView.isHighlighted = (node.id == highlightedNodeId)
+            bubbleView.onSelect = { [weak self] in self?.onSelect?(node) }
+            bubbleView.onHover = { [weak self] hovering in
+                self?.onHover?(hovering ? node : nil)
+            }
+            bubbleView.translatesAutoresizingMaskIntoConstraints = true
+
+            addSubview(bubbleView)
+            bubbleViews[node.id] = bubbleView
+        }
+
+        lastLayoutSize = bounds.size
+    }
+
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+
+        // Only rebuild if size changed significantly and not currently updating
+        if !isUpdating && !currentNodes.isEmpty {
+            let sizeDiff = abs(newSize.width - lastLayoutSize.width) + abs(newSize.height - lastLayoutSize.height)
+            if sizeDiff > 50 {
+                rebuildBubblesIfNeeded()
+            }
+        }
+    }
+
+    private func computePositions(nodes: [FileNode], parentSize: Int64, in size: CGSize) -> [(FileNode, BubblePosition)] {
+        let sortedNodes = nodes.sorted { $0.size > $1.size }
+        let topNodes = Array(sortedNodes.prefix(20))
+
+        let centerX = size.width / 2
+        let centerY = size.height / 2
+        let containerRadius = min(size.width, size.height) / 2 - 40
+
+        var result: [(FileNode, BubblePosition)] = []
+        var placedBubbles: [(x: CGFloat, y: CGFloat, r: CGFloat)] = []
+
+        let totalSize = topNodes.reduce(Int64(0)) { $0 + $1.size }
+        guard totalSize > 0 else { return [] }
+
+        let minRadius: CGFloat = 24
+        let maxBubbleRadius = containerRadius * 0.42
+
+        for (index, node) in topNodes.enumerated() {
+            let sizeRatio = sqrt(Double(node.size) / Double(totalSize))
+            let radius = max(minRadius, min(maxBubbleRadius, CGFloat(sizeRatio) * containerRadius * 1.4))
+
+            var placed = false
+            var finalX = centerX
+            var finalY = centerY
+
+            if index == 0 {
+                placed = true
+            } else {
+                let padding: CGFloat = 10
+
+                outer: for dist in stride(from: CGFloat(0), to: containerRadius, by: 8) {
+                    let angleCount = max(16, Int(dist / 6))
+                    for a in 0..<angleCount {
+                        let angle = CGFloat(a) * (2 * .pi / CGFloat(angleCount))
+                        let testX = centerX + cos(angle) * dist
+                        let testY = centerY + sin(angle) * dist
+
+                        let distFromCenter = hypot(testX - centerX, testY - centerY)
+                        if distFromCenter + radius > containerRadius {
+                            continue
                         }
 
-                        Text(node.name)
-                            .font(.system(size: max(9, min(12, rect.width * 0.08))))
-                            .fontWeight(.medium)
-                            .foregroundStyle(.white)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
+                        var overlaps = false
+                        for other in placedBubbles {
+                            let d = hypot(testX - other.x, testY - other.y)
+                            if d < radius + other.r + padding {
+                                overlaps = true
+                                break
+                            }
+                        }
 
-                        if rect.height > 50 {
-                            Text(node.formattedSize)
-                                .font(.system(size: max(8, min(10, rect.width * 0.06))))
-                                .foregroundStyle(.white.opacity(0.8))
+                        if !overlaps {
+                            finalX = testX
+                            finalY = testY
+                            placed = true
+                            break outer
                         }
                     }
-                    .padding(4)
                 }
             }
-        }
-        .buttonStyle(.plain)
-        .frame(width: rect.width - 2, height: rect.height - 2)
-        .position(x: rect.midX, y: rect.midY)
-        .onHover { hovering in
-            isHovered = hovering
-            onHover(hovering)
-        }
-        .contextMenu {
-            Button("Reveal in Finder") {
-                NSWorkspace.shared.selectFile(node.url.path, inFileViewerRootedAtPath: node.url.deletingLastPathComponent().path)
-            }
 
-            Divider()
-
-            Button("Move to Trash", role: .destructive) {
-                onContextMenu()
+            if placed {
+                result.append((node, BubblePosition(x: finalX, y: finalY, radius: radius)))
+                placedBubbles.append((x: finalX, y: finalY, r: radius))
             }
+        }
+
+        return result
+    }
+}
+
+struct BubblePosition {
+    let x: CGFloat
+    let y: CGFloat
+    let radius: CGFloat
+}
+
+// MARK: - Single Bubble NSView
+
+class SingleBubbleView: NSView {
+    var node: FileNode?
+    var radius: CGFloat = 0
+    var isHighlighted: Bool = false { didSet { needsDisplay = true } }
+    var onSelect: (() -> Void)?
+    var onHover: ((Bool) -> Void)?
+
+    private var isHovered: Bool = false { didSet { needsDisplay = true } }
+    private var trackingArea: NSTrackingArea?
+
+    private var isActive: Bool { isHovered || isHighlighted }
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        layer?.masksToBounds = false
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let existing = trackingArea {
+            removeTrackingArea(existing)
+        }
+        trackingArea = NSTrackingArea(
+            rect: bounds,
+            options: [.mouseEnteredAndExited, .activeInActiveApp],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(trackingArea!)
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        isHovered = true
+        onHover?(true)
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        isHovered = false
+        onHover?(false)
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        // Highlight on press
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        let location = convert(event.locationInWindow, from: nil)
+        if bounds.contains(location) {
+            onSelect?()
+        }
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard let ctx = NSGraphicsContext.current?.cgContext, let node = node else { return }
+
+        let center = CGPoint(x: bounds.midX, y: bounds.midY)
+        let r = radius
+
+        // Outer glow
+        ctx.saveGState()
+        let glowColor = node.color.cgColor?.copy(alpha: isActive ? 0.5 : 0.15) ?? CGColor(gray: 0.5, alpha: 0.15)
+        ctx.setShadow(offset: .zero, blur: isActive ? 20 : 10, color: glowColor)
+        ctx.setFillColor(glowColor)
+        ctx.fillEllipse(in: CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
+        ctx.restoreGState()
+
+        // Main bubble gradient
+        let colors: [CGColor] = [
+            node.color.cgColor?.copy(alpha: isActive ? 0.95 : 0.6) ?? CGColor(gray: 0.5, alpha: 0.6),
+            node.color.cgColor?.copy(alpha: isActive ? 0.7 : 0.35) ?? CGColor(gray: 0.5, alpha: 0.35)
+        ]
+        let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: [0, 1])!
+
+        ctx.saveGState()
+        ctx.addEllipse(in: CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
+        ctx.clip()
+        ctx.drawRadialGradient(gradient, startCenter: CGPoint(x: center.x - r * 0.3, y: center.y - r * 0.3), startRadius: 0, endCenter: center, endRadius: r, options: [])
+        ctx.restoreGState()
+
+        // Shine
+        ctx.saveGState()
+        let shineColors: [CGColor] = [
+            CGColor(gray: 1, alpha: isActive ? 0.5 : 0.25),
+            CGColor(gray: 1, alpha: 0)
+        ]
+        let shineGradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: shineColors as CFArray, locations: [0, 1])!
+        ctx.addEllipse(in: CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
+        ctx.clip()
+        ctx.drawLinearGradient(shineGradient, start: CGPoint(x: center.x - r, y: center.y - r), end: center, options: [])
+        ctx.restoreGState()
+
+        // Border
+        ctx.saveGState()
+        ctx.setLineWidth(isActive ? 3 : 2)
+        let borderColor = CGColor(gray: 1, alpha: isActive ? 0.9 : 0.5)
+        ctx.setStrokeColor(borderColor)
+        ctx.strokeEllipse(in: CGRect(x: center.x - r + 1, y: center.y - r + 1, width: r * 2 - 2, height: r * 2 - 2))
+        ctx.restoreGState()
+
+        // Draw text content
+        drawContent(in: ctx, center: center, radius: r)
+    }
+
+    private func drawContent(in ctx: CGContext, center: CGPoint, radius: CGFloat) {
+        guard let node = node else { return }
+
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .center
+        paragraphStyle.lineBreakMode = .byTruncatingTail
+
+        // Icon background
+        if radius > 32 {
+            let iconSize = min(radius * 0.45, 40)
+            let iconRect = CGRect(
+                x: center.x - iconSize / 2,
+                y: center.y - iconSize / 2 - radius * 0.15,
+                width: iconSize,
+                height: iconSize
+            )
+
+            ctx.saveGState()
+            ctx.setFillColor(CGColor(gray: 1, alpha: isActive ? 0.4 : 0.25))
+            let path = NSBezierPath(roundedRect: iconRect, xRadius: 6, yRadius: 6)
+            ctx.addPath(path.cgPath)
+            ctx.fillPath()
+            ctx.restoreGState()
+
+            // Draw SF Symbol
+            let config = NSImage.SymbolConfiguration(pointSize: min(radius * 0.2, 18), weight: .semibold)
+            if let image = NSImage(systemSymbolName: node.icon, accessibilityDescription: nil)?.withSymbolConfiguration(config) {
+                let imageRect = CGRect(
+                    x: center.x - image.size.width / 2,
+                    y: center.y - image.size.height / 2 - radius * 0.15,
+                    width: image.size.width,
+                    height: image.size.height
+                )
+                image.draw(in: imageRect, from: .zero, operation: .sourceOver, fraction: 1.0)
+            }
+        }
+
+        // Name
+        if radius > 25 {
+            let fontSize = min(radius * 0.12, 11)
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: NSFont.systemFont(ofSize: fontSize, weight: .bold),
+                .foregroundColor: NSColor.white,
+                .paragraphStyle: paragraphStyle
+            ]
+            let nameStr = node.name as NSString
+            let nameSize = nameStr.size(withAttributes: attrs)
+            let nameRect = CGRect(
+                x: center.x - min(nameSize.width, radius * 1.4) / 2,
+                y: center.y + (radius > 32 ? radius * 0.2 : 0) - nameSize.height / 2,
+                width: min(nameSize.width, radius * 1.4),
+                height: nameSize.height
+            )
+            nameStr.draw(in: nameRect, withAttributes: attrs)
+        }
+
+        // Size
+        if radius > 38 {
+            let fontSize = min(radius * 0.09, 9)
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: NSFont.systemFont(ofSize: fontSize, weight: .semibold),
+                .foregroundColor: NSColor.white.withAlphaComponent(0.9),
+                .paragraphStyle: paragraphStyle
+            ]
+            let sizeStr = node.formattedSize as NSString
+            let sizeSize = sizeStr.size(withAttributes: attrs)
+            let sizeRect = CGRect(
+                x: center.x - sizeSize.width / 2,
+                y: center.y + radius * 0.35,
+                width: sizeSize.width,
+                height: sizeSize.height
+            )
+            sizeStr.draw(in: sizeRect, withAttributes: attrs)
         }
     }
 }
 
-// MARK: - Treemap Layout
-
-enum TreemapLayout {
-    static func calculate(nodes: [FileNode], in rect: CGRect, totalSize: Int64) -> [CGRect] {
-        guard !nodes.isEmpty, totalSize > 0 else { return [] }
-
-        // Filter nodes with size > 0 and limit to top items for performance
-        let validNodes = nodes.filter { $0.size > 0 }.prefix(50)
-        guard !validNodes.isEmpty else { return [] }
-
-        let normalizedSizes = validNodes.map { Double($0.size) / Double(totalSize) }
-
-        return squarify(
-            sizes: Array(normalizedSizes),
-            in: rect
-        )
-    }
-
-    private static func squarify(sizes: [Double], in rect: CGRect) -> [CGRect] {
-        guard !sizes.isEmpty else { return [] }
-
-        var rects: [CGRect] = []
-        var remaining = sizes
-        var currentRect = rect
-
-        while !remaining.isEmpty {
-            let isHorizontal = currentRect.width >= currentRect.height
-
-            // Find the best row
-            var row: [Double] = []
-            var rowTotal: Double = 0
-            var bestAspectRatio = Double.infinity
-
-            for size in remaining {
-                let testRow = row + [size]
-                let testTotal = rowTotal + size
-
-                let aspectRatio = worstAspectRatio(row: testRow, totalSize: testTotal, length: isHorizontal ? currentRect.height : currentRect.width)
-
-                if aspectRatio <= bestAspectRatio {
-                    row = testRow
-                    rowTotal = testTotal
-                    bestAspectRatio = aspectRatio
-                } else {
-                    break
-                }
-            }
-
-            // Layout the row
-            let rowRects = layoutRow(row: row, totalSize: rowTotal, in: currentRect, horizontal: isHorizontal)
-            rects.append(contentsOf: rowRects)
-
-            // Remove processed items and update rect
-            remaining.removeFirst(row.count)
-
-            if isHorizontal {
-                let rowWidth = currentRect.width * CGFloat(rowTotal)
-                currentRect = CGRect(
-                    x: currentRect.minX + rowWidth,
-                    y: currentRect.minY,
-                    width: currentRect.width - rowWidth,
-                    height: currentRect.height
-                )
-            } else {
-                let rowHeight = currentRect.height * CGFloat(rowTotal)
-                currentRect = CGRect(
-                    x: currentRect.minX,
-                    y: currentRect.minY + rowHeight,
-                    width: currentRect.width,
-                    height: currentRect.height - rowHeight
-                )
+extension NSBezierPath {
+    var cgPath: CGPath {
+        let path = CGMutablePath()
+        var points = [CGPoint](repeating: .zero, count: 3)
+        for i in 0..<elementCount {
+            let type = element(at: i, associatedPoints: &points)
+            switch type {
+            case .moveTo: path.move(to: points[0])
+            case .lineTo: path.addLine(to: points[0])
+            case .curveTo: path.addCurve(to: points[2], control1: points[0], control2: points[1])
+            case .closePath: path.closeSubpath()
+            case .cubicCurveTo: path.addCurve(to: points[2], control1: points[0], control2: points[1])
+            case .quadraticCurveTo: path.addQuadCurve(to: points[1], control: points[0])
+            @unknown default: break
             }
         }
-
-        return rects
-    }
-
-    private static func worstAspectRatio(row: [Double], totalSize: Double, length: CGFloat) -> Double {
-        guard !row.isEmpty, totalSize > 0 else { return .infinity }
-
-        let rowLength = CGFloat(totalSize) * length
-        var worst: Double = 0
-
-        for size in row {
-            let itemLength = CGFloat(size / totalSize) * rowLength
-            let itemWidth = length * CGFloat(size)
-
-            let aspectRatio = max(Double(itemLength / itemWidth), Double(itemWidth / itemLength))
-            worst = max(worst, aspectRatio)
-        }
-
-        return worst
-    }
-
-    private static func layoutRow(row: [Double], totalSize: Double, in rect: CGRect, horizontal: Bool) -> [CGRect] {
-        guard !row.isEmpty, totalSize > 0 else { return [] }
-
-        var rects: [CGRect] = []
-        var offset: CGFloat = 0
-
-        let dimension = horizontal ? rect.width * CGFloat(totalSize) : rect.height * CGFloat(totalSize)
-
-        for size in row {
-            let itemSize = CGFloat(size / totalSize)
-
-            let itemRect: CGRect
-            if horizontal {
-                itemRect = CGRect(
-                    x: rect.minX,
-                    y: rect.minY + offset * rect.height,
-                    width: dimension,
-                    height: itemSize * rect.height
-                )
-            } else {
-                itemRect = CGRect(
-                    x: rect.minX + offset * rect.width,
-                    y: rect.minY,
-                    width: itemSize * rect.width,
-                    height: dimension
-                )
-            }
-
-            rects.append(itemRect)
-            offset += itemSize
-        }
-
-        return rects
+        return path
     }
 }
 
@@ -510,5 +773,5 @@ enum TreemapLayout {
 
 #Preview {
     SpaceLensView()
-        .frame(width: 900, height: 700)
+        .frame(width: 1000, height: 700)
 }
