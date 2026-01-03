@@ -30,9 +30,11 @@ struct CleanupCategoryCard: View {
                 expandedContent
             }
         }
+        .clipped()
         .glassCard()
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
+        .animation(Theme.Animation.spring, value: isExpanded)
     }
 
     // MARK: - Header Row
@@ -158,7 +160,6 @@ struct CleanupCategoryCard: View {
                 .buttonStyle(.plain)
             }
         }
-        .transition(.opacity.combined(with: .move(edge: .top)))
     }
 }
 
