@@ -66,6 +66,9 @@ MyMacCleaner/
     │   └── ContentView.swift
     ├── Core/
     │   ├── Design/
+    │   │   ├── Theme.swift
+    │   │   ├── LiquidGlass.swift
+    │   │   └── Animations.swift
     │   ├── Services/
     │   ├── Models/
     │   └── Extensions/
@@ -87,17 +90,17 @@ MyMacCleaner/
 
 ## TODO Tracker
 
-### Current Phase: Phase 2 - UI Shell & Navigation
+### Current Phase: Phase 3 - Home Smart Scan (Completion)
 
-### Overall Progress: 12.5% (1/8 phases complete)
+### Overall Progress: 25% (2/8 phases complete)
 
 ### Phase Status
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
 | 1 | Project Setup | COMPLETED | 100% |
-| 2 | UI Shell & Navigation | IN PROGRESS | 70% |
-| 3 | Home - Smart Scan | IN PROGRESS | 50% |
+| 2 | UI Shell & Navigation | COMPLETED | 100% |
+| 3 | Home - Smart Scan | IN PROGRESS | 80% |
 | 4 | Disk Cleaner + Space Lens | NOT STARTED | 0% |
 | 5 | Performance | NOT STARTED | 0% |
 | 6 | Applications Manager | NOT STARTED | 0% |
@@ -118,14 +121,15 @@ MyMacCleaner/
 - [x] Test build succeeds
 
 #### Phase 2: UI Shell & Navigation
-- [x] Create Theme.swift with color palette (basic - in ContentView)
-- [ ] Create LiquidGlass.swift with glass effect modifiers
-- [x] Create NavigationSection enum
-- [x] Create Sidebar.swift component (in ContentView)
+- [x] Create Theme.swift with color palette
+- [x] Create LiquidGlass.swift with glass effect modifiers
+- [x] Create Animations.swift with page transitions
+- [x] Create NavigationSection enum with colors
+- [x] Create SidebarView with hover effects
 - [x] Create ContentView.swift with NavigationSplitView
-- [x] Create ComingSoonView.swift placeholder
+- [x] Create ComingSoonView.swift with animations
 - [x] Create placeholder views for all 6 sections
-- [ ] Add page transition animations
+- [x] Add page transition animations (staggered, slide, fade)
 - [x] Test navigation works correctly
 
 #### Phase 3: Home - Smart Scan
@@ -295,6 +299,61 @@ MyMacCleaner/
 - Complete Phase 2: Add LiquidGlass.swift, page transitions
 - Complete Phase 3: Add permission checks, scan results card
 - Begin Phase 4: Disk Cleaner
+
+---
+
+### 2026-01-03 - Phase 2 Complete
+
+**Session Goal**: Complete UI shell with Liquid Glass design system
+
+**Completed**:
+- Created Theme.swift with complete design system:
+  - Colors (accent, backgrounds, surfaces, semantic, category)
+  - Typography system
+  - Spacing constants
+  - Corner radius values
+  - Shadow styles
+  - Animation presets
+- Created LiquidGlass.swift with glass effects:
+  - glassCard(), glassCardProminent(), glassCardSubtle()
+  - glassPill() for buttons/tags
+  - hoverEffect(), pressEffect()
+  - GlassCard component
+  - GlassButtonStyle
+  - Shimmer, Glow, AnimatedBorder effects
+- Created Animations.swift with transitions:
+  - PageTransition, SlideTransition, ScaleFadeTransition
+  - StaggeredAnimation for lists
+  - PulseAnimation, BreathingAnimation
+  - LoadingDotsView, ProgressRing
+  - ConfettiView for celebrations
+- Updated ContentView with:
+  - Improved sidebar with app header
+  - Section colors per navigation item
+  - Hover effects on sidebar rows
+  - System status badge
+  - Page transitions on navigation
+- Updated HomeView with:
+  - Staggered animations on load
+  - SystemHealthPill component
+  - Improved SmartScanButton with press states
+  - Updated StatCard with glass effects
+  - QuickActionButton with colors and hover
+
+**Files Created**:
+- `MyMacCleaner/Core/Design/Theme.swift`
+- `MyMacCleaner/Core/Design/LiquidGlass.swift`
+- `MyMacCleaner/Core/Design/Animations.swift`
+
+**Files Modified**:
+- `MyMacCleaner/App/ContentView.swift` (complete rewrite)
+- `MyMacCleaner/Features/Home/HomeView.swift` (complete rewrite)
+
+**Build Status**: SUCCESS
+
+**Next Steps**:
+- Complete Phase 3: Add scan results card, permission checks
+- Begin Phase 4: Disk Cleaner with Space Lens
 
 ---
 

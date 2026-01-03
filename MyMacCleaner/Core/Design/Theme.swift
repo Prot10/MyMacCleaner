@@ -1,0 +1,154 @@
+import SwiftUI
+
+// MARK: - App Theme
+
+enum Theme {
+    // MARK: - Colors (Apple Music Dark Style)
+
+    enum Colors {
+        // Primary colors
+        static let accent = Color.blue
+        static let accentGradient = LinearGradient(
+            colors: [Color.blue, Color.blue.opacity(0.8)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+
+        // Background colors
+        static let background = Color(nsColor: .windowBackgroundColor)
+        static let secondaryBackground = Color(nsColor: .controlBackgroundColor)
+        static let tertiaryBackground = Color(nsColor: .underPageBackgroundColor)
+
+        // Surface colors (for cards)
+        static let surfaceLight = Color.white.opacity(0.05)
+        static let surfaceMedium = Color.white.opacity(0.08)
+        static let surfaceHover = Color.white.opacity(0.12)
+
+        // Text colors
+        static let textPrimary = Color(nsColor: .labelColor)
+        static let textSecondary = Color(nsColor: .secondaryLabelColor)
+        static let textTertiary = Color(nsColor: .tertiaryLabelColor)
+
+        // Semantic colors
+        static let success = Color.green
+        static let warning = Color.yellow
+        static let error = Color.red
+        static let info = Color.blue
+
+        // Category colors
+        static let storage = Color.blue
+        static let memory = Color.purple
+        static let junk = Color.orange
+        static let apps = Color.green
+        static let ports = Color.cyan
+        static let health = Color.pink
+    }
+
+    // MARK: - Typography
+
+    enum Typography {
+        static let largeTitle = Font.largeTitle.bold()
+        static let title = Font.title.bold()
+        static let title2 = Font.title2.bold()
+        static let title3 = Font.title3.bold()
+        static let headline = Font.headline
+        static let body = Font.body
+        static let callout = Font.callout
+        static let subheadline = Font.subheadline
+        static let footnote = Font.footnote
+        static let caption = Font.caption
+        static let caption2 = Font.caption2
+
+        // Monospace for numbers/code
+        static let mono = Font.system(.body, design: .monospaced)
+        static let monoSmall = Font.system(.caption, design: .monospaced)
+    }
+
+    // MARK: - Spacing
+
+    enum Spacing {
+        static let xxs: CGFloat = 4
+        static let xs: CGFloat = 8
+        static let sm: CGFloat = 12
+        static let md: CGFloat = 16
+        static let lg: CGFloat = 24
+        static let xl: CGFloat = 32
+        static let xxl: CGFloat = 48
+    }
+
+    // MARK: - Corner Radius
+
+    enum CornerRadius {
+        static let small: CGFloat = 8
+        static let medium: CGFloat = 12
+        static let large: CGFloat = 16
+        static let xl: CGFloat = 20
+        static let pill: CGFloat = 100
+    }
+
+    // MARK: - Shadows
+
+    enum Shadows {
+        static let small = ShadowStyle(color: .black.opacity(0.1), radius: 4, y: 2)
+        static let medium = ShadowStyle(color: .black.opacity(0.15), radius: 8, y: 4)
+        static let large = ShadowStyle(color: .black.opacity(0.2), radius: 16, y: 8)
+    }
+
+    // MARK: - Animation
+
+    enum Animation {
+        static let fast = SwiftUI.Animation.easeInOut(duration: 0.15)
+        static let normal = SwiftUI.Animation.easeInOut(duration: 0.25)
+        static let slow = SwiftUI.Animation.easeInOut(duration: 0.4)
+        static let spring = SwiftUI.Animation.spring(response: 0.4, dampingFraction: 0.75)
+        static let springBouncy = SwiftUI.Animation.spring(response: 0.5, dampingFraction: 0.6)
+        static let springSmooth = SwiftUI.Animation.spring(response: 0.6, dampingFraction: 0.85)
+    }
+}
+
+// MARK: - Shadow Style
+
+struct ShadowStyle {
+    let color: Color
+    let radius: CGFloat
+    let y: CGFloat
+}
+
+// MARK: - View Extensions
+
+extension View {
+    func themeShadow(_ style: ShadowStyle) -> some View {
+        self.shadow(color: style.color, radius: style.radius, x: 0, y: style.y)
+    }
+}
+
+// MARK: - Color Extensions
+
+extension Color {
+    static let theme = Theme.Colors.self
+}
+
+// MARK: - Gradient Presets
+
+extension LinearGradient {
+    static let accentGradient = Theme.Colors.accentGradient
+
+    static let glassGradient = LinearGradient(
+        colors: [
+            Color.white.opacity(0.15),
+            Color.white.opacity(0.05)
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let shimmerGradient = LinearGradient(
+        colors: [
+            Color.clear,
+            Color.white.opacity(0.1),
+            Color.clear
+        ],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+}
