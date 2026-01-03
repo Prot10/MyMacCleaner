@@ -59,8 +59,38 @@ struct HomeView: View {
                 )
                 .transition(.scale.combined(with: .opacity))
             }
+
+            // Cleaning progress overlay
+            if viewModel.isCleaning {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+
+                CleaningProgressOverlay(
+                    progress: viewModel.cleaningProgress,
+                    category: viewModel.cleaningCategory
+                )
+                .transition(.scale.combined(with: .opacity))
+            }
+
+            // Toast notification
+            if viewModel.showToast {
+                VStack {
+                    ToastView(
+                        message: viewModel.toastMessage,
+                        type: viewModel.toastType,
+                        onDismiss: viewModel.dismissToast
+                    )
+                    .padding(.top, Theme.Spacing.lg)
+
+                    Spacer()
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
         .animation(Theme.Animation.springSmooth, value: viewModel.showPermissionPrompt)
+        .animation(Theme.Animation.springSmooth, value: viewModel.isCleaning)
+        .animation(Theme.Animation.spring, value: viewModel.showToast)
         .navigationTitle("Home")
         .onAppear {
             withAnimation(Theme.Animation.springSmooth) {

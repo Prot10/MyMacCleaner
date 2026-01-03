@@ -30,6 +30,16 @@ class HomeViewModel: ObservableObject {
     // Cleaning state
     @Published var isCleaning = false
     @Published var cleaningProgress: Double = 0
+    @Published var cleaningCategory: String = ""
+
+    // Toast notification
+    @Published var showToast = false
+    @Published var toastMessage: String = ""
+    @Published var toastType: ToastType = .success
+
+    enum ToastType {
+        case success, error, info
+    }
 
     // MARK: - Private Properties
 
@@ -115,31 +125,77 @@ class HomeViewModel: ObservableObject {
 
         isCleaning = true
         cleaningProgress = 0
+        cleaningCategory = ""
 
         Task {
             var totalFreed: Int64 = 0
+            var failedCount = 0
             let allItems = scanResults.flatMap { $0.items }
             let selectedItems = allItems.filter { $0.isSelected }
             let totalItems = selectedItems.count
 
+            guard totalItems > 0 else {
+                isCleaning = false
+                showToastMessage("No items selected", type: .info)
+                return
+            }
+
             for (index, item) in selectedItems.enumerated() {
+                cleaningCategory = item.category.rawValue
+                cleaningProgress = Double(index) / Double(totalItems)
+
                 do {
                     let freed = try await fileScanner.trashItems([item])
                     totalFreed += freed
-                    cleaningProgress = Double(index + 1) / Double(totalItems)
                 } catch {
                     print("Failed to clean \(item.name): \(error)")
+                    failedCount += 1
                 }
+
+                // Small delay for visual feedback
+                try? await Task.sleep(nanoseconds: 50_000_000) // 0.05s
             }
+
+            cleaningProgress = 1.0
+
+            // Small delay to show 100%
+            try? await Task.sleep(nanoseconds: 300_000_000) // 0.3s
 
             // Refresh after cleaning
             scanResults = []
             showScanResults = false
             isCleaning = false
+            cleaningCategory = ""
 
             await loadSystemStats()
             await performQuickEstimate()
+
+            // Show result toast
+            let freedFormatted = ByteCountFormatter.string(fromByteCount: totalFreed, countStyle: .file)
+            if failedCount == 0 {
+                showToastMessage("Cleaned \(freedFormatted) successfully!", type: .success)
+            } else if failedCount < totalItems {
+                showToastMessage("Cleaned \(freedFormatted) (\(failedCount) items failed)", type: .info)
+            } else {
+                showToastMessage("Failed to clean items", type: .error)
+            }
         }
+    }
+
+    func showToastMessage(_ message: String, type: ToastType) {
+        toastMessage = message
+        toastType = type
+        showToast = true
+
+        // Auto-hide after 3 seconds
+        Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            showToast = false
+        }
+    }
+
+    func dismissToast() {
+        showToast = false
     }
 
     // MARK: - Private Methods
