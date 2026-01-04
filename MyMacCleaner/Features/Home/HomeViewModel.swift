@@ -41,6 +41,9 @@ class HomeViewModel: ObservableObject {
         case success, error, info
     }
 
+    // Navigation callback - set by parent view to handle navigation requests
+    var onNavigateToSection: ((String) -> Void)?
+
     // MARK: - Private Properties
 
     private let fileScanner = FileScanner.shared
@@ -86,38 +89,40 @@ class HomeViewModel: ObservableObject {
     }
 
     func emptyTrash() {
+        // Check FDA permission first - emptying trash requires it for complete cleanup
+        if !hasFullDiskAccess {
+            // Show permission prompt instead of failing silently
+            showPermissionPrompt = true
+            return
+        }
+
         Task {
             do {
+                let trashSize = await fileScanner.getTrashSize()
+                if trashSize == 0 {
+                    showToastMessage("Trash is already empty", type: .info)
+                    return
+                }
+
                 try await fileScanner.emptyTrash()
                 // Refresh stats after emptying
                 await loadSystemStats()
                 await performQuickEstimate()
+                showToastMessage("Trash emptied successfully!", type: .success)
             } catch {
-                scanError = "Failed to empty trash: \(error.localizedDescription)"
+                showToastMessage("Failed to empty trash: \(error.localizedDescription)", type: .error)
             }
         }
     }
 
     func freeMemory() {
-        // Use purge command (requires sudo, so we'll just show a tip)
-        Task {
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/purge")
-
-            do {
-                try process.run()
-                process.waitUntilExit()
-                await loadSystemStats()
-            } catch {
-                // purge requires root, show tip instead
-                print("Memory optimization requires elevated privileges")
-            }
-        }
+        // Navigate to Performance section where user can use Purge Disk Cache
+        onNavigateToSection?("performance")
     }
 
     func viewLargeFiles() {
-        // TODO: Navigate to space lens - will be implemented in Phase 5
-        print("View large files - Space Lens coming soon")
+        // Navigate to Disk Cleaner section (Space Lens tab)
+        onNavigateToSection?("diskCleaner")
     }
 
     func cleanSelectedItems() {
