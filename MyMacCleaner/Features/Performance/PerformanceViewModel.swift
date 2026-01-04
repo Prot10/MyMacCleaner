@@ -32,6 +32,7 @@ class PerformanceViewModel: ObservableObject {
     // Process monitoring
     @Published var topProcesses: [RunningProcess] = []
     @Published var isLoadingProcesses = false
+    private var processTimer: Timer?
 
     @Published var showToast = false
     @Published var toastMessage = ""
@@ -239,37 +240,46 @@ class PerformanceViewModel: ObservableObject {
         }
 
         Task {
-            // Check if any tasks require admin
-            let needsAdmin = maintenanceTasks.contains { $0.requiresAdmin }
+            // Separate admin and non-admin tasks
+            let adminTasks = maintenanceTasks.filter { $0.requiresAdmin }
+            let nonAdminTasks = maintenanceTasks.filter { !$0.requiresAdmin }
 
-            if needsAdmin {
-                // Request authorization upfront (single password prompt)
-                let authorized = await AuthorizationService.shared.requestAuthorization()
-                if !authorized {
-                    showToastMessage("Authorization required to run maintenance tasks", type: .error)
-                    isRunningAll = false
-                    runAllCurrentIndex = 0
-                    for task in maintenanceTasks {
-                        taskResults[task.id] = nil
-                    }
-                    return
+            // Build batch of admin commands
+            var adminCommands: [(command: String, arguments: [String])] = []
+            for task in adminTasks {
+                if let cmd = getCommandForTask(task) {
+                    adminCommands.append(cmd)
                 }
             }
 
-            var successCount = 0
-            var failedCount = 0
-
-            for (index, task) in maintenanceTasks.enumerated() {
-                // Check if cancelled
-                guard isRunningAll else {
-                    // Mark remaining as skipped
-                    for remainingTask in maintenanceTasks[index...] {
-                        taskResults[remainingTask.id] = .skipped
-                    }
-                    break
+            // Run all admin tasks in ONE batch (single password prompt)
+            var adminResults: [Bool] = []
+            if !adminCommands.isEmpty {
+                // Show first admin task as running
+                if let firstAdmin = adminTasks.first {
+                    runAllCurrentIndex = maintenanceTasks.firstIndex(where: { $0.id == firstAdmin.id })! + 1
+                    runningTaskId = firstAdmin.id
+                    taskResults[firstAdmin.id] = .running
                 }
 
-                runAllCurrentIndex = index + 1
+                // Run batch with SINGLE password prompt
+                adminResults = await AuthorizationService.shared.runBatchCommands(adminCommands)
+
+                // Update results for admin tasks
+                for (index, task) in adminTasks.enumerated() {
+                    let success = index < adminResults.count ? adminResults[index] : false
+                    taskResults[task.id] = success ? .success : .failed
+                }
+            }
+
+            // Now run non-admin tasks individually with progress
+            for task in nonAdminTasks {
+                guard isRunningAll else {
+                    taskResults[task.id] = .skipped
+                    continue
+                }
+
+                runAllCurrentIndex = maintenanceTasks.firstIndex(where: { $0.id == task.id })! + 1
                 runningTaskId = task.id
                 taskProgress = 0
                 taskResults[task.id] = .running
@@ -281,24 +291,21 @@ class PerformanceViewModel: ObservableObject {
                 }
 
                 let success = await executeTask(task)
-
-                if success {
-                    taskResults[task.id] = .success
-                    successCount += 1
-                } else {
-                    taskResults[task.id] = .failed
-                    failedCount += 1
-                }
+                taskResults[task.id] = success ? .success : .failed
 
                 taskProgress = 0
                 runningTaskId = nil
 
-                // Small delay between tasks
                 try? await Task.sleep(nanoseconds: 200_000_000)
             }
 
             isRunningAll = false
             runAllCurrentIndex = 0
+            runningTaskId = nil
+
+            // Count results
+            let successCount = taskResults.values.filter { $0 == .success }.count
+            let failedCount = taskResults.values.filter { $0 == .failed }.count
 
             // Show summary toast
             if failedCount == 0 {
@@ -310,6 +317,30 @@ class PerformanceViewModel: ObservableObject {
             // Clear results after a delay
             try? await Task.sleep(nanoseconds: 5_000_000_000)
             taskResults.removeAll()
+        }
+    }
+
+    /// Get the command and arguments for a task
+    private func getCommandForTask(_ task: MaintenanceTask) -> (command: String, arguments: [String])? {
+        switch task.id {
+        case "purge_ram":
+            return ("/usr/sbin/purge", [])
+        case "flush_dns":
+            return ("/usr/bin/dscacheutil", ["-flushcache"])
+        case "kill_dns":
+            return ("/usr/bin/killall", ["-HUP", "mDNSResponder"])
+        case "clear_font_cache":
+            return ("/usr/bin/atsutil", ["databases", "-remove"])
+        case "rebuild_spotlight":
+            return ("/usr/bin/mdutil", ["-E", "/"])
+        case "rebuild_launch":
+            return ("/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister", ["-kill", "-r", "-domain", "local", "-domain", "system", "-domain", "user"])
+        case "clear_quicklook":
+            return ("/usr/bin/qlmanage", ["-r", "cache"])
+        case "verify_disk":
+            return ("/usr/sbin/diskutil", ["verifyVolume", "/"])
+        default:
+            return nil
         }
     }
 
@@ -422,7 +453,8 @@ class PerformanceViewModel: ObservableObject {
     private func executeTask(_ task: MaintenanceTask) async -> Bool {
         switch task.id {
         case "purge_ram":
-            return await runCommand("/usr/bin/purge", requiresAdmin: true)
+            // purge is in /usr/sbin, not /usr/bin
+            return await runCommand("/usr/sbin/purge", requiresAdmin: true)
         case "flush_dns":
             return await runCommand("/usr/bin/dscacheutil", arguments: ["-flushcache"])
         case "kill_dns":
@@ -556,8 +588,8 @@ struct MaintenanceTask: Identifiable {
     static let allTasks: [MaintenanceTask] = [
         MaintenanceTask(
             id: "purge_ram",
-            name: "Free Up RAM",
-            description: "Purge inactive memory to free up RAM",
+            name: "Purge Disk Cache",
+            description: "Clear filesystem cache to free memory",
             icon: "memorychip",
             color: .blue,
             requiresAdmin: true
