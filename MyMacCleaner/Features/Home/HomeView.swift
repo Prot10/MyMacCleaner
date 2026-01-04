@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var viewModel = HomeViewModel()
+    @ObservedObject var viewModel: HomeViewModel
     @State private var isVisible = false
 
     var body: some View {
@@ -474,6 +474,6 @@ struct QuickActionButton: View {
 // MARK: - Preview
 
 #Preview {
-    HomeView()
+    HomeView(viewModel: HomeViewModel())
         .frame(width: 800, height: 600)
 }

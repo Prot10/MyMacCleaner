@@ -2,9 +2,13 @@ import SwiftUI
 
 @main
 struct MyMacCleanerApp: App {
+    /// Shared app state that persists across section switches
+    @StateObject private var appState = AppState()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(appState)
         }
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1100, height: 700)

@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - Space Lens View
 
 struct SpaceLensView: View {
-    @StateObject private var viewModel = SpaceLensViewModel()
+    @ObservedObject var viewModel: SpaceLensViewModel
     @State private var isVisible = false
 
     var body: some View {
@@ -772,6 +772,6 @@ extension NSBezierPath {
 // MARK: - Preview
 
 #Preview {
-    SpaceLensView()
+    SpaceLensView(viewModel: SpaceLensViewModel())
         .frame(width: 1000, height: 700)
 }

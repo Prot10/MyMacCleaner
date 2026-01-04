@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - System Health View
 
 struct SystemHealthView: View {
-    @StateObject private var viewModel = SystemHealthViewModel()
+    @ObservedObject var viewModel: SystemHealthViewModel
     @State private var isVisible = false
 
     var body: some View {
@@ -493,6 +493,6 @@ struct InfoRow: View {
 // MARK: - Preview
 
 #Preview {
-    SystemHealthView()
+    SystemHealthView(viewModel: SystemHealthViewModel())
         .frame(width: 900, height: 700)
 }

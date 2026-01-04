@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - Applications View
 
 struct ApplicationsView: View {
-    @StateObject private var viewModel = ApplicationsViewModel()
+    @ObservedObject var viewModel: ApplicationsViewModel
     @State private var isVisible = false
 
     var body: some View {
@@ -694,6 +694,6 @@ struct FileRow: View {
 // MARK: - Preview
 
 #Preview {
-    ApplicationsView()
+    ApplicationsView(viewModel: ApplicationsViewModel())
         .frame(width: 900, height: 700)
 }
