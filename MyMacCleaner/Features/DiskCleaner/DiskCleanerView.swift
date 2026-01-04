@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct DiskCleanerView: View {
-    @StateObject private var viewModel = DiskCleanerViewModel()
+    @ObservedObject var viewModel: DiskCleanerViewModel
+    @ObservedObject var spaceLensViewModel: SpaceLensViewModel
     @State private var isVisible = false
     @State private var selectedTab: DiskCleanerTab = .cleaner
 
@@ -22,7 +23,7 @@ struct DiskCleanerView: View {
             if selectedTab == .cleaner {
                 cleanerContent
             } else {
-                SpaceLensView()
+                SpaceLensView(viewModel: spaceLensViewModel)
             }
         }
         .animation(Theme.Animation.spring, value: selectedTab)
@@ -479,6 +480,6 @@ struct ScanningOverlay: View {
 // MARK: - Preview
 
 #Preview {
-    DiskCleanerView()
+    DiskCleanerView(viewModel: DiskCleanerViewModel(), spaceLensViewModel: SpaceLensViewModel())
         .frame(width: 800, height: 600)
 }

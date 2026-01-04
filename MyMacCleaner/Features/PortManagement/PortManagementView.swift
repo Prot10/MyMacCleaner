@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - Port Management View
 
 struct PortManagementView: View {
-    @StateObject private var viewModel = PortManagementViewModel()
+    @ObservedObject var viewModel: PortManagementViewModel
     @State private var isVisible = false
 
     var body: some View {
@@ -375,6 +375,6 @@ struct ConnectionRow: View {
 // MARK: - Preview
 
 #Preview {
-    PortManagementView()
+    PortManagementView(viewModel: PortManagementViewModel())
         .frame(width: 900, height: 700)
 }

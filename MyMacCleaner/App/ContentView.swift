@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject private var appState: AppState
     @State private var selectedSection: NavigationSection = .home
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var isDetailVisible = false
@@ -9,8 +10,8 @@ struct ContentView: View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             SidebarView(selection: $selectedSection)
         } detail: {
-            DetailView(section: selectedSection)
-                .id(selectedSection) // Force view refresh on selection change
+            DetailView(section: selectedSection, appState: appState)
+                // Removed .id() to preserve state when switching sections
                 .transition(.opacity.combined(with: .move(edge: .trailing)))
         }
         .navigationSplitViewStyle(.balanced)
@@ -197,6 +198,7 @@ struct SystemStatusBadge: View {
 
 struct DetailView: View {
     let section: NavigationSection
+    let appState: AppState
     @State private var isVisible = false
 
     var body: some View {
@@ -205,21 +207,24 @@ struct DetailView: View {
             Theme.Colors.background
                 .ignoresSafeArea()
 
-            // Content
+            // Content - pass ViewModels from AppState to preserve state
             Group {
                 switch section {
                 case .home:
-                    HomeView()
+                    HomeView(viewModel: appState.homeViewModel)
                 case .diskCleaner:
-                    DiskCleanerView()
+                    DiskCleanerView(
+                        viewModel: appState.diskCleanerViewModel,
+                        spaceLensViewModel: appState.spaceLensViewModel
+                    )
                 case .performance:
-                    PerformanceView()
+                    PerformanceView(viewModel: appState.performanceViewModel)
                 case .applications:
-                    ApplicationsView()
+                    ApplicationsView(viewModel: appState.applicationsViewModel)
                 case .portManagement:
-                    PortManagementView()
+                    PortManagementView(viewModel: appState.portManagementViewModel)
                 case .systemHealth:
-                    SystemHealthView()
+                    SystemHealthView(viewModel: appState.systemHealthViewModel)
                 }
             }
             .opacity(isVisible ? 1 : 0)
@@ -323,4 +328,5 @@ struct ComingSoonView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(AppState())
 }

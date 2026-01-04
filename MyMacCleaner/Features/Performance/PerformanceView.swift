@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - Performance View
 
 struct PerformanceView: View {
-    @StateObject private var viewModel = PerformanceViewModel()
+    @ObservedObject var viewModel: PerformanceViewModel
     @State private var isVisible = false
     @State private var selectedTab: PerformanceTab = .memory
 
@@ -1035,6 +1035,6 @@ struct CircularProgressView: View {
 // MARK: - Preview
 
 #Preview {
-    PerformanceView()
+    PerformanceView(viewModel: PerformanceViewModel())
         .frame(width: 800, height: 700)
 }
