@@ -53,7 +53,8 @@ struct SystemHealthView: View {
                 HStack(spacing: 6) {
                     if viewModel.isLoading {
                         ProgressView()
-                            .scaleEffect(0.7)
+                            .controlSize(.small)
+                            .frame(width: 16, height: 16)
                     } else {
                         Image(systemName: "arrow.clockwise")
                     }
@@ -209,7 +210,8 @@ struct HealthCheckCard: View {
 
                 if check.status == .checking {
                     ProgressView()
-                        .scaleEffect(0.8)
+                        .controlSize(.small)
+                        .frame(width: 16, height: 16)
                 } else {
                     Image(systemName: check.status.icon)
                         .font(.system(size: 18, weight: .semibold))

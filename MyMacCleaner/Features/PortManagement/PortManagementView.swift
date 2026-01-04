@@ -188,7 +188,8 @@ struct PortManagementView: View {
     private var loadingSection: some View {
         VStack(spacing: Theme.Spacing.lg) {
             ProgressView()
-                .scaleEffect(1.5)
+                .controlSize(.large)
+                .frame(width: 32, height: 32)
 
             Text("Scanning network connections...")
                 .font(Theme.Typography.subheadline)

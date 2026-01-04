@@ -206,7 +206,8 @@ struct PerformanceView: View {
                     HStack(spacing: 8) {
                         if viewModel.runningTaskId == "purge_ram" {
                             ProgressView()
-                                .scaleEffect(0.7)
+                                .controlSize(.small)
+                                .frame(width: 16, height: 16)
                         } else {
                             Image(systemName: "bolt.fill")
                         }
@@ -330,7 +331,8 @@ struct PerformanceView: View {
                 // Loading state
                 VStack(spacing: Theme.Spacing.md) {
                     ProgressView()
-                        .scaleEffect(1.2)
+                        .controlSize(.regular)
+                        .frame(width: 20, height: 20)
 
                     Text("Loading processes...")
                         .font(Theme.Typography.subheadline)
@@ -657,7 +659,8 @@ struct MaintenanceTaskCard: View {
 
                         if isRunning {
                             ProgressView()
-                                .scaleEffect(0.7)
+                                .controlSize(.small)
+                                .frame(width: 16, height: 16)
                         } else if let result = result {
                             resultIcon(for: result)
                         } else {
@@ -749,7 +752,8 @@ struct MaintenanceTaskCard: View {
                 .foregroundStyle(task.color.opacity(0.5))
         case .running:
             ProgressView()
-                .scaleEffect(0.7)
+                .controlSize(.small)
+                .frame(width: 16, height: 16)
         }
     }
 
@@ -934,7 +938,8 @@ struct RunAllProgressView: View {
                     if !currentTaskName.isEmpty {
                         HStack(spacing: 6) {
                             ProgressView()
-                                .scaleEffect(0.6)
+                                .controlSize(.mini)
+                                .frame(width: 10, height: 10)
 
                             Text(currentTaskName)
                                 .font(Theme.Typography.caption)
