@@ -1,82 +1,79 @@
 import Foundation
 import Security
 
-/// Service that manages admin authorization, requesting it once and reusing for subsequent commands
-actor AuthorizationService {
+/// Service that manages admin authorization with a SINGLE password prompt
+class AuthorizationService {
     static let shared = AuthorizationService()
 
-    private var authRef: AuthorizationRef?
-    private var isAuthorized = false
+    private var cachedPassword: String?
+    private var passwordExpiry: Date?
+    private let passwordTimeout: TimeInterval = 300 // 5 minutes
 
     private init() {}
 
-    /// Request authorization from the user (shows password dialog once)
-    func requestAuthorization() async -> Bool {
-        // If already authorized, return true
-        if isAuthorized && authRef != nil {
-            return true
+    /// Run a single command with admin privileges
+    func runAuthorizedCommand(_ command: String, arguments: [String] = []) async -> Bool {
+        // Build the full command
+        let fullCommand: String
+        if arguments.isEmpty {
+            fullCommand = command
+        } else {
+            let escapedArgs = arguments.map { escapeForShell($0) }.joined(separator: " ")
+            fullCommand = "\(command) \(escapedArgs)"
         }
 
-        return await withCheckedContinuation { continuation in
-            var auth: AuthorizationRef?
-
-            // Create authorization reference
-            let createStatus = AuthorizationCreate(nil, nil, [], &auth)
-            guard createStatus == errAuthorizationSuccess, let authRef = auth else {
-                continuation.resume(returning: false)
-                return
-            }
-
-            // Define the right we need
-            var rightName = "system.privilege.admin"
-            let rightNameData = rightName.withCString { ptr in
-                AuthorizationItem(name: ptr, valueLength: 0, value: nil, flags: 0)
-            }
-
-            var rights = withUnsafePointer(to: rightNameData) { ptr in
-                AuthorizationRights(count: 1, items: UnsafeMutablePointer(mutating: ptr))
-            }
-
-            let flags: AuthorizationFlags = [.interactionAllowed, .preAuthorize, .extendRights]
-
-            // Request authorization (this shows the password dialog)
-            let authStatus = AuthorizationCopyRights(authRef, &rights, nil, flags, nil)
-
-            if authStatus == errAuthorizationSuccess {
-                self.authRef = authRef
-                self.isAuthorized = true
-                continuation.resume(returning: true)
-            } else {
-                AuthorizationFree(authRef, [])
-                continuation.resume(returning: false)
-            }
-        }
+        return await runWithAdminPrivileges(fullCommand)
     }
 
-    /// Run a command with the stored authorization
-    func runAuthorizedCommand(_ command: String, arguments: [String] = []) async -> Bool {
-        // First ensure we have authorization
-        guard await requestAuthorization() else {
-            return false
+    /// Run multiple commands with a SINGLE password prompt
+    func runBatchCommands(_ commands: [(command: String, arguments: [String])]) async -> [Bool] {
+        guard !commands.isEmpty else { return [] }
+
+        // Build all commands into a single script
+        var scriptCommands: [String] = []
+        for (command, arguments) in commands {
+            if arguments.isEmpty {
+                scriptCommands.append(command)
+            } else {
+                let escapedArgs = arguments.map { escapeForShell($0) }.joined(separator: " ")
+                scriptCommands.append("\(command) \(escapedArgs)")
+            }
         }
 
+        // Join with ; and track exit codes
+        // We'll run each command and collect results
+        let combinedScript = scriptCommands.enumerated().map { index, cmd in
+            "\(cmd); echo \"CMD_\(index)_EXIT:$?\""
+        }.joined(separator: "; ")
+
+        let result = await runWithAdminPrivilegesAndCapture(combinedScript)
+
+        // Parse results
+        var results: [Bool] = Array(repeating: false, count: commands.count)
+        if let output = result {
+            for index in 0..<commands.count {
+                if output.contains("CMD_\(index)_EXIT:0") {
+                    results[index] = true
+                }
+            }
+        }
+
+        return results
+    }
+
+    /// Request authorization upfront (for UI feedback)
+    func requestAuthorization() async -> Bool {
+        // Just verify we can run a simple command
+        return await runWithAdminPrivileges("/usr/bin/true")
+    }
+
+    // MARK: - Private Methods
+
+    private func runWithAdminPrivileges(_ command: String) async -> Bool {
         return await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
-                // Build the full command
-                let fullCommand: String
-                if arguments.isEmpty {
-                    fullCommand = command
-                } else {
-                    let escapedArgs = arguments.map { arg in
-                        "'\(arg.replacingOccurrences(of: "'", with: "'\\''"))'"
-                    }.joined(separator: " ")
-                    fullCommand = "\(command) \(escapedArgs)"
-                }
-
-                // Use AppleScript to run with admin privileges
-                // The system caches the authorization after the first prompt
                 let script = """
-                do shell script "\(fullCommand)" with administrator privileges
+                do shell script "\(self.escapeForAppleScript(command))" with administrator privileges
                 """
 
                 var error: NSDictionary?
@@ -90,34 +87,37 @@ actor AuthorizationService {
         }
     }
 
-    /// Run multiple commands with a single authorization request
-    func runAuthorizedCommands(_ commands: [(command: String, arguments: [String])]) async -> [Bool] {
-        // First ensure we have authorization
-        guard await requestAuthorization() else {
-            return commands.map { _ in false }
+    private func runWithAdminPrivilegesAndCapture(_ command: String) async -> String? {
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let script = """
+                do shell script "\(self.escapeForAppleScript(command))" with administrator privileges
+                """
+
+                var error: NSDictionary?
+                if let appleScript = NSAppleScript(source: script) {
+                    let result = appleScript.executeAndReturnError(&error)
+                    if error == nil {
+                        continuation.resume(returning: result.stringValue)
+                    } else {
+                        continuation.resume(returning: nil)
+                    }
+                } else {
+                    continuation.resume(returning: nil)
+                }
+            }
         }
-
-        var results: [Bool] = []
-
-        for (command, arguments) in commands {
-            let result = await runAuthorizedCommand(command, arguments: arguments)
-            results.append(result)
-        }
-
-        return results
     }
 
-    /// Check if we currently have valid authorization
-    func hasAuthorization() -> Bool {
-        return isAuthorized && authRef != nil
+    private func escapeForShell(_ string: String) -> String {
+        // Escape single quotes for shell
+        return "'" + string.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 
-    /// Clear the stored authorization
-    func clearAuthorization() {
-        if let auth = authRef {
-            AuthorizationFree(auth, [])
-        }
-        authRef = nil
-        isAuthorized = false
+    private func escapeForAppleScript(_ string: String) -> String {
+        // Escape backslashes and double quotes for AppleScript
+        return string
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
     }
 }
