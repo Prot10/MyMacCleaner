@@ -239,10 +239,36 @@ class PerformanceViewModel: ObservableObject {
         }
 
         Task {
+            // Check if any tasks require admin
+            let needsAdmin = maintenanceTasks.contains { $0.requiresAdmin }
+
+            if needsAdmin {
+                // Request authorization upfront (single password prompt)
+                let authorized = await AuthorizationService.shared.requestAuthorization()
+                if !authorized {
+                    showToastMessage("Authorization required to run maintenance tasks", type: .error)
+                    isRunningAll = false
+                    runAllCurrentIndex = 0
+                    for task in maintenanceTasks {
+                        taskResults[task.id] = nil
+                    }
+                    return
+                }
+            }
+
             var successCount = 0
             var failedCount = 0
 
             for (index, task) in maintenanceTasks.enumerated() {
+                // Check if cancelled
+                guard isRunningAll else {
+                    // Mark remaining as skipped
+                    for remainingTask in maintenanceTasks[index...] {
+                        taskResults[remainingTask.id] = .skipped
+                    }
+                    break
+                }
+
                 runAllCurrentIndex = index + 1
                 runningTaskId = task.id
                 taskProgress = 0
@@ -417,28 +443,12 @@ class PerformanceViewModel: ObservableObject {
     }
 
     private func runCommand(_ path: String, arguments: [String] = [], requiresAdmin: Bool = false) async -> Bool {
-        return await withCheckedContinuation { continuation in
-            DispatchQueue.global(qos: .userInitiated).async {
-                if requiresAdmin {
-                    // Use AppleScript to prompt for admin privileges
-                    let fullCommand = ([path] + arguments).joined(separator: " ")
-                    let script = """
-                    do shell script "\(fullCommand)" with administrator privileges
-                    """
-
-                    var error: NSDictionary?
-                    if let appleScript = NSAppleScript(source: script) {
-                        appleScript.executeAndReturnError(&error)
-                        if error == nil {
-                            continuation.resume(returning: true)
-                        } else {
-                            // User cancelled or error occurred
-                            continuation.resume(returning: false)
-                        }
-                    } else {
-                        continuation.resume(returning: false)
-                    }
-                } else {
+        if requiresAdmin {
+            // Use the shared authorization service (prompts once, caches authorization)
+            return await AuthorizationService.shared.runAuthorizedCommand(path, arguments: arguments)
+        } else {
+            return await withCheckedContinuation { continuation in
+                DispatchQueue.global(qos: .userInitiated).async {
                     let process = Process()
                     process.executableURL = URL(fileURLWithPath: path)
                     process.arguments = arguments
