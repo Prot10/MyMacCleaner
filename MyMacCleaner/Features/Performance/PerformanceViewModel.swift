@@ -190,7 +190,11 @@ class PerformanceViewModel: ObservableObject {
                 if success {
                     showToastMessage("\(task.name) completed successfully", type: .success)
                 } else {
-                    showToastMessage("\(task.name) requires administrator privileges", type: .error)
+                    if task.requiresAdmin {
+                        showToastMessage("\(task.name) was cancelled", type: .info)
+                    } else {
+                        showToastMessage("\(task.name) failed", type: .error)
+                    }
                 }
 
             } catch {
@@ -204,41 +208,62 @@ class PerformanceViewModel: ObservableObject {
     private func executeTask(_ task: MaintenanceTask) async -> Bool {
         switch task.id {
         case "purge_ram":
-            return await runCommand("/usr/bin/purge")
+            return await runCommand("/usr/bin/purge", requiresAdmin: true)
         case "flush_dns":
             return await runCommand("/usr/bin/dscacheutil", arguments: ["-flushcache"])
         case "kill_dns":
-            return await runCommand("/usr/bin/killall", arguments: ["-HUP", "mDNSResponder"])
+            return await runCommand("/usr/bin/killall", arguments: ["-HUP", "mDNSResponder"], requiresAdmin: true)
         case "clear_font_cache":
             return await runCommand("/usr/bin/atsutil", arguments: ["databases", "-remove"])
         case "rebuild_spotlight":
-            return await runCommand("/usr/bin/mdutil", arguments: ["-E", "/"])
+            return await runCommand("/usr/bin/mdutil", arguments: ["-E", "/"], requiresAdmin: true)
         case "rebuild_launch":
             return await runCommand("/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister", arguments: ["-kill", "-r", "-domain", "local", "-domain", "system", "-domain", "user"])
         case "clear_quicklook":
             return await runCommand("/usr/bin/qlmanage", arguments: ["-r", "cache"])
         case "verify_disk":
-            return await runCommand("/usr/sbin/diskutil", arguments: ["verifyVolume", "/"])
+            return await runCommand("/usr/sbin/diskutil", arguments: ["verifyVolume", "/"], requiresAdmin: true)
         default:
             return false
         }
     }
 
-    private func runCommand(_ path: String, arguments: [String] = []) async -> Bool {
+    private func runCommand(_ path: String, arguments: [String] = [], requiresAdmin: Bool = false) async -> Bool {
         return await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
-                let process = Process()
-                process.executableURL = URL(fileURLWithPath: path)
-                process.arguments = arguments
-                process.standardOutput = FileHandle.nullDevice
-                process.standardError = FileHandle.nullDevice
+                if requiresAdmin {
+                    // Use AppleScript to prompt for admin privileges
+                    let fullCommand = ([path] + arguments).joined(separator: " ")
+                    let script = """
+                    do shell script "\(fullCommand)" with administrator privileges
+                    """
 
-                do {
-                    try process.run()
-                    process.waitUntilExit()
-                    continuation.resume(returning: process.terminationStatus == 0)
-                } catch {
-                    continuation.resume(returning: false)
+                    var error: NSDictionary?
+                    if let appleScript = NSAppleScript(source: script) {
+                        appleScript.executeAndReturnError(&error)
+                        if error == nil {
+                            continuation.resume(returning: true)
+                        } else {
+                            // User cancelled or error occurred
+                            continuation.resume(returning: false)
+                        }
+                    } else {
+                        continuation.resume(returning: false)
+                    }
+                } else {
+                    let process = Process()
+                    process.executableURL = URL(fileURLWithPath: path)
+                    process.arguments = arguments
+                    process.standardOutput = FileHandle.nullDevice
+                    process.standardError = FileHandle.nullDevice
+
+                    do {
+                        try process.run()
+                        process.waitUntilExit()
+                        continuation.resume(returning: process.terminationStatus == 0)
+                    } catch {
+                        continuation.resume(returning: false)
+                    }
                 }
             }
         }
