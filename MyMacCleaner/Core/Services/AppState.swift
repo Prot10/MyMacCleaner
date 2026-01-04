@@ -27,6 +27,9 @@ class AppState: ObservableObject {
     /// System Health section state
     let systemHealthViewModel = SystemHealthViewModel()
 
+    /// Startup Items section state
+    let startupItemsViewModel = StartupItemsViewModel()
+
     // MARK: - Initialization
 
     init() {

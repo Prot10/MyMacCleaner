@@ -38,6 +38,7 @@ enum NavigationSection: String, CaseIterable, Identifiable {
     case diskCleaner = "Disk Cleaner"
     case performance = "Performance"
     case applications = "Applications"
+    case startupItems = "Startup Items"
     case portManagement = "Port Management"
     case systemHealth = "System Health"
 
@@ -49,6 +50,7 @@ enum NavigationSection: String, CaseIterable, Identifiable {
         case .diskCleaner: return "internaldrive.fill"
         case .performance: return "gauge.with.needle.fill"
         case .applications: return "square.grid.2x2.fill"
+        case .startupItems: return "power.circle.fill"
         case .portManagement: return "network"
         case .systemHealth: return "heart.text.square.fill"
         }
@@ -60,6 +62,7 @@ enum NavigationSection: String, CaseIterable, Identifiable {
         case .diskCleaner: return "Clean junk files"
         case .performance: return "Optimize your Mac"
         case .applications: return "Manage installed apps"
+        case .startupItems: return "Control startup programs"
         case .portManagement: return "View active ports"
         case .systemHealth: return "Monitor system health"
         }
@@ -71,6 +74,7 @@ enum NavigationSection: String, CaseIterable, Identifiable {
         case .diskCleaner: return Theme.Colors.storage
         case .performance: return Theme.Colors.memory
         case .applications: return Theme.Colors.apps
+        case .startupItems: return .cyan
         case .portManagement: return Theme.Colors.ports
         case .systemHealth: return Theme.Colors.health
         }
@@ -233,6 +237,8 @@ struct DetailView: View {
                     PerformanceView(viewModel: appState.performanceViewModel)
                 case .applications:
                     ApplicationsView(viewModel: appState.applicationsViewModel)
+                case .startupItems:
+                    StartupItemsView(viewModel: appState.startupItemsViewModel)
                 case .portManagement:
                     PortManagementView(viewModel: appState.portManagementViewModel)
                 case .systemHealth:
