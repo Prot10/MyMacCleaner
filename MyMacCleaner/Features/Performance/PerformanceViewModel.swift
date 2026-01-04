@@ -351,13 +351,37 @@ class PerformanceViewModel: ObservableObject {
 
     // MARK: - Process Management
 
+    func startProcessMonitoring() {
+        // Initial fetch
+        refreshProcesses()
+
+        // Auto-refresh every 2 seconds
+        processTimer?.invalidate()
+        processTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.refreshProcesses()
+            }
+        }
+    }
+
+    func stopProcessMonitoring() {
+        processTimer?.invalidate()
+        processTimer = nil
+    }
+
     func refreshProcesses() {
-        isLoadingProcesses = true
+        // Don't show loading indicator for auto-refresh
+        let isFirstLoad = topProcesses.isEmpty
+        if isFirstLoad {
+            isLoadingProcesses = true
+        }
 
         Task {
             let processes = await getTopProcesses()
-            topProcesses = processes
-            isLoadingProcesses = false
+            await MainActor.run {
+                self.topProcesses = processes
+                self.isLoadingProcesses = false
+            }
         }
     }
 
@@ -367,14 +391,11 @@ class PerformanceViewModel: ObservableObject {
 
             if success {
                 showToastMessage("Killed \(process.name)", type: .success)
-                // Refresh the process list
-                refreshProcesses()
             } else {
                 // Try with sudo
                 let sudoSuccess = await runCommand("/bin/kill", arguments: ["-9", "\(process.pid)"], requiresAdmin: true)
                 if sudoSuccess {
                     showToastMessage("Killed \(process.name)", type: .success)
-                    refreshProcesses()
                 } else {
                     showToastMessage("Failed to kill \(process.name)", type: .error)
                 }
@@ -385,9 +406,11 @@ class PerformanceViewModel: ObservableObject {
     private func getTopProcesses() async -> [RunningProcess] {
         return await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
+                // Use top command for better real-time data like htop
                 let task = Process()
-                task.executableURL = URL(fileURLWithPath: "/bin/ps")
-                task.arguments = ["aux"]
+                task.executableURL = URL(fileURLWithPath: "/usr/bin/top")
+                // -l 1: one sample, -n 10: 10 processes, -o mem: sort by memory, -stats: columns
+                task.arguments = ["-l", "1", "-n", "10", "-o", "mem", "-stats", "pid,command,user,mem,cpu"]
 
                 let pipe = Pipe()
                 task.standardOutput = pipe
@@ -406,47 +429,80 @@ class PerformanceViewModel: ObservableObject {
                     var processes: [RunningProcess] = []
                     let lines = output.components(separatedBy: "\n")
 
-                    // Skip header line
-                    for line in lines.dropFirst() {
-                        guard !line.isEmpty else { continue }
+                    // Find the line that starts with "PID" (header)
+                    var foundHeader = false
+                    for line in lines {
+                        let trimmed = line.trimmingCharacters(in: .whitespaces)
 
-                        let components = line.split(separator: " ", omittingEmptySubsequences: true)
-                        guard components.count >= 11 else { continue }
+                        if trimmed.hasPrefix("PID") {
+                            foundHeader = true
+                            continue
+                        }
 
-                        let user = String(components[0])
-                        let pid = Int(components[1]) ?? 0
-                        let cpuPercent = Double(components[2]) ?? 0
-                        let memPercent = Double(components[3]) ?? 0
-                        let rss = Int(components[5]) ?? 0  // RSS in KB
-                        let command = components[10...].joined(separator: " ")
+                        guard foundHeader, !trimmed.isEmpty else { continue }
 
-                        // Extract just the process name from the full path
-                        let name = command.components(separatedBy: "/").last?.components(separatedBy: " ").first ?? command
+                        // Parse: PID COMMAND USER MEM CPU
+                        let components = trimmed.split(separator: " ", maxSplits: 4, omittingEmptySubsequences: true)
+                        guard components.count >= 5 else { continue }
 
-                        // Skip kernel processes and very small memory usage
-                        guard pid > 0, rss > 1000 else { continue }
+                        let pid = Int(components[0]) ?? 0
+                        let command = String(components[1])
+                        let user = String(components[2])
+                        let memString = String(components[3])
+                        let cpuString = String(components[4])
+
+                        // Parse memory (e.g., "1234M", "512K", "2G")
+                        let memoryKB = self.parseMemoryString(memString)
+
+                        // Parse CPU percentage
+                        let cpuPercent = Double(cpuString.replacingOccurrences(of: "%", with: "")) ?? 0
+
+                        guard pid > 0 else { continue }
 
                         let runningProcess = RunningProcess(
                             pid: pid,
-                            name: String(name),
+                            name: command,
                             user: user,
                             cpuPercent: cpuPercent,
-                            memoryPercent: memPercent,
-                            memoryKB: rss
+                            memoryPercent: 0,
+                            memoryKB: memoryKB
                         )
                         processes.append(runningProcess)
                     }
 
-                    // Sort by memory usage and take top 10
-                    let topProcesses = processes
-                        .sorted { $0.memoryKB > $1.memoryKB }
-                        .prefix(10)
-
-                    continuation.resume(returning: Array(topProcesses))
+                    continuation.resume(returning: processes)
                 } catch {
                     continuation.resume(returning: [])
                 }
             }
+        }
+    }
+
+    private func parseMemoryString(_ str: String) -> Int {
+        // Remove whitespace and + suffix, convert to uppercase
+        var cleanStr = str.trimmingCharacters(in: .whitespaces).uppercased()
+        cleanStr = cleanStr.replacingOccurrences(of: "+", with: "")
+        cleanStr = cleanStr.replacingOccurrences(of: "-", with: "")
+
+        if cleanStr.hasSuffix("G") || cleanStr.hasSuffix("GB") {
+            let numStr = cleanStr.replacingOccurrences(of: "GB", with: "").replacingOccurrences(of: "G", with: "")
+            let num = Double(numStr) ?? 0
+            return Int(num * 1024 * 1024) // GB to KB
+        } else if cleanStr.hasSuffix("M") || cleanStr.hasSuffix("MB") {
+            let numStr = cleanStr.replacingOccurrences(of: "MB", with: "").replacingOccurrences(of: "M", with: "")
+            let num = Double(numStr) ?? 0
+            return Int(num * 1024) // MB to KB
+        } else if cleanStr.hasSuffix("K") || cleanStr.hasSuffix("KB") {
+            let numStr = cleanStr.replacingOccurrences(of: "KB", with: "").replacingOccurrences(of: "K", with: "")
+            let num = Double(numStr) ?? 0
+            return Int(num) // Already KB
+        } else if cleanStr.hasSuffix("B") {
+            let numStr = cleanStr.replacingOccurrences(of: "B", with: "")
+            let num = Double(numStr) ?? 0
+            return Int(num / 1024) // Bytes to KB
+        } else {
+            // Assume bytes if no suffix
+            return Int((Double(cleanStr) ?? 0) / 1024)
         }
     }
 
