@@ -59,7 +59,7 @@ struct PortManagementView: View {
             }
         } message: {
             if let connection = viewModel.connectionToKill {
-                Text("This will terminate \(connection.processName) (PID: \(connection.pid)) using port \(connection.localPort).")
+                Text("This will terminate \(connection.processName) (PID: \(String(connection.pid))) using port \(connection.localPort).")
             }
         }
         .onAppear {
@@ -320,8 +320,8 @@ struct ConnectionRow: View {
             }
             .frame(width: 150, alignment: .leading)
 
-            // PID
-            Text("\(connection.pid)")
+            // PID - use String() to avoid locale-based thousand separators
+            Text(String(connection.pid))
                 .font(Theme.Typography.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .frame(width: 60, alignment: .leading)
