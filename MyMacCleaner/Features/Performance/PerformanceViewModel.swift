@@ -334,7 +334,8 @@ class PerformanceViewModel: ObservableObject {
         case "rebuild_spotlight":
             return ("/usr/bin/mdutil", ["-E", "/"])
         case "rebuild_launch":
-            return ("/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister", ["-kill", "-r", "-domain", "local", "-domain", "system", "-domain", "user"])
+            // Note: -kill was removed in recent macOS. Using -gc (garbage collect) instead
+            return ("/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister", ["-gc"])
         case "clear_quicklook":
             return ("/usr/bin/qlmanage", ["-r", "cache"])
         case "verify_disk":
@@ -518,7 +519,8 @@ class PerformanceViewModel: ObservableObject {
         case "rebuild_spotlight":
             return await runCommand("/usr/bin/mdutil", arguments: ["-E", "/"], requiresAdmin: true)
         case "rebuild_launch":
-            return await runCommand("/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister", arguments: ["-kill", "-r", "-domain", "local", "-domain", "system", "-domain", "user"])
+            // Note: -kill was removed in recent macOS. Using -gc (garbage collect) instead
+            return await runCommand("/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister", arguments: ["-gc"])
         case "clear_quicklook":
             return await runCommand("/usr/bin/qlmanage", arguments: ["-r", "cache"])
         case "verify_disk":
@@ -683,7 +685,7 @@ struct MaintenanceTask: Identifiable {
         MaintenanceTask(
             id: "rebuild_launch",
             name: "Rebuild Launch Services",
-            description: "Fix 'Open With' menu and app associations",
+            description: "Clean up and refresh app associations database",
             icon: "square.grid.2x2",
             color: .cyan,
             requiresAdmin: false
