@@ -406,11 +406,23 @@ class PerformanceViewModel: ObservableObject {
     private func getTopProcesses() async -> [RunningProcess] {
         return await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
-                // Use top command for better real-time data like htop
+                // Use ps with awk to properly parse and format output
+                // This extracts just the executable name from full paths
+                let script = """
+                ps -axo pid,rss,%cpu,user,comm | tail -n +2 | sort -k2 -rn | head -10 | awk '{
+                  pid=$1; rss=$2; cpu=$3; user=$4;
+                  path=""; for(i=5;i<=NF;i++) path = path (i>5 ? " " : "") $i;
+                  n = split(path, parts, "/");
+                  name = parts[n];
+                  gsub(/\\.app.*/, "", name);
+                  if (name == "") name = path;
+                  printf "%d\\t%d\\t%.1f\\t%s\\t%s\\n", pid, rss, cpu, user, name
+                }'
+                """
+
                 let task = Process()
-                task.executableURL = URL(fileURLWithPath: "/usr/bin/top")
-                // -l 1: one sample, -n 10: 10 processes, -o mem: sort by memory, -stats: columns
-                task.arguments = ["-l", "1", "-n", "10", "-o", "mem", "-stats", "pid,command,user,mem,cpu"]
+                task.executableURL = URL(fileURLWithPath: "/bin/bash")
+                task.arguments = ["-c", script]
 
                 let pipe = Pipe()
                 task.standardOutput = pipe
@@ -429,35 +441,21 @@ class PerformanceViewModel: ObservableObject {
                     var processes: [RunningProcess] = []
                     let lines = output.components(separatedBy: "\n")
 
-                    // Find the line that starts with "PID" (header)
-                    var foundHeader = false
                     for line in lines {
-                        let trimmed = line.trimmingCharacters(in: .whitespaces)
+                        let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !trimmed.isEmpty else { continue }
 
-                        if trimmed.hasPrefix("PID") {
-                            foundHeader = true
-                            continue
-                        }
-
-                        guard foundHeader, !trimmed.isEmpty else { continue }
-
-                        // Parse: PID COMMAND USER MEM CPU
-                        let components = trimmed.split(separator: " ", maxSplits: 4, omittingEmptySubsequences: true)
+                        // Split by tab
+                        let components = trimmed.components(separatedBy: "\t")
                         guard components.count >= 5 else { continue }
 
                         let pid = Int(components[0]) ?? 0
-                        let command = String(components[1])
-                        let user = String(components[2])
-                        let memString = String(components[3])
-                        let cpuString = String(components[4])
+                        let rssKB = Int(components[1]) ?? 0
+                        let cpuPercent = Double(components[2]) ?? 0
+                        let user = components[3]
+                        let command = components[4]
 
-                        // Parse memory (e.g., "1234M", "512K", "2G")
-                        let memoryKB = self.parseMemoryString(memString)
-
-                        // Parse CPU percentage
-                        let cpuPercent = Double(cpuString.replacingOccurrences(of: "%", with: "")) ?? 0
-
-                        guard pid > 0 else { continue }
+                        guard pid > 0, rssKB > 0 else { continue }
 
                         let runningProcess = RunningProcess(
                             pid: pid,
@@ -465,7 +463,7 @@ class PerformanceViewModel: ObservableObject {
                             user: user,
                             cpuPercent: cpuPercent,
                             memoryPercent: 0,
-                            memoryKB: memoryKB
+                            memoryKB: rssKB
                         )
                         processes.append(runningProcess)
                     }
