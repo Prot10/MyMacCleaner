@@ -1,0 +1,399 @@
+import SwiftUI
+import Combine
+
+// MARK: - Performance View Model
+
+@MainActor
+class PerformanceViewModel: ObservableObject {
+    // MARK: - Published Properties
+
+    @Published var memoryUsage: MemoryUsage = MemoryUsage()
+    @Published var cpuUsage: Double = 0
+    @Published var isMonitoring = false
+
+    @Published var maintenanceTasks: [MaintenanceTask] = MaintenanceTask.allTasks
+    @Published var runningTaskId: String?
+    @Published var taskProgress: Double = 0
+
+    @Published var showToast = false
+    @Published var toastMessage = ""
+    @Published var toastType: ToastType = .success
+
+    enum ToastType {
+        case success, error, info
+    }
+
+    // MARK: - Private Properties
+
+    private var monitorTimer: Timer?
+    private var cpuInfo: processor_info_array_t?
+    private var prevCpuInfo: processor_info_array_t?
+    private var numCpuInfo: mach_msg_type_number_t = 0
+    private var numPrevCpuInfo: mach_msg_type_number_t = 0
+    private var numCPUs: uint = 0
+
+    // MARK: - Initialization
+
+    init() {
+        var numCPUsU: natural_t = 0
+        let result = host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, &numCPUsU, &cpuInfo, &numCpuInfo)
+        if result == KERN_SUCCESS {
+            numCPUs = uint(numCPUsU)
+        }
+        startMonitoring()
+    }
+
+    deinit {
+        monitorTimer?.invalidate()
+    }
+
+    // MARK: - Monitoring
+
+    func startMonitoring() {
+        guard !isMonitoring else { return }
+        isMonitoring = true
+
+        updateMemoryUsage()
+        updateCPUUsage()
+
+        monitorTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateMemoryUsage()
+                self?.updateCPUUsage()
+            }
+        }
+    }
+
+    func stopMonitoring() {
+        monitorTimer?.invalidate()
+        monitorTimer = nil
+        isMonitoring = false
+    }
+
+    private func updateMemoryUsage() {
+        var stats = vm_statistics64()
+        var count = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.stride / MemoryLayout<integer_t>.stride)
+
+        let result = withUnsafeMutablePointer(to: &stats) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                host_statistics64(mach_host_self(), HOST_VM_INFO64, $0, &count)
+            }
+        }
+
+        guard result == KERN_SUCCESS else { return }
+
+        let pageSize = UInt64(vm_kernel_page_size)
+
+        let active = UInt64(stats.active_count) * pageSize
+        let inactive = UInt64(stats.inactive_count) * pageSize
+        let wired = UInt64(stats.wire_count) * pageSize
+        let compressed = UInt64(stats.compressor_page_count) * pageSize
+        let purgeable = UInt64(stats.purgeable_count) * pageSize
+        let speculative = UInt64(stats.speculative_count) * pageSize
+
+        // Get actual physical memory
+        let total = ProcessInfo.processInfo.physicalMemory
+
+        // "Used" like htop: Active + Wired (what's actually in use)
+        // Compressed is part of the physical used space
+        let appMemory = active + wired + compressed
+
+        // Free = Total - (Active + Inactive + Wired + Compressed + Speculative)
+        let accountedFor = active + inactive + wired + compressed + speculative
+        let free = total > accountedFor ? total - accountedFor : 0
+
+        // Get swap info
+        let swapInfo = getSwapUsage()
+
+        memoryUsage = MemoryUsage(
+            total: total,
+            used: appMemory,
+            free: free,
+            active: active,
+            inactive: inactive,
+            wired: wired,
+            compressed: compressed,
+            purgeable: purgeable,
+            swapUsed: swapInfo.used,
+            swapTotal: swapInfo.total
+        )
+    }
+
+    private func getSwapUsage() -> (used: UInt64, total: UInt64) {
+        var swapUsage = xsw_usage()
+        var size = MemoryLayout<xsw_usage>.size
+
+        let result = sysctlbyname("vm.swapusage", &swapUsage, &size, nil, 0)
+
+        if result == 0 {
+            return (used: swapUsage.xsu_used, total: swapUsage.xsu_total)
+        }
+        return (used: 0, total: 0)
+    }
+
+    private func updateCPUUsage() {
+        var numCPUsU: natural_t = 0
+        var newInfo: processor_info_array_t?
+        var numInfo: mach_msg_type_number_t = 0
+
+        let result = host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, &numCPUsU, &newInfo, &numInfo)
+
+        guard result == KERN_SUCCESS, let newInfo = newInfo else { return }
+
+        var totalUsage: Double = 0
+
+        if let prevInfo = prevCpuInfo {
+            for i in 0..<Int(numCPUs) {
+                let offset = Int32(CPU_STATE_MAX) * Int32(i)
+
+                let userDiff = Double(newInfo[Int(offset + CPU_STATE_USER)]) - Double(prevInfo[Int(offset + CPU_STATE_USER)])
+                let systemDiff = Double(newInfo[Int(offset + CPU_STATE_SYSTEM)]) - Double(prevInfo[Int(offset + CPU_STATE_SYSTEM)])
+                let niceDiff = Double(newInfo[Int(offset + CPU_STATE_NICE)]) - Double(prevInfo[Int(offset + CPU_STATE_NICE)])
+                let idleDiff = Double(newInfo[Int(offset + CPU_STATE_IDLE)]) - Double(prevInfo[Int(offset + CPU_STATE_IDLE)])
+
+                let total = userDiff + systemDiff + niceDiff + idleDiff
+                if total > 0 {
+                    totalUsage += (userDiff + systemDiff + niceDiff) / total
+                }
+            }
+
+            cpuUsage = (totalUsage / Double(numCPUs)) * 100
+
+            let prevSize = vm_size_t(numPrevCpuInfo) * vm_size_t(MemoryLayout<integer_t>.stride)
+            vm_deallocate(mach_task_self_, vm_address_t(bitPattern: prevInfo), prevSize)
+        }
+
+        prevCpuInfo = newInfo
+        numPrevCpuInfo = numInfo
+    }
+
+    // MARK: - Maintenance Tasks
+
+    func runTask(_ task: MaintenanceTask) {
+        guard runningTaskId == nil else { return }
+
+        runningTaskId = task.id
+        taskProgress = 0
+
+        Task {
+            do {
+                for i in 1...10 {
+                    try await Task.sleep(nanoseconds: 100_000_000)
+                    taskProgress = Double(i) / 10.0
+                }
+
+                let success = await executeTask(task)
+
+                runningTaskId = nil
+                taskProgress = 0
+
+                if success {
+                    showToastMessage("\(task.name) completed successfully", type: .success)
+                } else {
+                    showToastMessage("\(task.name) requires administrator privileges", type: .error)
+                }
+
+            } catch {
+                runningTaskId = nil
+                taskProgress = 0
+                showToastMessage("Failed: \(error.localizedDescription)", type: .error)
+            }
+        }
+    }
+
+    private func executeTask(_ task: MaintenanceTask) async -> Bool {
+        switch task.id {
+        case "purge_ram":
+            return await runCommand("/usr/bin/purge")
+        case "flush_dns":
+            return await runCommand("/usr/bin/dscacheutil", arguments: ["-flushcache"])
+        case "kill_dns":
+            return await runCommand("/usr/bin/killall", arguments: ["-HUP", "mDNSResponder"])
+        case "clear_font_cache":
+            return await runCommand("/usr/bin/atsutil", arguments: ["databases", "-remove"])
+        case "rebuild_spotlight":
+            return await runCommand("/usr/bin/mdutil", arguments: ["-E", "/"])
+        case "rebuild_launch":
+            return await runCommand("/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister", arguments: ["-kill", "-r", "-domain", "local", "-domain", "system", "-domain", "user"])
+        case "clear_quicklook":
+            return await runCommand("/usr/bin/qlmanage", arguments: ["-r", "cache"])
+        case "verify_disk":
+            return await runCommand("/usr/sbin/diskutil", arguments: ["verifyVolume", "/"])
+        default:
+            return false
+        }
+    }
+
+    private func runCommand(_ path: String, arguments: [String] = []) async -> Bool {
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: path)
+                process.arguments = arguments
+                process.standardOutput = FileHandle.nullDevice
+                process.standardError = FileHandle.nullDevice
+
+                do {
+                    try process.run()
+                    process.waitUntilExit()
+                    continuation.resume(returning: process.terminationStatus == 0)
+                } catch {
+                    continuation.resume(returning: false)
+                }
+            }
+        }
+    }
+
+    private func showToastMessage(_ message: String, type: ToastType) {
+        toastMessage = message
+        toastType = type
+        showToast = true
+
+        Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            showToast = false
+        }
+    }
+
+    func dismissToast() {
+        showToast = false
+    }
+}
+
+// MARK: - Memory Usage Model
+
+struct MemoryUsage {
+    var total: UInt64 = 0
+    var used: UInt64 = 0       // Active + Wired + Compressed (app memory)
+    var free: UInt64 = 0
+    var active: UInt64 = 0     // Currently in use
+    var inactive: UInt64 = 0   // Cached, can be reclaimed
+    var wired: UInt64 = 0      // Cannot be paged out
+    var compressed: UInt64 = 0 // Compressed in RAM
+    var purgeable: UInt64 = 0  // Can be purged if needed
+    var swapUsed: UInt64 = 0
+    var swapTotal: UInt64 = 0
+
+    var usagePercentage: Double {
+        guard total > 0 else { return 0 }
+        return Double(used) / Double(total) * 100
+    }
+
+    var formattedTotal: String {
+        ByteCountFormatter.string(fromByteCount: Int64(total), countStyle: .memory)
+    }
+
+    var formattedUsed: String {
+        ByteCountFormatter.string(fromByteCount: Int64(used), countStyle: .memory)
+    }
+
+    var formattedFree: String {
+        ByteCountFormatter.string(fromByteCount: Int64(free), countStyle: .memory)
+    }
+
+    var formattedActive: String {
+        ByteCountFormatter.string(fromByteCount: Int64(active), countStyle: .memory)
+    }
+
+    var formattedInactive: String {
+        ByteCountFormatter.string(fromByteCount: Int64(inactive), countStyle: .memory)
+    }
+
+    var formattedWired: String {
+        ByteCountFormatter.string(fromByteCount: Int64(wired), countStyle: .memory)
+    }
+
+    var formattedCompressed: String {
+        ByteCountFormatter.string(fromByteCount: Int64(compressed), countStyle: .memory)
+    }
+
+    var formattedSwapUsed: String {
+        ByteCountFormatter.string(fromByteCount: Int64(swapUsed), countStyle: .memory)
+    }
+
+    var formattedSwapTotal: String {
+        ByteCountFormatter.string(fromByteCount: Int64(swapTotal), countStyle: .memory)
+    }
+
+    var hasSwap: Bool {
+        swapTotal > 0
+    }
+}
+
+// MARK: - Maintenance Task Model
+
+struct MaintenanceTask: Identifiable {
+    let id: String
+    let name: String
+    let description: String
+    let icon: String
+    let color: Color
+    let requiresAdmin: Bool
+
+    static let allTasks: [MaintenanceTask] = [
+        MaintenanceTask(
+            id: "purge_ram",
+            name: "Free Up RAM",
+            description: "Purge inactive memory to free up RAM",
+            icon: "memorychip",
+            color: .blue,
+            requiresAdmin: true
+        ),
+        MaintenanceTask(
+            id: "flush_dns",
+            name: "Flush DNS Cache",
+            description: "Clear the DNS cache to fix network issues",
+            icon: "network",
+            color: .green,
+            requiresAdmin: false
+        ),
+        MaintenanceTask(
+            id: "kill_dns",
+            name: "Restart DNS Service",
+            description: "Restart the mDNSResponder service",
+            icon: "arrow.clockwise",
+            color: .orange,
+            requiresAdmin: true
+        ),
+        MaintenanceTask(
+            id: "clear_font_cache",
+            name: "Clear Font Cache",
+            description: "Remove cached font data to fix font issues",
+            icon: "textformat",
+            color: .purple,
+            requiresAdmin: false
+        ),
+        MaintenanceTask(
+            id: "rebuild_spotlight",
+            name: "Rebuild Spotlight Index",
+            description: "Recreate the Spotlight search index",
+            icon: "magnifyingglass",
+            color: .pink,
+            requiresAdmin: true
+        ),
+        MaintenanceTask(
+            id: "rebuild_launch",
+            name: "Rebuild Launch Services",
+            description: "Fix 'Open With' menu and app associations",
+            icon: "square.grid.2x2",
+            color: .cyan,
+            requiresAdmin: false
+        ),
+        MaintenanceTask(
+            id: "clear_quicklook",
+            name: "Clear QuickLook Cache",
+            description: "Reset QuickLook preview cache",
+            icon: "eye",
+            color: .indigo,
+            requiresAdmin: false
+        ),
+        MaintenanceTask(
+            id: "verify_disk",
+            name: "Verify Disk",
+            description: "Check disk for errors",
+            icon: "internaldrive",
+            color: .red,
+            requiresAdmin: true
+        )
+    ]
+}
