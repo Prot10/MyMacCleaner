@@ -15,6 +15,24 @@ class PerformanceViewModel: ObservableObject {
     @Published var runningTaskId: String?
     @Published var taskProgress: Double = 0
 
+    // Run All state
+    @Published var isRunningAll = false
+    @Published var runAllCurrentIndex = 0
+    @Published var runAllTotalCount = 0
+    @Published var taskResults: [String: TaskResult] = [:]
+
+    enum TaskResult {
+        case pending
+        case running
+        case success
+        case failed
+        case skipped
+    }
+
+    // Process monitoring
+    @Published var topProcesses: [RunningProcess] = []
+    @Published var isLoadingProcesses = false
+
     @Published var showToast = false
     @Published var toastMessage = ""
     @Published var toastType: ToastType = .success
@@ -170,10 +188,11 @@ class PerformanceViewModel: ObservableObject {
     // MARK: - Maintenance Tasks
 
     func runTask(_ task: MaintenanceTask) {
-        guard runningTaskId == nil else { return }
+        guard runningTaskId == nil && !isRunningAll else { return }
 
         runningTaskId = task.id
         taskProgress = 0
+        taskResults[task.id] = .running
 
         Task {
             do {
@@ -186,6 +205,7 @@ class PerformanceViewModel: ObservableObject {
 
                 runningTaskId = nil
                 taskProgress = 0
+                taskResults[task.id] = success ? .success : .failed
 
                 if success {
                     showToastMessage("\(task.name) completed successfully", type: .success)
@@ -200,7 +220,175 @@ class PerformanceViewModel: ObservableObject {
             } catch {
                 runningTaskId = nil
                 taskProgress = 0
+                taskResults[task.id] = .failed
                 showToastMessage("Failed: \(error.localizedDescription)", type: .error)
+            }
+        }
+    }
+
+    func runAllTasks() {
+        guard !isRunningAll && runningTaskId == nil else { return }
+
+        isRunningAll = true
+        runAllCurrentIndex = 0
+        runAllTotalCount = maintenanceTasks.count
+
+        // Reset all task results
+        for task in maintenanceTasks {
+            taskResults[task.id] = .pending
+        }
+
+        Task {
+            var successCount = 0
+            var failedCount = 0
+
+            for (index, task) in maintenanceTasks.enumerated() {
+                runAllCurrentIndex = index + 1
+                runningTaskId = task.id
+                taskProgress = 0
+                taskResults[task.id] = .running
+
+                // Animate progress
+                for i in 1...10 {
+                    try? await Task.sleep(nanoseconds: 80_000_000)
+                    taskProgress = Double(i) / 10.0
+                }
+
+                let success = await executeTask(task)
+
+                if success {
+                    taskResults[task.id] = .success
+                    successCount += 1
+                } else {
+                    taskResults[task.id] = .failed
+                    failedCount += 1
+                }
+
+                taskProgress = 0
+                runningTaskId = nil
+
+                // Small delay between tasks
+                try? await Task.sleep(nanoseconds: 200_000_000)
+            }
+
+            isRunningAll = false
+            runAllCurrentIndex = 0
+
+            // Show summary toast
+            if failedCount == 0 {
+                showToastMessage("All \(successCount) tasks completed successfully!", type: .success)
+            } else {
+                showToastMessage("\(successCount) succeeded, \(failedCount) failed or cancelled", type: .info)
+            }
+
+            // Clear results after a delay
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            taskResults.removeAll()
+        }
+    }
+
+    func cancelRunAll() {
+        // This will stop after the current task completes
+        isRunningAll = false
+    }
+
+    // MARK: - Process Management
+
+    func refreshProcesses() {
+        isLoadingProcesses = true
+
+        Task {
+            let processes = await getTopProcesses()
+            topProcesses = processes
+            isLoadingProcesses = false
+        }
+    }
+
+    func killProcess(_ process: RunningProcess) {
+        Task {
+            let success = await runCommand("/bin/kill", arguments: ["-9", "\(process.pid)"])
+
+            if success {
+                showToastMessage("Killed \(process.name)", type: .success)
+                // Refresh the process list
+                refreshProcesses()
+            } else {
+                // Try with sudo
+                let sudoSuccess = await runCommand("/bin/kill", arguments: ["-9", "\(process.pid)"], requiresAdmin: true)
+                if sudoSuccess {
+                    showToastMessage("Killed \(process.name)", type: .success)
+                    refreshProcesses()
+                } else {
+                    showToastMessage("Failed to kill \(process.name)", type: .error)
+                }
+            }
+        }
+    }
+
+    private func getTopProcesses() async -> [RunningProcess] {
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let task = Process()
+                task.executableURL = URL(fileURLWithPath: "/bin/ps")
+                task.arguments = ["aux"]
+
+                let pipe = Pipe()
+                task.standardOutput = pipe
+                task.standardError = FileHandle.nullDevice
+
+                do {
+                    try task.run()
+                    task.waitUntilExit()
+
+                    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                    guard let output = String(data: data, encoding: .utf8) else {
+                        continuation.resume(returning: [])
+                        return
+                    }
+
+                    var processes: [RunningProcess] = []
+                    let lines = output.components(separatedBy: "\n")
+
+                    // Skip header line
+                    for line in lines.dropFirst() {
+                        guard !line.isEmpty else { continue }
+
+                        let components = line.split(separator: " ", omittingEmptySubsequences: true)
+                        guard components.count >= 11 else { continue }
+
+                        let user = String(components[0])
+                        let pid = Int(components[1]) ?? 0
+                        let cpuPercent = Double(components[2]) ?? 0
+                        let memPercent = Double(components[3]) ?? 0
+                        let rss = Int(components[5]) ?? 0  // RSS in KB
+                        let command = components[10...].joined(separator: " ")
+
+                        // Extract just the process name from the full path
+                        let name = command.components(separatedBy: "/").last?.components(separatedBy: " ").first ?? command
+
+                        // Skip kernel processes and very small memory usage
+                        guard pid > 0, rss > 1000 else { continue }
+
+                        let runningProcess = RunningProcess(
+                            pid: pid,
+                            name: String(name),
+                            user: user,
+                            cpuPercent: cpuPercent,
+                            memoryPercent: memPercent,
+                            memoryKB: rss
+                        )
+                        processes.append(runningProcess)
+                    }
+
+                    // Sort by memory usage and take top 10
+                    let topProcesses = processes
+                        .sorted { $0.memoryKB > $1.memoryKB }
+                        .prefix(10)
+
+                    continuation.resume(returning: Array(topProcesses))
+                } catch {
+                    continuation.resume(returning: [])
+                }
             }
         }
     }
@@ -421,4 +609,28 @@ struct MaintenanceTask: Identifiable {
             requiresAdmin: true
         )
     ]
+}
+
+// MARK: - Running Process Model
+
+struct RunningProcess: Identifiable {
+    let id = UUID()
+    let pid: Int
+    let name: String
+    let user: String
+    let cpuPercent: Double
+    let memoryPercent: Double
+    let memoryKB: Int
+
+    var memoryMB: Double {
+        Double(memoryKB) / 1024.0
+    }
+
+    var formattedMemory: String {
+        if memoryMB >= 1024 {
+            return String(format: "%.1f GB", memoryMB / 1024.0)
+        } else {
+            return String(format: "%.0f MB", memoryMB)
+        }
+    }
 }
