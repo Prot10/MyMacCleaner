@@ -8,19 +8,38 @@ class ApplicationsViewModel: ObservableObject {
     // MARK: - Published Properties
 
     @Published var applications: [AppInfo] = []
-    @Published var isLoading = false
     @Published var searchText = ""
     @Published var sortOrder: SortOrder = .name
     @Published var selectedApp: AppInfo?
 
+    // Scan states
+    @Published var discoveryState: DiscoveryState = .idle
+    @Published var analysisState: AnalysisState = .idle
+    @Published var analysisProgress: Double = 0
+    @Published var currentAppBeingAnalyzed: String = ""
+
+    // Uninstall
     @Published var showUninstallConfirmation = false
     @Published var appToUninstall: AppInfo?
     @Published var relatedFiles: [URL] = []
     @Published var isScanning = false
 
+    // Toast
     @Published var showToast = false
     @Published var toastMessage = ""
     @Published var toastType: ToastType = .success
+
+    enum DiscoveryState {
+        case idle
+        case discovering
+        case completed
+    }
+
+    enum AnalysisState {
+        case idle
+        case analyzing
+        case completed
+    }
 
     enum SortOrder: String, CaseIterable {
         case name = "Name"
@@ -31,6 +50,11 @@ class ApplicationsViewModel: ObservableObject {
     enum ToastType {
         case success, error, info
     }
+
+    // MARK: - Private Properties
+
+    private var discoveryTask: Task<Void, Never>?
+    private var analysisTask: Task<Void, Never>?
 
     // MARK: - Computed Properties
 
@@ -60,26 +84,89 @@ class ApplicationsViewModel: ObservableObject {
     }
 
     var formattedTotalSize: String {
-        ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
+        if analysisState == .completed {
+            return ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
+        } else {
+            return "—"
+        }
+    }
+
+    var appsWithSizeCalculated: Int {
+        applications.filter { $0.sizeCalculated }.count
+    }
+
+    var isAnalyzing: Bool {
+        analysisState == .analyzing
+    }
+
+    var hasStartedDiscovery: Bool {
+        discoveryState != .idle
     }
 
     // MARK: - Initialization
 
     init() {
-        loadApplications()
+        // Don't auto-start - will be triggered by view
     }
 
     // MARK: - Public Methods
 
-    func loadApplications() {
-        isLoading = true
+    /// Start low-priority background discovery (just find apps, no size calculation)
+    func startBackgroundDiscovery() {
+        guard discoveryState == .idle else { return }
 
-        Task {
-            let apps = await scanApplications()
+        discoveryState = .discovering
 
-            applications = apps
-            isLoading = false
+        discoveryTask = Task(priority: .background) {
+            await discoverApplications()
+
+            await MainActor.run {
+                discoveryState = .completed
+            }
         }
+    }
+
+    /// Start full analysis with size calculation (user-initiated, higher priority)
+    func startFullAnalysis() {
+        guard analysisState == .idle else { return }
+
+        // If discovery hasn't finished, wait for it
+        if discoveryState == .discovering {
+            // Cancel low-priority discovery and restart with high priority
+            discoveryTask?.cancel()
+        }
+
+        analysisState = .analyzing
+        analysisProgress = 0
+
+        analysisTask = Task(priority: .userInitiated) {
+            // If we don't have apps yet, discover them first
+            if applications.isEmpty {
+                await discoverApplications()
+            }
+
+            // Now calculate sizes for all apps
+            await calculateAllSizes()
+
+            await MainActor.run {
+                discoveryState = .completed
+                analysisState = .completed
+            }
+        }
+    }
+
+    func refresh() {
+        // Reset states
+        discoveryTask?.cancel()
+        analysisTask?.cancel()
+
+        applications = []
+        discoveryState = .idle
+        analysisState = .idle
+        analysisProgress = 0
+
+        // Restart
+        startBackgroundDiscovery()
     }
 
     func prepareUninstall(_ app: AppInfo) {
@@ -141,9 +228,8 @@ class ApplicationsViewModel: ObservableObject {
 
     // MARK: - Private Methods
 
-    private func scanApplications() async -> [AppInfo] {
-        var apps: [AppInfo] = []
-
+    /// Quick discovery - just find apps without calculating sizes
+    private func discoverApplications() async {
         let applicationPaths = [
             "/Applications",
             FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications").path
@@ -154,23 +240,33 @@ class ApplicationsViewModel: ObservableObject {
 
             guard let contents = try? FileManager.default.contentsOfDirectory(
                 at: url,
-                includingPropertiesForKeys: [.fileSizeKey, .contentModificationDateKey, .addedToDirectoryDateKey],
+                includingPropertiesForKeys: [.contentModificationDateKey, .addedToDirectoryDateKey],
                 options: [.skipsHiddenFiles]
             ) else { continue }
 
             for itemURL in contents {
+                // Check if cancelled
+                if Task.isCancelled { return }
+
                 guard itemURL.pathExtension == "app" else { continue }
 
-                if let appInfo = await createAppInfo(from: itemURL) {
-                    apps.append(appInfo)
+                if let appInfo = await createAppInfoQuick(from: itemURL) {
+                    await MainActor.run {
+                        // Only add if not already present
+                        if !applications.contains(where: { $0.url == appInfo.url }) {
+                            applications.append(appInfo)
+                        }
+                    }
                 }
+
+                // Small yield to keep UI responsive
+                await Task.yield()
             }
         }
-
-        return apps
     }
 
-    private func createAppInfo(from url: URL) async -> AppInfo? {
+    /// Quick app info - just basic info, no size calculation
+    private func createAppInfoQuick(from url: URL) async -> AppInfo? {
         let name = url.deletingPathExtension().lastPathComponent
 
         // Get app icon
@@ -181,10 +277,7 @@ class ApplicationsViewModel: ObservableObject {
         let bundleId = bundle?.bundleIdentifier
         let version = bundle?.infoDictionary?["CFBundleShortVersionString"] as? String
 
-        // Get size
-        let size = await calculateDirectorySize(url)
-
-        // Get dates
+        // Get dates (quick)
         let resourceValues = try? url.resourceValues(forKeys: [.contentModificationDateKey, .addedToDirectoryDateKey])
         let dateModified = resourceValues?.contentModificationDate
         let dateAdded = resourceValues?.addedToDirectoryDate
@@ -195,10 +288,41 @@ class ApplicationsViewModel: ObservableObject {
             bundleId: bundleId,
             version: version,
             icon: icon,
-            size: size,
+            size: 0, // Not calculated yet
+            sizeCalculated: false,
             dateModified: dateModified,
             dateAdded: dateAdded
         )
+    }
+
+    /// Calculate sizes for all apps
+    private func calculateAllSizes() async {
+        let totalApps = applications.count
+        guard totalApps > 0 else { return }
+
+        for (index, app) in applications.enumerated() {
+            if Task.isCancelled { return }
+
+            await MainActor.run {
+                currentAppBeingAnalyzed = app.name
+                analysisProgress = Double(index) / Double(totalApps)
+            }
+
+            // Calculate size
+            let size = await calculateDirectorySize(app.url)
+
+            await MainActor.run {
+                if let appIndex = applications.firstIndex(where: { $0.id == app.id }) {
+                    applications[appIndex].size = size
+                    applications[appIndex].sizeCalculated = true
+                }
+            }
+        }
+
+        await MainActor.run {
+            analysisProgress = 1.0
+            currentAppBeingAnalyzed = ""
+        }
     }
 
     private func calculateDirectorySize(_ url: URL) async -> Int64 {
@@ -210,12 +334,21 @@ class ApplicationsViewModel: ObservableObject {
             options: [.skipsHiddenFiles]
         ) else { return 0 }
 
+        var fileCount = 0
         for case let fileURL as URL in enumerator {
+            if Task.isCancelled { return totalSize }
+
             guard let resourceValues = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .totalFileAllocatedSizeKey]) else {
                 continue
             }
 
             totalSize += Int64(resourceValues.totalFileAllocatedSize ?? resourceValues.fileSize ?? 0)
+
+            // Yield occasionally to keep responsive
+            fileCount += 1
+            if fileCount % 100 == 0 {
+                await Task.yield()
+            }
         }
 
         return totalSize
@@ -283,12 +416,17 @@ struct AppInfo: Identifiable, Equatable {
     let bundleId: String?
     let version: String?
     let icon: NSImage
-    let size: Int64
+    var size: Int64
+    var sizeCalculated: Bool
     let dateModified: Date?
     let dateAdded: Date?
 
     var formattedSize: String {
-        ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+        if sizeCalculated {
+            return ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+        } else {
+            return "—"
+        }
     }
 
     var formattedDate: String {

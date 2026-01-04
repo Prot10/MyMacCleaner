@@ -319,8 +319,9 @@ struct SmartScanButton: View {
                     if isScanning {
                         ProgressView()
                             .progressViewStyle(.circular)
+                            .controlSize(.small)
+                            .frame(width: 16, height: 16)
                             .tint(.white)
-                            .scaleEffect(0.8)
                     } else {
                         Image(systemName: "magnifyingglass")
                             .font(.title2.bold())

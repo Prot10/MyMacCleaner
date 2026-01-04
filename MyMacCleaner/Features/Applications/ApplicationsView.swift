@@ -14,17 +14,24 @@ struct ApplicationsView: View {
                     headerSection
                         .staggeredAnimation(index: 0, isActive: isVisible)
 
-                    // Search and controls
-                    controlsSection
-                        .staggeredAnimation(index: 1, isActive: isVisible)
+                    // Show different content based on state
+                    if viewModel.analysisState == .completed {
+                        // Full app list view
+                        controlsSection
+                            .staggeredAnimation(index: 1, isActive: isVisible)
 
-                    // App grid
-                    if viewModel.isLoading {
-                        loadingSection
-                    } else if viewModel.filteredApps.isEmpty {
-                        emptySection
+                        if viewModel.filteredApps.isEmpty {
+                            emptySection
+                        } else {
+                            appGridSection
+                                .staggeredAnimation(index: 2, isActive: isVisible)
+                        }
                     } else {
-                        appGridSection
+                        // Discovery / Pre-analysis view
+                        infoCardsSection
+                            .staggeredAnimation(index: 1, isActive: isVisible)
+
+                        analysisSection
                             .staggeredAnimation(index: 2, isActive: isVisible)
                     }
                 }
@@ -46,6 +53,7 @@ struct ApplicationsView: View {
             }
         }
         .animation(Theme.Animation.spring, value: viewModel.showToast)
+        .animation(Theme.Animation.spring, value: viewModel.analysisState)
         .sheet(isPresented: $viewModel.showUninstallConfirmation) {
             if let app = viewModel.appToUninstall {
                 UninstallConfirmationSheet(
@@ -61,6 +69,8 @@ struct ApplicationsView: View {
             withAnimation(Theme.Animation.springSmooth) {
                 isVisible = true
             }
+            // Start background discovery when view appears
+            viewModel.startBackgroundDiscovery()
         }
     }
 
@@ -87,14 +97,199 @@ struct ApplicationsView: View {
 
             Spacer()
 
-            VStack(alignment: .trailing, spacing: 4) {
-                Text(viewModel.formattedTotalSize)
-                    .font(Theme.Typography.title)
-                    .foregroundStyle(.cyan)
+            if viewModel.analysisState == .completed {
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(viewModel.formattedTotalSize)
+                        .font(Theme.Typography.title)
+                        .foregroundStyle(.cyan)
 
-                Text("\(viewModel.applications.count) apps installed")
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(.secondary)
+                    Text("\(viewModel.applications.count) apps installed")
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    // MARK: - Info Cards Section
+
+    private var infoCardsSection: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            // Apps Found Card
+            InfoCard(
+                icon: "square.grid.2x2.fill",
+                iconColor: .cyan,
+                title: "\(viewModel.applications.count)",
+                subtitle: "Apps Found",
+                isLoading: viewModel.discoveryState == .discovering
+            )
+
+            // System Apps Card
+            InfoCard(
+                icon: "gearshape.fill",
+                iconColor: .orange,
+                title: "\(systemAppsCount)",
+                subtitle: "System Apps",
+                isLoading: viewModel.discoveryState == .discovering
+            )
+
+            // User Apps Card
+            InfoCard(
+                icon: "person.fill",
+                iconColor: .purple,
+                title: "\(userAppsCount)",
+                subtitle: "User Apps",
+                isLoading: viewModel.discoveryState == .discovering
+            )
+
+            // Analysis Status Card
+            InfoCard(
+                icon: viewModel.analysisState == .analyzing ? "arrow.triangle.2.circlepath" : "chart.bar.fill",
+                iconColor: .green,
+                title: viewModel.analysisState == .analyzing ? "\(Int(viewModel.analysisProgress * 100))%" : "Ready",
+                subtitle: viewModel.analysisState == .analyzing ? "Analyzing..." : "To Analyze",
+                isLoading: viewModel.analysisState == .analyzing
+            )
+        }
+    }
+
+    private var systemAppsCount: Int {
+        viewModel.applications.filter { $0.url.path.hasPrefix("/Applications") }.count
+    }
+
+    private var userAppsCount: Int {
+        viewModel.applications.filter { !$0.url.path.hasPrefix("/Applications") }.count
+    }
+
+    // MARK: - Analysis Section
+
+    private var analysisSection: some View {
+        VStack(spacing: Theme.Spacing.lg) {
+            if viewModel.analysisState == .analyzing {
+                // Progress view
+                VStack(spacing: Theme.Spacing.md) {
+                    // Progress bar
+                    VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                        HStack {
+                            Text("Analyzing Applications...")
+                                .font(Theme.Typography.headline)
+
+                            Spacer()
+
+                            Text("\(viewModel.appsWithSizeCalculated) / \(viewModel.applications.count)")
+                                .font(Theme.Typography.subheadline.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+
+                        ProgressView(value: viewModel.analysisProgress)
+                            .progressViewStyle(.linear)
+                            .tint(.cyan)
+
+                        if !viewModel.currentAppBeingAnalyzed.isEmpty {
+                            Text("Calculating size for: \(viewModel.currentAppBeingAnalyzed)")
+                                .font(Theme.Typography.caption)
+                                .foregroundStyle(.tertiary)
+                                .lineLimit(1)
+                        }
+                    }
+                    .padding(Theme.Spacing.lg)
+                    .glassCard()
+                }
+            } else {
+                // Start Analysis button
+                VStack(spacing: Theme.Spacing.lg) {
+                    // Description
+                    VStack(spacing: Theme.Spacing.sm) {
+                        Image(systemName: "chart.bar.doc.horizontal")
+                            .font(.system(size: 48))
+                            .foregroundStyle(.cyan.gradient)
+
+                        Text("Ready to Analyze")
+                            .font(Theme.Typography.title2)
+
+                        Text("Click the button below to calculate the size of each application.\nThis helps identify which apps are using the most disk space.")
+                            .font(Theme.Typography.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: 400)
+                    }
+                    .padding(.top, Theme.Spacing.lg)
+
+                    // Start button
+                    Button(action: viewModel.startFullAnalysis) {
+                        HStack(spacing: Theme.Spacing.sm) {
+                            Image(systemName: "play.fill")
+                            Text("Start Analysis")
+                        }
+                        .font(Theme.Typography.headline)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, Theme.Spacing.xl)
+                        .padding(.vertical, Theme.Spacing.md)
+                        .background(
+                            LinearGradient(
+                                colors: [.cyan, .blue],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium))
+                        .shadow(color: .cyan.opacity(0.3), radius: 8, y: 4)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(viewModel.discoveryState == .discovering && viewModel.applications.isEmpty)
+
+                    // Discovery status
+                    if viewModel.discoveryState == .discovering {
+                        HStack(spacing: Theme.Spacing.sm) {
+                            ProgressView()
+                                .controlSize(.small)
+                                .frame(width: 16, height: 16)
+
+                            Text("Discovering apps in background...")
+                                .font(Theme.Typography.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(Theme.Spacing.xl)
+                .glassCard()
+            }
+
+            // App preview (show some apps without sizes during discovery)
+            if !viewModel.applications.isEmpty && viewModel.analysisState != .analyzing {
+                VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                    HStack {
+                        Text("Discovered Apps")
+                            .font(Theme.Typography.headline)
+
+                        Spacer()
+
+                        if viewModel.discoveryState == .discovering {
+                            HStack(spacing: 6) {
+                                ProgressView()
+                                    .controlSize(.mini)
+                                    .frame(width: 10, height: 10)
+                                Text("Discovering...")
+                                    .font(Theme.Typography.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+
+                    // Show first 8 apps as preview
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100, maximum: 120), spacing: Theme.Spacing.sm)], spacing: Theme.Spacing.sm) {
+                        ForEach(Array(viewModel.applications.prefix(8))) { app in
+                            AppPreviewCard(app: app)
+                        }
+
+                        if viewModel.applications.count > 8 {
+                            MoreAppsCard(count: viewModel.applications.count - 8)
+                        }
+                    }
+                }
+                .padding(Theme.Spacing.lg)
+                .glassCard()
             }
         }
     }
@@ -133,7 +328,7 @@ struct ApplicationsView: View {
             .frame(width: 120)
 
             // Refresh button
-            Button(action: viewModel.loadApplications) {
+            Button(action: viewModel.refresh) {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.clockwise")
                     Text("Refresh")
@@ -143,21 +338,6 @@ struct ApplicationsView: View {
             }
             .buttonStyle(.plain)
         }
-    }
-
-    // MARK: - Loading Section
-
-    private var loadingSection: some View {
-        VStack(spacing: Theme.Spacing.lg) {
-            ProgressView()
-                .scaleEffect(1.5)
-
-            Text("Loading applications...")
-                .font(Theme.Typography.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(Theme.Spacing.xxl)
     }
 
     // MARK: - Empty Section
@@ -195,6 +375,102 @@ struct ApplicationsView: View {
     }
 }
 
+// MARK: - Info Card
+
+struct InfoCard: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    let subtitle: String
+    var isLoading: Bool = false
+
+    @State private var isHovered = false
+
+    var body: some View {
+        VStack(spacing: Theme.Spacing.sm) {
+            ZStack {
+                Circle()
+                    .fill(iconColor.opacity(0.15))
+                    .frame(width: 48, height: 48)
+
+                if isLoading {
+                    ProgressView()
+                        .controlSize(.small)
+                        .frame(width: 16, height: 16)
+                } else {
+                    Image(systemName: icon)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(iconColor)
+                }
+            }
+
+            Text(title)
+                .font(Theme.Typography.title.monospacedDigit())
+
+            Text(subtitle)
+                .font(Theme.Typography.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(Theme.Spacing.md)
+        .glassCard()
+        .hoverEffect(isHovered: isHovered)
+        .onHover { isHovered = $0 }
+    }
+}
+
+// MARK: - App Preview Card (small, no actions)
+
+struct AppPreviewCard: View {
+    let app: AppInfo
+
+    var body: some View {
+        VStack(spacing: Theme.Spacing.xs) {
+            Image(nsImage: app.icon)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 40, height: 40)
+
+            Text(app.name)
+                .font(Theme.Typography.caption)
+                .lineLimit(1)
+                .truncationMode(.middle)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(Theme.Spacing.sm)
+        .background(Color.white.opacity(0.03))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+    }
+}
+
+// MARK: - More Apps Card
+
+struct MoreAppsCard: View {
+    let count: Int
+
+    var body: some View {
+        VStack(spacing: Theme.Spacing.xs) {
+            ZStack {
+                Circle()
+                    .fill(Color.white.opacity(0.1))
+                    .frame(width: 40, height: 40)
+
+                Text("+\(count)")
+                    .font(Theme.Typography.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            Text("more")
+                .font(Theme.Typography.caption)
+                .foregroundStyle(.tertiary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(Theme.Spacing.sm)
+        .background(Color.white.opacity(0.03))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+    }
+}
+
 // MARK: - App Card
 
 struct AppCard: View {
@@ -223,7 +499,7 @@ struct AppCard: View {
             HStack(spacing: Theme.Spacing.xs) {
                 Text(app.formattedSize)
                     .font(Theme.Typography.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(app.sizeCalculated ? .secondary : .tertiary)
 
                 if let version = app.version {
                     Text("•")
@@ -321,7 +597,8 @@ struct UninstallConfirmationSheet: View {
             if isScanning {
                 HStack {
                     ProgressView()
-                        .scaleEffect(0.8)
+                        .controlSize(.small)
+                        .frame(width: 16, height: 16)
                     Text("Scanning for related files...")
                         .font(Theme.Typography.subheadline)
                         .foregroundStyle(.secondary)
