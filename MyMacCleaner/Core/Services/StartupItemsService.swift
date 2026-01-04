@@ -113,42 +113,205 @@ actor StartupItemsService {
 
     func scanAllItems() async -> [StartupItem] {
         var items: [StartupItem] = []
+        var seenIdentifiers = Set<String>()
+
+        // Primary: Parse BTM database (most comprehensive on macOS 13+)
+        let btmItems = await parseBTMDatabase()
+        for item in btmItems {
+            if !seenIdentifiers.contains(item.label) {
+                items.append(item)
+                seenIdentifiers.insert(item.label)
+            }
+        }
 
         // Get running items for status check
         let runningLabels = await getRunningLabels()
 
-        // Scan user launch agents
-        let userAgents = await scanDirectory(
-            path: userLaunchAgentsPath,
-            type: .userLaunchAgent,
-            isSystem: false,
-            runningLabels: runningLabels
-        )
-        items.append(contentsOf: userAgents)
+        // Fallback: Scan plist directories for items not in BTM
+        let directories: [(path: String, type: StartupItemType, isSystem: Bool)] = [
+            (userLaunchAgentsPath, .userLaunchAgent, false),
+            (globalLaunchAgentsPath, .launchAgent, false),
+            (globalLaunchDaemonsPath, .launchDaemon, false)
+        ]
 
-        // Scan global launch agents
-        let globalAgents = await scanDirectory(
-            path: globalLaunchAgentsPath,
-            type: .launchAgent,
-            isSystem: false,
-            runningLabels: runningLabels
-        )
-        items.append(contentsOf: globalAgents)
+        for (path, type, isSystem) in directories {
+            let dirItems = await scanDirectory(
+                path: path,
+                type: type,
+                isSystem: isSystem,
+                runningLabels: runningLabels
+            )
+            for item in dirItems {
+                if !seenIdentifiers.contains(item.label) {
+                    items.append(item)
+                    seenIdentifiers.insert(item.label)
+                }
+            }
+        }
 
-        // Scan global launch daemons
-        let globalDaemons = await scanDirectory(
-            path: globalLaunchDaemonsPath,
-            type: .launchDaemon,
-            isSystem: false,
-            runningLabels: runningLabels
-        )
-        items.append(contentsOf: globalDaemons)
-
-        // Scan login items
+        // Fallback: Traditional login items via AppleScript
         let loginItems = await getLoginItems()
-        items.append(contentsOf: loginItems)
+        for item in loginItems {
+            if !seenIdentifiers.contains(item.label) {
+                items.append(item)
+                seenIdentifiers.insert(item.label)
+            }
+        }
 
         return items.sorted { $0.displayName.lowercased() < $1.displayName.lowercased() }
+    }
+
+    // MARK: - BTM Database Parsing
+
+    private func parseBTMDatabase() async -> [StartupItem] {
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                var items: [StartupItem] = []
+
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: "/usr/bin/sfltool")
+                process.arguments = ["dumpbtm"]
+
+                let pipe = Pipe()
+                process.standardOutput = pipe
+                process.standardError = FileHandle.nullDevice
+
+                do {
+                    try process.run()
+                    process.waitUntilExit()
+
+                    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                    if let output = String(data: data, encoding: .utf8) {
+                        items = self.parseBTMOutput(output)
+                    }
+                } catch {
+                    print("Error running sfltool: \(error)")
+                }
+
+                continuation.resume(returning: items)
+            }
+        }
+    }
+
+    private func parseBTMOutput(_ output: String) -> [StartupItem] {
+        var items: [StartupItem] = []
+        let lines = output.components(separatedBy: "\n")
+
+        var currentItem: [String: String] = [:]
+        var inItem = false
+
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+
+            // Start of a new item
+            if trimmed.hasPrefix("#") && trimmed.contains(":") {
+                // Save previous item if exists
+                if inItem, let item = createItemFromBTMData(currentItem) {
+                    items.append(item)
+                }
+                currentItem = [:]
+                inItem = true
+                continue
+            }
+
+            // Skip section headers
+            if trimmed.hasPrefix("===") || trimmed.hasPrefix("Records for UID") {
+                continue
+            }
+
+            // Parse key-value pairs
+            if inItem && trimmed.contains(":") {
+                let parts = trimmed.split(separator: ":", maxSplits: 1)
+                if parts.count == 2 {
+                    let key = String(parts[0]).trimmingCharacters(in: .whitespaces)
+                    let value = String(parts[1]).trimmingCharacters(in: .whitespaces)
+                    currentItem[key] = value
+                }
+            }
+        }
+
+        // Don't forget the last item
+        if inItem, let item = createItemFromBTMData(currentItem) {
+            items.append(item)
+        }
+
+        return items
+    }
+
+    private func createItemFromBTMData(_ data: [String: String]) -> StartupItem? {
+        guard let name = data["Name"], !name.isEmpty,
+              let identifier = data["Identifier"]
+        else { return nil }
+
+        // Skip Apple system items
+        if identifier.contains("com.apple.") {
+            return nil
+        }
+
+        // Parse type
+        let typeString = data["Type"] ?? ""
+        let itemType: StartupItemType
+        if typeString.contains("login item") {
+            itemType = .loginItem
+        } else if typeString.contains("daemon") {
+            itemType = .launchDaemon
+        } else if typeString.contains("agent") {
+            itemType = .launchAgent
+        } else if typeString.contains("app") {
+            // Skip app entries - we want their embedded items, not the app itself
+            return nil
+        } else if typeString.contains("developer") {
+            // Skip developer entries - these are groupings
+            return nil
+        } else {
+            itemType = .launchAgent
+        }
+
+        // Parse disposition for enabled status
+        let disposition = data["Disposition"] ?? ""
+        let isEnabled = disposition.contains("enabled")
+
+        // Parse URL for path
+        var path = ""
+        if let url = data["URL"] {
+            // Clean up file:// URLs
+            path = url.replacingOccurrences(of: "file://", with: "")
+                .removingPercentEncoding ?? url
+            // Handle relative paths
+            if !path.hasPrefix("/") && path.contains("Contents/") {
+                // This is a relative path inside an app bundle
+                if let bundleId = data["Bundle Identifier"] ?? data["Parent Identifier"] {
+                    // Try to find the parent app
+                    path = "Embedded in app: \(bundleId)"
+                }
+            }
+        }
+
+        // Get executable path
+        let executablePath = data["Executable Path"]?.removingPercentEncoding
+
+        // Get developer
+        let developer = data["Developer Name"]
+
+        // Get bundle identifier
+        let bundleIdentifier = data["Bundle Identifier"]
+
+        // Create a unique ID
+        let id = "btm:\(identifier)"
+
+        return StartupItem(
+            id: id,
+            name: name,
+            label: identifier,
+            type: itemType,
+            path: path,
+            executablePath: executablePath,
+            isEnabled: isEnabled,
+            isRunning: false, // Will be updated separately
+            isSystemItem: false,
+            developer: developer,
+            bundleIdentifier: bundleIdentifier
+        )
     }
 
     private func scanDirectory(
@@ -377,11 +540,38 @@ actor StartupItemsService {
     // MARK: - Management Actions
 
     func setItemEnabled(_ item: StartupItem, enabled: Bool) async -> Bool {
+        // BTM items (from sfltool) need special handling
+        if item.id.hasPrefix("btm:") {
+            // For BTM login items, try using the bundled helper approach
+            if item.type == .loginItem {
+                // Modern login items can't be toggled programmatically without the app's cooperation
+                // Open System Settings instead
+                openLoginItemsSettings()
+                return true // Return true since we opened settings
+            }
+
+            // For BTM agents/daemons, try launchctl if we have the plist path
+            if item.path.hasSuffix(".plist") {
+                return await setLaunchItemEnabled(item, enabled: enabled)
+            }
+
+            // Otherwise open System Settings
+            openLoginItemsSettings()
+            return true
+        }
+
         switch item.type {
         case .loginItem:
             return await setLoginItemEnabled(item, enabled: enabled)
         case .userLaunchAgent, .launchAgent, .launchDaemon:
             return await setLaunchItemEnabled(item, enabled: enabled)
+        }
+    }
+
+    func openLoginItemsSettings() {
+        // Open System Settings > General > Login Items
+        if let url = URL(string: "x-apple.systempreferences:com.apple.LoginItems-Settings.extension") {
+            NSWorkspace.shared.open(url)
         }
     }
 

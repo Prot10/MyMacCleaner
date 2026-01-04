@@ -143,6 +143,16 @@ class StartupItemsViewModel: ObservableObject {
 
         Task {
             let newState = !item.isEnabled
+
+            // For BTM login items, we open System Settings
+            if item.id.hasPrefix("btm:") && item.type == .loginItem {
+                await service.setItemEnabled(item, enabled: newState)
+                showToastMessage("Opening System Settings - toggle \(item.displayName) there", type: .info)
+                showDisableConfirmation = false
+                itemToToggle = nil
+                return
+            }
+
             let success = await service.setItemEnabled(item, enabled: newState)
 
             if success {
