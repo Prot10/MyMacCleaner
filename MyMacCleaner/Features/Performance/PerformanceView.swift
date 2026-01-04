@@ -825,8 +825,8 @@ struct ProcessRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            // PID
-            Text("\(process.pid)")
+            // PID - use String() to avoid locale-based thousand separators
+            Text(String(process.pid))
                 .font(Theme.Typography.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .frame(width: 60, alignment: .trailing)
@@ -872,7 +872,7 @@ struct ProcessRow: View {
             Button("Kill Process", role: .destructive, action: onKill)
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("PID: \(process.pid)\nThis may cause data loss if the app has unsaved changes.")
+            Text("PID: \(String(process.pid))\nThis may cause data loss if the app has unsaved changes.")
         }
     }
 
