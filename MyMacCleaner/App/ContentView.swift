@@ -10,7 +10,14 @@ struct ContentView: View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             SidebarView(selection: $selectedSection)
         } detail: {
-            DetailView(section: selectedSection, appState: appState)
+            DetailView(section: selectedSection, appState: appState, onNavigate: { sectionName in
+                // Handle navigation requests from child views
+                if let section = NavigationSection.allCases.first(where: { $0.rawValue.lowercased().replacingOccurrences(of: " ", with: "") == sectionName.lowercased() }) {
+                    withAnimation(Theme.Animation.spring) {
+                        selectedSection = section
+                    }
+                }
+            })
                 // Removed .id() to preserve state when switching sections
                 .transition(.opacity.combined(with: .move(edge: .trailing)))
         }
@@ -199,6 +206,7 @@ struct SystemStatusBadge: View {
 struct DetailView: View {
     let section: NavigationSection
     let appState: AppState
+    let onNavigate: (String) -> Void
     @State private var isVisible = false
 
     var body: some View {
@@ -212,6 +220,10 @@ struct DetailView: View {
                 switch section {
                 case .home:
                     HomeView(viewModel: appState.homeViewModel)
+                        .onAppear {
+                            // Wire up navigation callback for HomeViewModel
+                            appState.homeViewModel.onNavigateToSection = onNavigate
+                        }
                 case .diskCleaner:
                     DiskCleanerView(
                         viewModel: appState.diskCleanerViewModel,
@@ -234,6 +246,8 @@ struct DetailView: View {
             withAnimation(Theme.Animation.springSmooth.delay(0.1)) {
                 isVisible = true
             }
+            // Also wire up the callback when view appears
+            appState.homeViewModel.onNavigateToSection = onNavigate
         }
         .onDisappear {
             isVisible = false
