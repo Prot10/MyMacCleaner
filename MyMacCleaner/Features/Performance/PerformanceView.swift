@@ -191,7 +191,7 @@ struct PerformanceView: View {
                 // Freeable RAM info
                 freeableRamInfo
 
-                // Free RAM button
+                // Purge cache button
                 Button(action: { viewModel.runTask(MaintenanceTask.allTasks[0]) }) {
                     HStack(spacing: 8) {
                         if viewModel.runningTaskId == "purge_ram" {
@@ -200,7 +200,7 @@ struct PerformanceView: View {
                         } else {
                             Image(systemName: "bolt.fill")
                         }
-                        Text("Free Up RAM")
+                        Text("Purge Disk Cache")
                     }
                     .font(Theme.Typography.body.weight(.semibold))
                     .foregroundStyle(.white)
