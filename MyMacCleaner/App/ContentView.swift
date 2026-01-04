@@ -213,13 +213,13 @@ struct DetailView: View {
                 case .diskCleaner:
                     DiskCleanerView()
                 case .performance:
-                    ComingSoonView(section: section)
+                    PerformanceView()
                 case .applications:
-                    ComingSoonView(section: section)
+                    ApplicationsView()
                 case .portManagement:
-                    ComingSoonView(section: section)
+                    PortManagementView()
                 case .systemHealth:
-                    ComingSoonView(section: section)
+                    SystemHealthView()
                 }
             }
             .opacity(isVisible ? 1 : 0)
