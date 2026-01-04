@@ -75,6 +75,16 @@ struct PerformanceView: View {
                 isVisible = true
             }
         }
+        .onChange(of: selectedTab) { _, newTab in
+            if newTab == .processes {
+                viewModel.startProcessMonitoring()
+            } else {
+                viewModel.stopProcessMonitoring()
+            }
+        }
+        .onDisappear {
+            viewModel.stopProcessMonitoring()
+        }
     }
 
     private var toastType: HomeViewModel.ToastType {
@@ -301,24 +311,35 @@ struct PerformanceView: View {
 
                 Spacer()
 
-                Button(action: { viewModel.refreshProcesses() }) {
-                    HStack(spacing: 4) {
-                        if viewModel.isLoadingProcesses {
-                            ProgressView()
-                                .scaleEffect(0.6)
-                        } else {
-                            Image(systemName: "arrow.clockwise")
-                        }
-                        Text("Refresh")
-                    }
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(.secondary)
+                // Auto-refresh indicator
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(.green)
+                        .frame(width: 6, height: 6)
+                    Text("Live")
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.plain)
-                .disabled(viewModel.isLoadingProcesses)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.green.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 4))
             }
 
-            if viewModel.topProcesses.isEmpty && !viewModel.isLoadingProcesses {
+            if viewModel.isLoadingProcesses && viewModel.topProcesses.isEmpty {
+                // Loading state
+                VStack(spacing: Theme.Spacing.md) {
+                    ProgressView()
+                        .scaleEffect(1.2)
+
+                    Text("Loading processes...")
+                        .font(Theme.Typography.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(Theme.Spacing.xl)
+                .glassCard()
+            } else if viewModel.topProcesses.isEmpty {
                 // Empty state
                 VStack(spacing: Theme.Spacing.md) {
                     Image(systemName: "list.bullet.rectangle")
@@ -328,12 +349,6 @@ struct PerformanceView: View {
                     Text("No process data")
                         .font(Theme.Typography.subheadline)
                         .foregroundStyle(.secondary)
-
-                    Button("Load Processes") {
-                        viewModel.refreshProcesses()
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.blue)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(Theme.Spacing.xl)
@@ -388,11 +403,6 @@ struct PerformanceView: View {
                 Text("Killing system processes may cause instability. Only kill processes you recognize.")
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.secondary)
-            }
-        }
-        .onAppear {
-            if viewModel.topProcesses.isEmpty {
-                viewModel.refreshProcesses()
             }
         }
     }
