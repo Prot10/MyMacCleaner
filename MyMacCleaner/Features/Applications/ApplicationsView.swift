@@ -5,6 +5,13 @@ import SwiftUI
 struct ApplicationsView: View {
     @ObservedObject var viewModel: ApplicationsViewModel
     @State private var isVisible = false
+    @State private var selectedTab: AppTab = .allApps
+
+    enum AppTab: String, CaseIterable {
+        case allApps = "All Apps"
+        case updates = "Updates"
+        case homebrew = "Homebrew"
+    }
 
     // Section color for applications
     private let sectionColor = Theme.Colors.apps
@@ -19,14 +26,29 @@ struct ApplicationsView: View {
 
                     // Show different content based on state
                     if viewModel.analysisState == .completed {
-                        // Full app list view
-                        controlsSection
+                        // Tab picker
+                        tabPicker
                             .staggeredAnimation(index: 1, isActive: isVisible)
 
-                        if viewModel.filteredApps.isEmpty {
-                            emptySection
-                        } else {
-                            appGridSection
+                        // Tab content
+                        switch selectedTab {
+                        case .allApps:
+                            controlsSection
+                                .staggeredAnimation(index: 2, isActive: isVisible)
+
+                            if viewModel.filteredApps.isEmpty {
+                                emptySection
+                            } else {
+                                appGridSection
+                                    .staggeredAnimation(index: 3, isActive: isVisible)
+                            }
+
+                        case .updates:
+                            updatesSection
+                                .staggeredAnimation(index: 2, isActive: isVisible)
+
+                        case .homebrew:
+                            homebrewSection
                                 .staggeredAnimation(index: 2, isActive: isVisible)
                         }
                     } else {
@@ -302,6 +324,286 @@ struct ApplicationsView: View {
                 .padding(Theme.Spacing.lg)
                 .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
             }
+        }
+    }
+
+    // MARK: - Tab Picker
+
+    private var tabPicker: some View {
+        HStack(spacing: Theme.Spacing.sm) {
+            ForEach(AppTab.allCases, id: \.self) { tab in
+                Button {
+                    withAnimation(Theme.Animation.spring) {
+                        selectedTab = tab
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: tabIcon(for: tab))
+                        Text(tab.rawValue)
+
+                        // Badge for updates count
+                        if tab == .updates && !viewModel.appUpdates.isEmpty {
+                            Text("\(viewModel.appUpdates.count)")
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.orange)
+                                .clipShape(Capsule())
+                        }
+
+                        // Badge for outdated homebrew casks
+                        if tab == .homebrew && !viewModel.outdatedCasks.isEmpty {
+                            Text("\(viewModel.outdatedCasks.count)")
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.orange)
+                                .clipShape(Capsule())
+                        }
+                    }
+                    .font(.system(size: 13, weight: selectedTab == tab ? .semibold : .medium))
+                    .foregroundStyle(selectedTab == tab ? .primary : .secondary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background {
+                        if selectedTab == tab {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(.white.opacity(0.1))
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+
+            Spacer()
+        }
+        .padding(4)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func tabIcon(for tab: AppTab) -> String {
+        switch tab {
+        case .allApps: return "square.grid.2x2"
+        case .updates: return "arrow.down.circle"
+        case .homebrew: return "shippingbox"
+        }
+    }
+
+    // MARK: - Updates Section
+
+    private var updatesSection: some View {
+        VStack(spacing: Theme.Spacing.lg) {
+            // Check for updates button
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("App Updates")
+                        .font(Theme.Typography.headline)
+
+                    Text("Check for available updates via Sparkle feeds")
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                if viewModel.isCheckingUpdates {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text("\(Int(viewModel.updateCheckProgress * 100))%")
+                            .font(Theme.Typography.caption.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    GlassActionButton(
+                        "Check Updates",
+                        icon: "arrow.clockwise",
+                        color: .orange
+                    ) {
+                        viewModel.checkForUpdates()
+                    }
+                }
+            }
+            .padding(Theme.Spacing.lg)
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+
+            // Updates list
+            if viewModel.appUpdates.isEmpty {
+                VStack(spacing: Theme.Spacing.md) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 48))
+                        .foregroundStyle(.green)
+
+                    Text("All apps are up to date")
+                        .font(Theme.Typography.headline)
+
+                    Text("Click \"Check Updates\" to scan for new versions")
+                        .font(Theme.Typography.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(Theme.Spacing.xxl)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+            } else {
+                VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                    Text("\(viewModel.appUpdates.count) Update(s) Available")
+                        .font(Theme.Typography.headline)
+
+                    ForEach(viewModel.appUpdates) { update in
+                        UpdateRow(update: update)
+                    }
+                }
+                .padding(Theme.Spacing.lg)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+            }
+        }
+    }
+
+    // MARK: - Homebrew Section
+
+    private var homebrewSection: some View {
+        VStack(spacing: Theme.Spacing.lg) {
+            if !viewModel.isHomebrewInstalled {
+                // Homebrew not installed
+                VStack(spacing: Theme.Spacing.lg) {
+                    Image(systemName: "shippingbox")
+                        .font(.system(size: 48))
+                        .foregroundStyle(.tertiary)
+
+                    Text("Homebrew Not Installed")
+                        .font(Theme.Typography.headline)
+
+                    Text("Homebrew is a package manager for macOS. Install it to manage apps via the command line.")
+                        .font(Theme.Typography.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 400)
+
+                    Link(destination: URL(string: "https://brew.sh")!) {
+                        HStack {
+                            Image(systemName: "globe")
+                            Text("Visit brew.sh")
+                        }
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.blue)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(Theme.Spacing.xxl)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+            } else {
+                // Homebrew header with actions
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Homebrew Casks")
+                            .font(Theme.Typography.headline)
+
+                        Text("\(viewModel.homebrewCasks.count) casks installed")
+                            .font(Theme.Typography.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    if viewModel.isLoadingHomebrew {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        HStack(spacing: Theme.Spacing.sm) {
+                            if !viewModel.outdatedCasks.isEmpty {
+                                GlassActionButton(
+                                    "Upgrade All",
+                                    icon: "arrow.up.circle.fill",
+                                    color: .orange
+                                ) {
+                                    viewModel.upgradeAllCasks()
+                                }
+                            }
+
+                            GlassActionButton(
+                                "Cleanup",
+                                icon: "trash",
+                                color: .gray
+                            ) {
+                                viewModel.cleanupHomebrew()
+                            }
+
+                            GlassActionButton(
+                                "Refresh",
+                                icon: "arrow.clockwise",
+                                color: sectionColor
+                            ) {
+                                viewModel.loadHomebrewStatus()
+                            }
+                        }
+                    }
+                }
+                .padding(Theme.Spacing.lg)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+
+                // Outdated casks
+                if !viewModel.outdatedCasks.isEmpty {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                        HStack {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .foregroundStyle(.orange)
+                            Text("\(viewModel.outdatedCasks.count) Outdated Cask(s)")
+                                .font(Theme.Typography.headline)
+                        }
+
+                        ForEach(viewModel.outdatedCasks, id: \.name) { cask in
+                            HomebrewCaskRow(
+                                cask: cask,
+                                showUpdateBadge: true,
+                                onUpgrade: { viewModel.upgradeCask(cask) },
+                                onUninstall: { viewModel.uninstallCask(cask) }
+                            )
+                        }
+                    }
+                    .padding(Theme.Spacing.lg)
+                    .glassEffect(.regular.tint(.orange), in: RoundedRectangle(cornerRadius: 16))
+                }
+
+                // All casks
+                if viewModel.homebrewCasks.isEmpty {
+                    VStack(spacing: Theme.Spacing.md) {
+                        Image(systemName: "shippingbox")
+                            .font(.system(size: 48))
+                            .foregroundStyle(.tertiary)
+
+                        Text("No casks installed")
+                            .font(Theme.Typography.headline)
+
+                        Text("Install apps via `brew install --cask <app>`")
+                            .font(Theme.Typography.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(Theme.Spacing.xxl)
+                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                } else {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                        Text("Installed Casks")
+                            .font(Theme.Typography.headline)
+
+                        ForEach(viewModel.homebrewCasks.filter { cask in
+                            !viewModel.outdatedCasks.contains(where: { $0.name == cask.name })
+                        }, id: \.name) { cask in
+                            HomebrewCaskRow(
+                                cask: cask,
+                                showUpdateBadge: false,
+                                onUpgrade: nil,
+                                onUninstall: { viewModel.uninstallCask(cask) }
+                            )
+                        }
+                    }
+                    .padding(Theme.Spacing.lg)
+                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                }
+            }
+        }
+        .onAppear {
+            viewModel.loadHomebrewStatus()
         }
     }
 
@@ -700,6 +1002,189 @@ struct FileRow: View {
             }
         }
         .padding(.vertical, 2)
+    }
+}
+
+// MARK: - Update Row
+
+struct UpdateRow: View {
+    let update: AppUpdate
+
+    @State private var isHovered = false
+
+    var body: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            // Icon placeholder (we don't have app icon here)
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.orange.opacity(0.15))
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: "arrow.down.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundStyle(.orange)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(update.appName)
+                    .font(Theme.Typography.subheadline.weight(.semibold))
+
+                HStack(spacing: Theme.Spacing.xs) {
+                    Text(update.currentVersion)
+                        .foregroundStyle(.secondary)
+
+                    Image(systemName: "arrow.right")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+
+                    Text(update.latestVersion)
+                        .foregroundStyle(.orange)
+                }
+                .font(Theme.Typography.caption)
+            }
+
+            Spacer()
+
+            // Source badge
+            Text(update.source.rawValue)
+                .font(.caption2)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.1))
+                .clipShape(Capsule())
+
+            // Download button
+            if let downloadURL = update.downloadURL {
+                Link(destination: downloadURL) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.down.circle")
+                        Text("Download")
+                    }
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.orange)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+            }
+        }
+        .padding(Theme.Spacing.sm)
+        .background(Color.white.opacity(isHovered ? 0.05 : 0))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .onHover { isHovered = $0 }
+    }
+}
+
+// MARK: - Homebrew Cask Row
+
+struct HomebrewCaskRow: View {
+    let cask: HomebrewCask
+    let showUpdateBadge: Bool
+    let onUpgrade: (() -> Void)?
+    let onUninstall: () -> Void
+
+    @State private var isHovered = false
+
+    var body: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            // Icon
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.purple.opacity(0.15))
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: "shippingbox.fill")
+                    .font(.system(size: 18))
+                    .foregroundStyle(.purple)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: Theme.Spacing.xs) {
+                    Text(cask.displayName)
+                        .font(Theme.Typography.subheadline.weight(.semibold))
+
+                    if showUpdateBadge {
+                        Text("Update")
+                            .font(.caption2)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.orange)
+                            .clipShape(Capsule())
+                    }
+                }
+
+                HStack(spacing: Theme.Spacing.xs) {
+                    if let installedVersion = cask.installedVersion {
+                        Text("v\(installedVersion)")
+                            .foregroundStyle(.secondary)
+
+                        if cask.hasUpdate {
+                            Image(systemName: "arrow.right")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+
+                            Text("v\(cask.version)")
+                                .foregroundStyle(.orange)
+                        }
+                    } else {
+                        Text("v\(cask.version)")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .font(Theme.Typography.caption)
+
+                if let description = cask.description {
+                    Text(description)
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+
+            // Actions
+            HStack(spacing: Theme.Spacing.sm) {
+                if let homepage = cask.homepage {
+                    Link(destination: homepage) {
+                        Image(systemName: "globe")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                if let onUpgrade = onUpgrade {
+                    Button(action: onUpgrade) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.up.circle")
+                            Text("Upgrade")
+                        }
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.orange)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Button(action: onUninstall) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.red)
+                        .padding(6)
+                        .background(Color.red.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(Theme.Spacing.sm)
+        .background(Color.white.opacity(isHovered ? 0.05 : 0))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .onHover { isHovered = $0 }
     }
 }
 
