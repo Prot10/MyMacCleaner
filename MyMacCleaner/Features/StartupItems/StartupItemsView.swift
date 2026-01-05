@@ -57,32 +57,32 @@ struct StartupItemsView: View {
             }
         }
         .animation(Theme.Animation.spring, value: viewModel.showToast)
-        .alert("Disable Startup Item?", isPresented: $viewModel.showDisableConfirmation) {
-            Button("Cancel", role: .cancel) {
+        .alert(L("startupItems.toggle.title"), isPresented: $viewModel.showDisableConfirmation) {
+            Button(L("common.cancel"), role: .cancel) {
                 viewModel.cancelToggle()
             }
-            Button(viewModel.itemToToggle?.isEnabled == true ? "Disable" : "Enable") {
+            Button(viewModel.itemToToggle?.isEnabled == true ? L("startupItems.toggle.disable") : L("startupItems.toggle.enable")) {
                 viewModel.confirmToggle()
             }
         } message: {
             if let item = viewModel.itemToToggle {
                 if item.isEnabled {
-                    Text("This will prevent \"\(item.displayName)\" from running at startup. You can re-enable it later.")
+                    Text(L("startupItems.toggle.disableMessage \(item.displayName)"))
                 } else {
-                    Text("This will allow \"\(item.displayName)\" to run at startup.")
+                    Text(L("startupItems.toggle.enableMessage \(item.displayName)"))
                 }
             }
         }
-        .alert("Remove Startup Item?", isPresented: $viewModel.showRemoveConfirmation) {
-            Button("Cancel", role: .cancel) {
+        .alert(L("startupItems.remove.title"), isPresented: $viewModel.showRemoveConfirmation) {
+            Button(L("common.cancel"), role: .cancel) {
                 viewModel.cancelRemove()
             }
-            Button("Remove", role: .destructive) {
+            Button(L("startupItems.remove.button"), role: .destructive) {
                 viewModel.confirmRemove()
             }
         } message: {
             if let item = viewModel.itemToRemove {
-                Text("This will permanently remove \"\(item.displayName)\" from startup items. The item will be moved to Trash.")
+                Text(L("startupItems.remove.message \(item.displayName)"))
             }
         }
         .onAppear {
@@ -105,10 +105,10 @@ struct StartupItemsView: View {
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Startup Items")
+                Text(L("navigation.startupItems"))
                     .font(.system(size: 28, weight: .bold))
 
-                Text("Manage apps and services that launch at startup")
+                Text(L("startupItems.subtitle"))
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
@@ -117,7 +117,7 @@ struct StartupItemsView: View {
 
             if !viewModel.items.isEmpty {
                 GlassActionButton(
-                    "Refresh",
+                    L("common.refresh"),
                     icon: viewModel.isLoading ? nil : "arrow.clockwise",
                     color: sectionColor,
                     disabled: viewModel.isLoading
@@ -139,28 +139,28 @@ struct StartupItemsView: View {
     private var statsSection: some View {
         HStack(spacing: Theme.Spacing.md) {
             StartupStatCard(
-                title: "Total Items",
+                title: L("startupItems.stats.total"),
                 value: "\(viewModel.items.filter { !$0.isSystemItem }.count)",
                 icon: "list.bullet",
                 color: .cyan
             )
 
             StartupStatCard(
-                title: "Enabled",
+                title: L("startupItems.stats.enabled"),
                 value: "\(viewModel.enabledCount)",
                 icon: "checkmark",
                 color: .green
             )
 
             StartupStatCard(
-                title: "Disabled",
+                title: L("startupItems.stats.disabled"),
                 value: "\(viewModel.disabledCount)",
                 icon: "xmark",
                 color: .orange
             )
 
             StartupStatCard(
-                title: "Running",
+                title: L("startupItems.stats.running"),
                 value: "\(viewModel.runningCount)",
                 icon: "play.fill",
                 color: .purple
@@ -195,10 +195,10 @@ struct StartupItemsView: View {
             }
 
             VStack(spacing: 8) {
-                Text("Scan Startup Items")
+                Text(L("startupItems.scan.title"))
                     .font(.system(size: 20, weight: .semibold))
 
-                Text("Discover all apps, agents, and daemons that run when your Mac starts")
+                Text(L("startupItems.scan.description"))
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -206,7 +206,7 @@ struct StartupItemsView: View {
             }
 
             GlassActionButton(
-                "Start Scan",
+                L("startupItems.scan.button"),
                 icon: "magnifyingglass",
                 color: sectionColor
             ) {
@@ -226,7 +226,7 @@ struct StartupItemsView: View {
                 .controlSize(.large)
                 .frame(width: 32, height: 32)
 
-            Text("Scanning startup items...")
+            Text(L("startupItems.scanning"))
                 .font(Theme.Typography.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -240,14 +240,14 @@ struct StartupItemsView: View {
     private var controlsSection: some View {
         HStack(spacing: Theme.Spacing.md) {
             // Search
-            GlassSearchField(text: $viewModel.searchText, placeholder: "Search items...")
+            GlassSearchField(text: $viewModel.searchText, placeholder: L("startupItems.search"))
                 .frame(maxWidth: 300)
 
             // Type filter
             Menu {
                 Button(action: { viewModel.selectedType = nil }) {
                     HStack {
-                        Text("All Types")
+                        Text(L("startupItems.filter.allTypes"))
                         if viewModel.selectedType == nil {
                             Image(systemName: "checkmark")
                         }
@@ -260,7 +260,7 @@ struct StartupItemsView: View {
                     Button(action: { viewModel.selectedType = type }) {
                         HStack {
                             Image(systemName: type.icon)
-                            Text(type.rawValue)
+                            Text(type.localizedName)
                             if viewModel.selectedType == type {
                                 Image(systemName: "checkmark")
                             }
@@ -270,7 +270,7 @@ struct StartupItemsView: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: viewModel.selectedType?.icon ?? "line.3.horizontal.decrease.circle")
-                    Text(viewModel.selectedType?.rawValue ?? "All Types")
+                    Text(viewModel.selectedType?.localizedName ?? L("startupItems.filter.allTypes"))
                     Image(systemName: "chevron.down")
                         .font(.caption2)
                 }
@@ -287,7 +287,7 @@ struct StartupItemsView: View {
                     Button(action: { viewModel.sortOrder = order }) {
                         HStack {
                             Image(systemName: order.icon)
-                            Text(order.rawValue)
+                            Text(order.localizedName)
                             if viewModel.sortOrder == order {
                                 Image(systemName: "checkmark")
                             }
@@ -297,7 +297,7 @@ struct StartupItemsView: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.up.arrow.down")
-                    Text("Sort: \(viewModel.sortOrder.rawValue)")
+                    Text(LFormat("startupItems.sort %@", viewModel.sortOrder.localizedName))
                     Image(systemName: "chevron.down")
                         .font(.caption2)
                 }
@@ -312,7 +312,7 @@ struct StartupItemsView: View {
 
             // Show system items toggle
             HStack(spacing: 8) {
-                Text("System Items")
+                Text(L("startupItems.systemItems"))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(.secondary)
 
@@ -351,10 +351,10 @@ struct StartupItemsView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(.tertiary)
 
-            Text("No matching items")
+            Text(L("startupItems.empty.title"))
                 .font(Theme.Typography.headline)
 
-            Text("Try adjusting your search or filters")
+            Text(L("startupItems.empty.message"))
                 .font(Theme.Typography.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -451,7 +451,7 @@ struct StartupItemRow: View {
                             .lineLimit(1)
 
                         if item.isSystemItem {
-                            Text("System")
+                            Text(L("startupItems.badge.system"))
                                 .font(.system(size: 9, weight: .medium))
                                 .foregroundStyle(.secondary)
                                 .padding(.horizontal, 6)
@@ -480,7 +480,7 @@ struct StartupItemRow: View {
                 Spacer()
 
                 // Type badge
-                Text(item.type.rawValue)
+                Text(item.type.localizedName)
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(item.typeColor)
                     .padding(.horizontal, 8)
@@ -494,7 +494,7 @@ struct StartupItemRow: View {
                         .fill(item.isEnabled ? Color.green : Color.orange)
                         .frame(width: 8, height: 8)
 
-                    Text(item.isEnabled ? "Enabled" : "Disabled")
+                    Text(item.isEnabled ? L("startupItems.status.enabled") : L("startupItems.status.disabled"))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -510,18 +510,18 @@ struct StartupItemRow: View {
                                 .foregroundStyle(item.isEnabled ? .orange : .green)
                         }
                         .buttonStyle(.plain)
-                        .help(item.isEnabled ? "Disable" : "Enable")
+                        .help(item.isEnabled ? L("startupItems.toggle.disable") : L("startupItems.toggle.enable"))
 
                         // Menu with more options
                         Menu {
                             Button(action: onReveal) {
-                                Label("Show in Finder", systemImage: "folder")
+                                Label(L("common.showInFinder"), systemImage: "folder")
                             }
 
                             Divider()
 
                             Button(role: .destructive, action: onRemove) {
-                                Label("Remove", systemImage: "trash")
+                                Label(L("common.remove"), systemImage: "trash")
                             }
                         } label: {
                             Image(systemName: "ellipsis.circle")
@@ -540,7 +540,7 @@ struct StartupItemRow: View {
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
-                    .help("Show in Finder")
+                    .help(L("common.showInFinder"))
                     .opacity(isHovered ? 1 : 0.6)
                 }
             }
@@ -560,13 +560,13 @@ struct StartupItemRow: View {
                     .padding(.horizontal, Theme.Spacing.md)
 
                 VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                    DetailRow(label: "Label", value: item.label)
-                    DetailRow(label: "Path", value: item.path)
+                    DetailRow(label: L("startupItems.detail.label"), value: item.label)
+                    DetailRow(label: L("startupItems.detail.path"), value: item.path)
                     if let execPath = item.executablePath {
-                        DetailRow(label: "Executable", value: execPath)
+                        DetailRow(label: L("startupItems.detail.executable"), value: execPath)
                     }
                     if let bundleId = item.bundleIdentifier {
-                        DetailRow(label: "Bundle ID", value: bundleId)
+                        DetailRow(label: L("startupItems.detail.bundleId"), value: bundleId)
                     }
                 }
                 .padding(Theme.Spacing.md)
