@@ -195,6 +195,9 @@
 			);
 			mainGroup = 650DE2922EE843C000C84519;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				65E790852F0C23E200CA264C /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 650DE29C2EE843C000C84519 /* Products */;
 			projectDirPath = "";
@@ -398,6 +401,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MyMacCleaner/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "MyMacCleaner needs automation access to help manage and uninstall applications.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 MyMacCleaner. All rights reserved.";
@@ -425,6 +429,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MyMacCleaner/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "MyMacCleaner needs automation access to help manage and uninstall applications.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2025 MyMacCleaner. All rights reserved.";
@@ -545,6 +550,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		65E790852F0C23E200CA264C /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.8.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = 650DE2932EE843C000C84519 /* Project object */;
 }
