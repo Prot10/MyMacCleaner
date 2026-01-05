@@ -134,14 +134,7 @@ struct PerformanceView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
-            .background {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(sectionColor.opacity(0.1))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 12)
-                            .strokeBorder(sectionColor.opacity(0.2), lineWidth: 0.5)
-                    }
-            }
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
         }
     }
 
@@ -231,17 +224,32 @@ struct PerformanceView: View {
             Circle()
                 .stroke(Color.white.opacity(0.1), lineWidth: 20)
 
-            // Progress arc
+            // Progress arc - border (drawn first, slightly wider)
             Circle()
                 .trim(from: 0, to: viewModel.memoryUsage.usagePercentage / 100)
                 .stroke(
                     AngularGradient(
-                        colors: [.green, .yellow, .orange, .red],
+                        colors: [.green.opacity(0.5), .yellow.opacity(0.5), .orange.opacity(0.5), .red.opacity(0.5)],
                         center: .center,
-                        startAngle: .degrees(0),
-                        endAngle: .degrees(360)
+                        startAngle: .degrees(-90),
+                        endAngle: .degrees(270)
                     ),
                     style: StrokeStyle(lineWidth: 20, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+                .animation(Theme.Animation.springSmooth, value: viewModel.memoryUsage.usagePercentage)
+
+            // Progress arc - fill (on top, narrower)
+            Circle()
+                .trim(from: 0, to: viewModel.memoryUsage.usagePercentage / 100)
+                .stroke(
+                    AngularGradient(
+                        colors: [.green.opacity(0.15), .yellow.opacity(0.15), .orange.opacity(0.15), .red.opacity(0.15)],
+                        center: .center,
+                        startAngle: .degrees(-90),
+                        endAngle: .degrees(270)
+                    ),
+                    style: StrokeStyle(lineWidth: 16, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
                 .animation(Theme.Animation.springSmooth, value: viewModel.memoryUsage.usagePercentage)
@@ -336,7 +344,7 @@ struct PerformanceView: View {
                 // Empty state
                 VStack(spacing: Theme.Spacing.md) {
                     Image(systemName: "list.bullet.rectangle")
-                        .font(.system(size: 40))
+                        .font(.system(size: 48))
                         .foregroundStyle(.tertiary)
 
                     Text("No process data")
@@ -364,7 +372,7 @@ struct PerformanceView: View {
                         Text("")
                             .frame(width: 70)
                     }
-                    .font(Theme.Typography.caption.weight(.medium))
+                    .font(Theme.Typography.caption.weight(.semibold))
                     .foregroundStyle(.tertiary)
                     .padding(.horizontal, Theme.Spacing.md)
                     .padding(.vertical, Theme.Spacing.sm)
@@ -552,7 +560,7 @@ struct PerformanceView: View {
             // Header with Run All button
             HStack {
                 Text("Maintenance Tasks")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(Theme.Typography.headline)
 
                 Spacer()
 
@@ -634,17 +642,16 @@ struct MaintenanceTaskCard: View {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(iconBackgroundColor.opacity(0.15))
-                            .frame(width: 40, height: 40)
+                            .frame(width: 44, height: 44)
 
                         if isRunning {
                             ProgressView()
                                 .controlSize(.small)
-                                .frame(width: 16, height: 16)
                         } else if let result = result {
                             resultIcon(for: result)
                         } else {
                             Image(systemName: task.icon)
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(task.color)
                         }
                     }
@@ -715,24 +722,23 @@ struct MaintenanceTaskCard: View {
         switch result {
         case .success:
             Image(systemName: "checkmark")
-                .font(.system(size: 16, weight: .bold))
+                .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(.green)
         case .failed:
             Image(systemName: "xmark")
-                .font(.system(size: 16, weight: .bold))
+                .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(.red)
         case .skipped:
             Image(systemName: "forward.fill")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.orange)
         case .pending:
             Image(systemName: task.icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(task.color.opacity(0.5))
         case .running:
             ProgressView()
                 .controlSize(.small)
-                .frame(width: 16, height: 16)
         }
     }
 
