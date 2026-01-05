@@ -45,10 +45,10 @@ struct ScanResultsCard: View {
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Scan Complete")
+                Text(L("scanResults.title"))
                     .font(Theme.Typography.title2)
 
-                Text("\(results.count) categories found")
+                Text(LFormat("scanResults.categoriesFound %lld", results.count))
                     .font(Theme.Typography.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -61,7 +61,7 @@ struct ScanResultsCard: View {
                     .font(Theme.Typography.title)
                     .foregroundStyle(.orange)
 
-                Text("cleanable")
+                Text(L("scanResults.cleanable"))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.secondary)
             }
@@ -88,7 +88,7 @@ struct ScanResultsCard: View {
             Button(action: {}) {
                 HStack(spacing: 8) {
                     Image(systemName: "list.bullet")
-                    Text("View All")
+                    Text(L("scanResults.viewAll"))
                 }
                 .font(Theme.Typography.subheadline)
                 .padding(.horizontal, Theme.Spacing.md)
@@ -103,7 +103,7 @@ struct ScanResultsCard: View {
             Button(action: onClean) {
                 HStack(spacing: 8) {
                     Image(systemName: "trash.fill")
-                    Text("Clean \(ByteCountFormatter.string(fromByteCount: selectedSize, countStyle: .file))")
+                    Text(LFormat("scanResults.clean %@", ByteCountFormatter.string(fromByteCount: selectedSize, countStyle: .file)))
                 }
                 .font(Theme.Typography.subheadline.weight(.semibold))
                 .foregroundStyle(.white)
@@ -148,11 +148,11 @@ struct ScanResultRow: View {
 
                 // Category info
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(result.category.rawValue)
+                    Text(result.category.localizedName)
                         .font(Theme.Typography.body)
                         .foregroundStyle(.primary)
 
-                    Text("\(result.itemCount) items")
+                    Text(LFormat("scanResults.items %lld", result.itemCount))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.tertiary)
                 }
@@ -197,7 +197,7 @@ struct CompactScanSummary: View {
                     .font(Theme.Typography.title2)
                     .foregroundStyle(.orange)
 
-                Text("Cleanable")
+                Text(L("scanResults.cleanable"))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.secondary)
             }
@@ -210,7 +210,7 @@ struct CompactScanSummary: View {
                 Text("\(summary.itemCount)")
                     .font(Theme.Typography.title2)
 
-                Text("Files")
+                Text(L("scanResults.files"))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.secondary)
             }
@@ -224,11 +224,11 @@ struct CompactScanSummary: View {
                     HStack(spacing: 4) {
                         Image(systemName: largest.icon)
                             .foregroundStyle(largest.color)
-                        Text(largest.rawValue)
+                        Text(largest.localizedName)
                     }
                     .font(Theme.Typography.subheadline)
 
-                    Text("Largest")
+                    Text(L("scanResults.largest"))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.secondary)
                 }

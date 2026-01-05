@@ -24,7 +24,7 @@ class HomeViewModel: ObservableObject {
     @Published var appCount: Int = 0
 
     // System health
-    @Published var systemHealthStatus: String = "Healthy"
+    @Published var systemHealthStatus: String = L("home.health.healthy")
     @Published var systemHealthColor: Color = .green
 
     // Cleaning state
@@ -100,7 +100,7 @@ class HomeViewModel: ObservableObject {
             do {
                 let trashSize = await fileScanner.getTrashSize()
                 if trashSize == 0 {
-                    showToastMessage("Trash is already empty", type: .info)
+                    showToastMessage(L("home.toast.trashEmpty"), type: .info)
                     return
                 }
 
@@ -108,9 +108,9 @@ class HomeViewModel: ObservableObject {
                 // Refresh stats after emptying
                 await loadSystemStats()
                 await performQuickEstimate()
-                showToastMessage("Trash emptied successfully!", type: .success)
+                showToastMessage(L("home.toast.trashSuccess"), type: .success)
             } catch {
-                showToastMessage("Failed to empty trash: \(error.localizedDescription)", type: .error)
+                showToastMessage(L("home.toast.trashFailed \(error.localizedDescription)"), type: .error)
             }
         }
     }
@@ -141,12 +141,12 @@ class HomeViewModel: ObservableObject {
 
             guard totalItems > 0 else {
                 isCleaning = false
-                showToastMessage("No items selected", type: .info)
+                showToastMessage(L("home.toast.noItemsSelected"), type: .info)
                 return
             }
 
             for (index, item) in selectedItems.enumerated() {
-                cleaningCategory = item.category.rawValue
+                cleaningCategory = item.category.localizedName
                 cleaningProgress = Double(index) / Double(totalItems)
 
                 do {
@@ -178,11 +178,11 @@ class HomeViewModel: ObservableObject {
             // Show result toast
             let freedFormatted = ByteCountFormatter.string(fromByteCount: totalFreed, countStyle: .file)
             if failedCount == 0 {
-                showToastMessage("Cleaned \(freedFormatted) successfully!", type: .success)
+                showToastMessage(L("home.toast.cleanSuccess \(freedFormatted)"), type: .success)
             } else if failedCount < totalItems {
-                showToastMessage("Cleaned \(freedFormatted) (\(failedCount) items failed)", type: .info)
+                showToastMessage(L("home.toast.cleanPartial \(freedFormatted) \(failedCount)"), type: .info)
             } else {
-                showToastMessage("Failed to clean items", type: .error)
+                showToastMessage(L("home.toast.cleanFailed"), type: .error)
             }
         }
     }
@@ -245,7 +245,7 @@ class HomeViewModel: ObservableObject {
         if total > 0 {
             junkSize = formatBytes(total)
         } else {
-            junkSize = "Scan to check"
+            junkSize = L("home.stats.scanToCheck")
         }
     }
 
@@ -337,13 +337,13 @@ class HomeViewModel: ObservableObject {
         let memoryUsagePercent = memoryStats.total > 0 ? Double(memoryStats.used) / Double(memoryStats.total) : 0
 
         if diskUsagePercent > 0.9 || memoryUsagePercent > 0.9 {
-            systemHealthStatus = "Needs Attention"
+            systemHealthStatus = L("home.health.needsAttention")
             systemHealthColor = .red
         } else if diskUsagePercent > 0.75 || memoryUsagePercent > 0.8 {
-            systemHealthStatus = "Fair"
+            systemHealthStatus = L("home.health.fair")
             systemHealthColor = .yellow
         } else {
-            systemHealthStatus = "Healthy"
+            systemHealthStatus = L("home.health.healthy")
             systemHealthColor = .green
         }
     }
