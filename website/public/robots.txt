@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://andreaperinu.github.io/MyMacCleaner/sitemap-index.xml
+Sitemap: https://Prot10.github.io/MyMacCleaner/sitemap-index.xml
