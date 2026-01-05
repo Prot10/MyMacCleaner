@@ -157,12 +157,12 @@ struct PermissionBanner: View {
         HStack(spacing: Theme.Spacing.md) {
             // Icon
             ZStack {
-                Circle()
+                RoundedRectangle(cornerRadius: 10)
                     .fill(Color.orange.opacity(0.15))
-                    .frame(width: 36, height: 36)
+                    .frame(width: 44, height: 44)
 
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 14))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(.orange)
             }
 
