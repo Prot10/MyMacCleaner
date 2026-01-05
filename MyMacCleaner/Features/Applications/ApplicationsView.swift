@@ -8,9 +8,21 @@ struct ApplicationsView: View {
     @State private var selectedTab: AppTab = .allApps
 
     enum AppTab: String, CaseIterable {
-        case allApps = "All Apps"
-        case updates = "Updates"
-        case homebrew = "Homebrew"
+        case allApps
+        case updates
+        case homebrew
+
+        var icon: String {
+            switch self {
+            case .allApps: return "square.grid.2x2"
+            case .updates: return "arrow.down.circle"
+            case .homebrew: return "shippingbox"
+            }
+        }
+
+        var localizedName: String {
+            L(key: "applications.tab.\(rawValue)")
+        }
     }
 
     // Section color for applications
@@ -112,10 +124,10 @@ struct ApplicationsView: View {
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Applications")
+                Text(L("navigation.applications"))
                     .font(.system(size: 28, weight: .bold))
 
-                Text("Manage and uninstall applications")
+                Text(L("applications.subtitle"))
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
@@ -129,7 +141,7 @@ struct ApplicationsView: View {
                             .font(.system(size: 22, weight: .semibold))
                             .foregroundStyle(sectionColor)
 
-                        Text("\(viewModel.applications.count) apps installed")
+                        Text(LFormat("applications.appsInstalled %lld", viewModel.applications.count))
                             .font(.system(size: 11))
                             .foregroundStyle(.secondary)
                     }
@@ -150,7 +162,7 @@ struct ApplicationsView: View {
                 icon: "square.grid.2x2.fill",
                 iconColor: .cyan,
                 title: "\(viewModel.applications.count)",
-                subtitle: "Apps Found",
+                subtitle: L("applications.stats.appsFound"),
                 isLoading: viewModel.discoveryState == .discovering
             )
 
@@ -159,7 +171,7 @@ struct ApplicationsView: View {
                 icon: "gearshape.fill",
                 iconColor: .orange,
                 title: "\(systemAppsCount)",
-                subtitle: "System Apps",
+                subtitle: L("applications.stats.systemApps"),
                 isLoading: viewModel.discoveryState == .discovering
             )
 
@@ -168,7 +180,7 @@ struct ApplicationsView: View {
                 icon: "person.fill",
                 iconColor: .purple,
                 title: "\(userAppsCount)",
-                subtitle: "User Apps",
+                subtitle: L("applications.stats.userApps"),
                 isLoading: viewModel.discoveryState == .discovering
             )
 
@@ -176,8 +188,8 @@ struct ApplicationsView: View {
             InfoCard(
                 icon: viewModel.analysisState == .analyzing ? "arrow.triangle.2.circlepath" : "chart.bar.fill",
                 iconColor: .green,
-                title: viewModel.analysisState == .analyzing ? "\(Int(viewModel.analysisProgress * 100))%" : "Ready",
-                subtitle: viewModel.analysisState == .analyzing ? "Analyzing..." : "To Analyze",
+                title: viewModel.analysisState == .analyzing ? "\(Int(viewModel.analysisProgress * 100))%" : L("applications.stats.ready"),
+                subtitle: viewModel.analysisState == .analyzing ? L("applications.stats.analyzing") : L("applications.stats.toAnalyze"),
                 isLoading: viewModel.analysisState == .analyzing
             )
         }
@@ -201,7 +213,7 @@ struct ApplicationsView: View {
                     // Progress bar
                     VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                         HStack {
-                            Text("Analyzing Applications...")
+                            Text(L("applications.analyzing"))
                                 .font(Theme.Typography.headline)
 
                             Spacer()
@@ -216,7 +228,7 @@ struct ApplicationsView: View {
                             .tint(.cyan)
 
                         if !viewModel.currentAppBeingAnalyzed.isEmpty {
-                            Text("Calculating size for: \(viewModel.currentAppBeingAnalyzed)")
+                            Text(LFormat("applications.calculatingSize %@", viewModel.currentAppBeingAnalyzed))
                                 .font(Theme.Typography.caption)
                                 .foregroundStyle(.tertiary)
                                 .lineLimit(1)
@@ -251,10 +263,10 @@ struct ApplicationsView: View {
                     }
 
                     VStack(spacing: 8) {
-                        Text("Analyze Applications")
+                        Text(L("applications.analyze.title"))
                             .font(.system(size: 20, weight: .semibold))
 
-                        Text("Calculate the size of each application to identify which apps are using the most disk space")
+                        Text(L("applications.analyze.description"))
                             .font(.system(size: 14))
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -263,7 +275,7 @@ struct ApplicationsView: View {
 
                     // Start button
                     GlassActionButton(
-                        "Start Analysis",
+                        L("applications.analyze.button"),
                         icon: "play.fill",
                         color: sectionColor,
                         disabled: viewModel.discoveryState == .discovering && viewModel.applications.isEmpty
@@ -278,7 +290,7 @@ struct ApplicationsView: View {
                                 .controlSize(.small)
                                 .frame(width: 16, height: 16)
 
-                            Text("Discovering apps in background...")
+                            Text(L("applications.discovering"))
                                 .font(.system(size: 11))
                                 .foregroundStyle(.tertiary)
                         }
@@ -293,7 +305,7 @@ struct ApplicationsView: View {
             if !viewModel.applications.isEmpty && viewModel.analysisState != .analyzing {
                 VStack(alignment: .leading, spacing: Theme.Spacing.md) {
                     HStack {
-                        Text("Discovered Apps")
+                        Text(L("applications.discoveredApps"))
                             .font(Theme.Typography.headline)
 
                         Spacer()
@@ -303,7 +315,7 @@ struct ApplicationsView: View {
                                 ProgressView()
                                     .controlSize(.mini)
                                     .frame(width: 10, height: 10)
-                                Text("Discovering...")
+                                Text(L("applications.discoveringShort"))
                                     .font(Theme.Typography.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -330,62 +342,16 @@ struct ApplicationsView: View {
     // MARK: - Tab Picker
 
     private var tabPicker: some View {
-        HStack(spacing: Theme.Spacing.sm) {
-            ForEach(AppTab.allCases, id: \.self) { tab in
-                Button {
-                    withAnimation(Theme.Animation.spring) {
-                        selectedTab = tab
-                    }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: tabIcon(for: tab))
-                        Text(tab.rawValue)
-
-                        // Badge for updates count
-                        if tab == .updates && !viewModel.appUpdates.isEmpty {
-                            Text("\(viewModel.appUpdates.count)")
-                                .font(.caption2)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.orange)
-                                .clipShape(Capsule())
-                        }
-
-                        // Badge for outdated homebrew casks
-                        if tab == .homebrew && !viewModel.outdatedCasks.isEmpty {
-                            Text("\(viewModel.outdatedCasks.count)")
-                                .font(.caption2)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.orange)
-                                .clipShape(Capsule())
-                        }
-                    }
-                    .font(.system(size: 13, weight: selectedTab == tab ? .semibold : .medium))
-                    .foregroundStyle(selectedTab == tab ? .primary : .secondary)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background {
-                        if selectedTab == tab {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(.white.opacity(0.1))
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
-            }
+        HStack {
+            GlassTabPicker(
+                tabs: AppTab.allCases,
+                selection: $selectedTab,
+                icon: { $0.icon },
+                label: { $0.localizedName },
+                accentColor: sectionColor
+            )
 
             Spacer()
-        }
-        .padding(4)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 14))
-    }
-
-    private func tabIcon(for tab: AppTab) -> String {
-        switch tab {
-        case .allApps: return "square.grid.2x2"
-        case .updates: return "arrow.down.circle"
-        case .homebrew: return "shippingbox"
         }
     }
 
@@ -396,10 +362,10 @@ struct ApplicationsView: View {
             // Check for updates button
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("App Updates")
+                    Text(L("applications.updates.title"))
                         .font(Theme.Typography.headline)
 
-                    Text("Check for available updates via Sparkle feeds")
+                    Text(L("applications.updates.description"))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -416,7 +382,7 @@ struct ApplicationsView: View {
                     }
                 } else {
                     GlassActionButton(
-                        "Check Updates",
+                        L("applications.updates.check"),
                         icon: "arrow.clockwise",
                         color: .orange
                     ) {
@@ -434,10 +400,10 @@ struct ApplicationsView: View {
                         .font(.system(size: 48))
                         .foregroundStyle(.green)
 
-                    Text("All apps are up to date")
+                    Text(L("applications.updates.upToDate"))
                         .font(Theme.Typography.headline)
 
-                    Text("Click \"Check Updates\" to scan for new versions")
+                    Text(L("applications.updates.clickToCheck"))
                         .font(Theme.Typography.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -446,7 +412,7 @@ struct ApplicationsView: View {
                 .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
             } else {
                 VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                    Text("\(viewModel.appUpdates.count) Update(s) Available")
+                    Text(LFormat("applications.updates.available %lld", viewModel.appUpdates.count))
                         .font(Theme.Typography.headline)
 
                     ForEach(viewModel.appUpdates) { update in
@@ -470,10 +436,10 @@ struct ApplicationsView: View {
                         .font(.system(size: 48))
                         .foregroundStyle(.tertiary)
 
-                    Text("Homebrew Not Installed")
+                    Text(L("applications.homebrew.notInstalled"))
                         .font(Theme.Typography.headline)
 
-                    Text("Homebrew is a package manager for macOS. Install it to manage apps via the command line.")
+                    Text(L("applications.homebrew.description"))
                         .font(Theme.Typography.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -482,7 +448,7 @@ struct ApplicationsView: View {
                     Link(destination: URL(string: "https://brew.sh")!) {
                         HStack {
                             Image(systemName: "globe")
-                            Text("Visit brew.sh")
+                            Text(L("applications.homebrew.visit"))
                         }
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.blue)
@@ -495,10 +461,10 @@ struct ApplicationsView: View {
                 // Homebrew header with actions
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Homebrew Casks")
+                        Text(L("applications.homebrew.casks"))
                             .font(Theme.Typography.headline)
 
-                        Text("\(viewModel.homebrewCasks.count) casks installed")
+                        Text(LFormat("applications.homebrew.casksInstalled %lld", viewModel.homebrewCasks.count))
                             .font(Theme.Typography.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -512,7 +478,7 @@ struct ApplicationsView: View {
                         HStack(spacing: Theme.Spacing.sm) {
                             if !viewModel.outdatedCasks.isEmpty {
                                 GlassActionButton(
-                                    "Upgrade All",
+                                    L("applications.homebrew.upgradeAll"),
                                     icon: "arrow.up.circle.fill",
                                     color: .orange
                                 ) {
@@ -521,7 +487,7 @@ struct ApplicationsView: View {
                             }
 
                             GlassActionButton(
-                                "Cleanup",
+                                L("applications.homebrew.cleanup"),
                                 icon: "trash",
                                 color: .gray
                             ) {
@@ -529,7 +495,7 @@ struct ApplicationsView: View {
                             }
 
                             GlassActionButton(
-                                "Refresh",
+                                L("common.refresh"),
                                 icon: "arrow.clockwise",
                                 color: sectionColor
                             ) {
@@ -547,7 +513,7 @@ struct ApplicationsView: View {
                         HStack {
                             Image(systemName: "exclamationmark.circle.fill")
                                 .foregroundStyle(.orange)
-                            Text("\(viewModel.outdatedCasks.count) Outdated Cask(s)")
+                            Text(LFormat("applications.homebrew.outdated %lld", viewModel.outdatedCasks.count))
                                 .font(Theme.Typography.headline)
                         }
 
@@ -571,10 +537,10 @@ struct ApplicationsView: View {
                             .font(.system(size: 48))
                             .foregroundStyle(.tertiary)
 
-                        Text("No casks installed")
+                        Text(L("applications.homebrew.noCasks"))
                             .font(Theme.Typography.headline)
 
-                        Text("Install apps via `brew install --cask <app>`")
+                        Text(L("applications.homebrew.installHint"))
                             .font(Theme.Typography.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -583,7 +549,7 @@ struct ApplicationsView: View {
                     .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
                 } else {
                     VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                        Text("Installed Casks")
+                        Text(L("applications.homebrew.installed"))
                             .font(Theme.Typography.headline)
 
                         ForEach(viewModel.homebrewCasks.filter { cask in
@@ -612,14 +578,14 @@ struct ApplicationsView: View {
     private var controlsSection: some View {
         HStack(spacing: Theme.Spacing.md) {
             // Search
-            GlassSearchField(text: $viewModel.searchText, placeholder: "Search applications...")
+            GlassSearchField(text: $viewModel.searchText, placeholder: L("applications.search"))
 
             // Sort picker
             Menu {
                 ForEach(ApplicationsViewModel.SortOrder.allCases, id: \.self) { order in
                     Button(action: { viewModel.sortOrder = order }) {
                         HStack {
-                            Text(order.rawValue)
+                            Text(order.localizedName)
                             if viewModel.sortOrder == order {
                                 Image(systemName: "checkmark")
                             }
@@ -629,7 +595,7 @@ struct ApplicationsView: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.up.arrow.down")
-                    Text("Sort: \(viewModel.sortOrder.rawValue)")
+                    Text(LFormat("applications.sort %@", viewModel.sortOrder.localizedName))
                     Image(systemName: "chevron.down")
                         .font(.caption2)
                 }
@@ -642,7 +608,7 @@ struct ApplicationsView: View {
 
             // Refresh button
             GlassActionButton(
-                "Refresh",
+                L("common.refresh"),
                 icon: "arrow.clockwise",
                 color: sectionColor
             ) {
@@ -659,10 +625,10 @@ struct ApplicationsView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(.tertiary)
 
-            Text("No applications found")
+            Text(L("applications.empty.title"))
                 .font(Theme.Typography.headline)
 
-            Text("Try adjusting your search")
+            Text(L("applications.empty.message"))
                 .font(Theme.Typography.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -774,7 +740,7 @@ struct MoreAppsCard: View {
                     .foregroundStyle(.secondary)
             }
 
-            Text("more")
+            Text(L("applications.more"))
                 .font(Theme.Typography.caption)
                 .foregroundStyle(.tertiary)
         }
@@ -827,7 +793,7 @@ struct AppCard: View {
             // Action buttons
             HStack(spacing: Theme.Spacing.sm) {
                 Button(action: onOpen) {
-                    Text("Open")
+                    Text(L("applications.open"))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.white)
                         .padding(.horizontal, Theme.Spacing.sm)
@@ -838,7 +804,7 @@ struct AppCard: View {
                 .buttonStyle(.plain)
 
                 Button(action: onUninstall) {
-                    Text("Uninstall")
+                    Text(L("applications.uninstall"))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.red)
                         .padding(.horizontal, Theme.Spacing.sm)
@@ -856,10 +822,10 @@ struct AppCard: View {
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
         .contextMenu {
-            Button("Open", action: onOpen)
-            Button("Reveal in Finder", action: onReveal)
+            Button(L("applications.open"), action: onOpen)
+            Button(L("common.revealInFinder"), action: onReveal)
             Divider()
-            Button("Uninstall", role: .destructive, action: onUninstall)
+            Button(L("applications.uninstall"), role: .destructive, action: onUninstall)
         }
     }
 }
@@ -894,10 +860,10 @@ struct UninstallConfirmationSheet: View {
                     .frame(width: 64, height: 64)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Uninstall \(app.name)?")
+                    Text(LFormat("applications.uninstall.title %@", app.name))
                         .font(Theme.Typography.title2)
 
-                    Text("This will move the app and related files to Trash")
+                    Text(L("applications.uninstall.description"))
                         .font(Theme.Typography.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -913,7 +879,7 @@ struct UninstallConfirmationSheet: View {
                     ProgressView()
                         .controlSize(.small)
                         .frame(width: 16, height: 16)
-                    Text("Scanning for related files...")
+                    Text(L("applications.uninstall.scanning"))
                         .font(Theme.Typography.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -921,7 +887,7 @@ struct UninstallConfirmationSheet: View {
                 .padding(Theme.Spacing.lg)
             } else {
                 VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                    Text("Files to remove:")
+                    Text(L("applications.uninstall.files"))
                         .font(Theme.Typography.headline)
 
                     ScrollView {
@@ -938,7 +904,7 @@ struct UninstallConfirmationSheet: View {
                     .frame(maxHeight: 200)
 
                     HStack {
-                        Text("Total space to free:")
+                        Text(L("applications.uninstall.totalSpace"))
                             .font(Theme.Typography.subheadline)
                             .foregroundStyle(.secondary)
 
@@ -956,12 +922,12 @@ struct UninstallConfirmationSheet: View {
 
             // Buttons
             HStack {
-                Button("Cancel", action: onCancel)
+                Button(L("common.cancel"), action: onCancel)
                     .keyboardShortcut(.cancelAction)
 
                 Spacer()
 
-                Button("Move to Trash", action: onConfirm)
+                Button(L("applications.uninstall.moveToTrash"), action: onConfirm)
                     .keyboardShortcut(.defaultAction)
                     .buttonStyle(.borderedProminent)
                     .tint(.red)
@@ -1058,7 +1024,7 @@ struct UpdateRow: View {
                 Link(destination: downloadURL) {
                     HStack(spacing: 4) {
                         Image(systemName: "arrow.down.circle")
-                        Text("Download")
+                        Text(L("applications.updates.download"))
                     }
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.white)
@@ -1105,7 +1071,7 @@ struct HomebrewCaskRow: View {
                         .font(Theme.Typography.subheadline.weight(.semibold))
 
                     if showUpdateBadge {
-                        Text("Update")
+                        Text(L("applications.homebrew.updateBadge"))
                             .font(.caption2)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -1158,7 +1124,7 @@ struct HomebrewCaskRow: View {
                     Button(action: onUpgrade) {
                         HStack(spacing: 4) {
                             Image(systemName: "arrow.up.circle")
-                            Text("Upgrade")
+                            Text(L("applications.homebrew.upgrade"))
                         }
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.white)
