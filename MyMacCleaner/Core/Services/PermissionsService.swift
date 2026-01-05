@@ -23,16 +23,25 @@ class PermissionsService: ObservableObject {
         isCheckingPermissions = true
 
         // Test by trying to read protected files that ONLY require FDA
-        // These paths don't trigger separate TCC prompts (like Downloads, Music, etc.)
-        // The TCC database is the most reliable test - it requires FDA to read
+        // These paths don't trigger separate TCC prompts (like Downloads, Music, Desktop, Documents)
+        //
+        // IMPORTANT: The paths we test here:
+        // - ~/Library/Safari/* - Requires FDA, fails silently without it
+        // - ~/Library/Mail - Requires FDA, fails silently without it
+        //
+        // Paths we DON'T use:
+        // - /Library/Application Support/com.apple.TCC/TCC.db - Requires ROOT, not just FDA
+        // - ~/Downloads, ~/Desktop, ~/Documents - These trigger TCC prompts!
+        // - ~/Music - Triggers Apple Music TCC prompt!
+
         let testPaths = [
-            "/Library/Application Support/com.apple.TCC/TCC.db",
             NSHomeDirectory() + "/Library/Safari/Bookmarks.plist",
             NSHomeDirectory() + "/Library/Safari/CloudTabs.db"
         ]
 
         var hasAccess = false
 
+        // First, try to read Safari files (these require FDA but don't trigger prompts)
         for path in testPaths {
             if FileManager.default.isReadableFile(atPath: path) {
                 hasAccess = true
@@ -40,9 +49,18 @@ class PermissionsService: ObservableObject {
             }
         }
 
-        // Note: We intentionally don't try to access ~/Library/Mail or other
-        // TCC-protected directories here, as they would trigger separate
-        // permission prompts on macOS
+        // Fallback: Try to list contents of ~/Library/Mail
+        // This directory requires FDA but does NOT trigger a TCC prompt
+        // (unlike Downloads, Documents, Desktop which DO trigger prompts)
+        if !hasAccess {
+            let mailURL = URL(fileURLWithPath: NSHomeDirectory() + "/Library/Mail")
+            do {
+                _ = try FileManager.default.contentsOfDirectory(at: mailURL, includingPropertiesForKeys: nil)
+                hasAccess = true
+            } catch {
+                // Access denied - FDA not granted
+            }
+        }
 
         hasFullDiskAccess = hasAccess
         isCheckingPermissions = false
