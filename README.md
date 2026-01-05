@@ -5,6 +5,9 @@ A modern, open-source macOS system utility app with Apple's Liquid Glass UI desi
 ![macOS](https://img.shields.io/badge/macOS-14.0+-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9+-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/prot10)
+
+**[Website](https://prot10.github.io/MyMacCleaner/)** | **[Documentation](https://prot10.github.io/MyMacCleaner/docs/)** | **[Download](https://github.com/Prot10/MyMacCleaner/releases/latest)**
 
 ## Overview
 
@@ -35,13 +38,13 @@ MyMacCleaner is a free, open-source alternative to commercial Mac cleaning apps 
 
 ### Download
 
-Download the latest release from the [Releases](https://github.com/yourusername/MyMacCleaner/releases) page.
+Download the latest release from the [Releases](https://github.com/Prot10/MyMacCleaner/releases) page.
 
 ### Build from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/MyMacCleaner.git
+git clone https://github.com/Prot10/MyMacCleaner.git
 
 # Open in Xcode
 cd MyMacCleaner
@@ -109,9 +112,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- [Open an Issue](https://github.com/yourusername/MyMacCleaner/issues)
-- [Discussions](https://github.com/yourusername/MyMacCleaner/discussions)
+If you find MyMacCleaner useful, consider supporting the project:
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/prot10)
+
+- [Open an Issue](https://github.com/Prot10/MyMacCleaner/issues)
+- [Discussions](https://github.com/Prot10/MyMacCleaner/discussions)
+- [Star on GitHub](https://github.com/Prot10/MyMacCleaner) - It helps a lot!
 
 ---
 
-Made with love for the Mac community
+Made with ❤️ for the Mac community by [Andrea Protani](https://github.com/Prot10)
