@@ -114,14 +114,7 @@ struct ApplicationsView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(sectionColor.opacity(0.1))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 12)
-                                .strokeBorder(sectionColor.opacity(0.2), lineWidth: 0.5)
-                        }
-                }
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
             }
         }
     }
@@ -301,33 +294,33 @@ struct ApplicationsView: View {
     private var controlsSection: some View {
         HStack(spacing: Theme.Spacing.md) {
             // Search
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-
-                TextField("Search applications...", text: $viewModel.searchText)
-                    .textFieldStyle(.plain)
-
-                if !viewModel.searchText.isEmpty {
-                    Button(action: { viewModel.searchText = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(Theme.Spacing.sm)
-            .background(Color.white.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+            GlassSearchField(text: $viewModel.searchText, placeholder: "Search applications...")
 
             // Sort picker
-            Picker("Sort", selection: $viewModel.sortOrder) {
+            Menu {
                 ForEach(ApplicationsViewModel.SortOrder.allCases, id: \.self) { order in
-                    Text(order.rawValue).tag(order)
+                    Button(action: { viewModel.sortOrder = order }) {
+                        HStack {
+                            Text(order.rawValue)
+                            if viewModel.sortOrder == order {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
                 }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.up.arrow.down")
+                    Text("Sort: \(viewModel.sortOrder.rawValue)")
+                    Image(systemName: "chevron.down")
+                        .font(.caption2)
+                }
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
             }
-            .pickerStyle(.menu)
-            .frame(width: 120)
 
             // Refresh button
             GlassActionButton(
@@ -387,32 +380,35 @@ struct InfoCard: View {
     @State private var isHovered = false
 
     var body: some View {
-        VStack(spacing: Theme.Spacing.sm) {
+        HStack(spacing: Theme.Spacing.md) {
             ZStack {
-                Circle()
+                RoundedRectangle(cornerRadius: 10)
                     .fill(iconColor.opacity(0.15))
-                    .frame(width: 48, height: 48)
+                    .frame(width: 44, height: 44)
 
                 if isLoading {
                     ProgressView()
                         .controlSize(.small)
-                        .frame(width: 16, height: 16)
                 } else {
                     Image(systemName: icon)
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(iconColor)
                 }
             }
 
-            Text(title)
-                .font(Theme.Typography.title.monospacedDigit())
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(Theme.Typography.title2.monospacedDigit())
 
-            Text(subtitle)
-                .font(Theme.Typography.caption)
-                .foregroundStyle(.secondary)
+                Text(subtitle)
+                    .font(Theme.Typography.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
         }
-        .frame(maxWidth: .infinity)
         .padding(Theme.Spacing.md)
+        .frame(maxWidth: .infinity)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
@@ -451,12 +447,12 @@ struct MoreAppsCard: View {
     var body: some View {
         VStack(spacing: Theme.Spacing.xs) {
             ZStack {
-                Circle()
+                RoundedRectangle(cornerRadius: 10)
                     .fill(Color.white.opacity(0.1))
-                    .frame(width: 40, height: 40)
+                    .frame(width: 44, height: 44)
 
                 Text("+\(count)")
-                    .font(Theme.Typography.subheadline.weight(.semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.secondary)
             }
 
@@ -534,7 +530,7 @@ struct AppCard: View {
                 }
                 .buttonStyle(.plain)
             }
-            .opacity(isHovered ? 1 : 0.7)
+            .opacity(isHovered ? 1 : 0.6)
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
