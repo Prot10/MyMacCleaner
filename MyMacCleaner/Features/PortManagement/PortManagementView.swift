@@ -6,6 +6,9 @@ struct PortManagementView: View {
     @ObservedObject var viewModel: PortManagementViewModel
     @State private var isVisible = false
 
+    // Section color for port management
+    private let sectionColor = Theme.Colors.ports
+
     var body: some View {
         ZStack {
             ScrollView {
@@ -83,28 +86,22 @@ struct PortManagementView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Port Management")
-                    .font(Theme.Typography.largeTitle)
+                    .font(.system(size: 28, weight: .bold))
 
                 Text("Monitor network connections and active ports")
-                    .font(Theme.Typography.subheadline)
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            Button(action: viewModel.refreshConnections) {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.clockwise")
-                    Text("Refresh")
-                }
-                .font(Theme.Typography.subheadline)
-                .foregroundStyle(.white)
-                .padding(.horizontal, Theme.Spacing.md)
-                .padding(.vertical, Theme.Spacing.sm)
-                .background(Color.blue)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+            GlassActionButton(
+                "Refresh",
+                icon: "arrow.clockwise",
+                color: sectionColor
+            ) {
+                viewModel.refreshConnections()
             }
-            .buttonStyle(.plain)
         }
     }
 
@@ -160,22 +157,27 @@ struct PortManagementView: View {
             .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
 
             // Filter
-            HStack(spacing: Theme.Spacing.xs) {
+            HStack(spacing: 4) {
                 ForEach(PortManagementViewModel.FilterType.allCases, id: \.self) { filter in
                     Button(action: { viewModel.filterType = filter }) {
                         HStack(spacing: 4) {
                             Image(systemName: filter.icon)
                                 .font(.caption)
                             Text(filter.rawValue)
-                                .font(Theme.Typography.caption)
+                                .font(.system(size: 11, weight: .medium))
                         }
                         .foregroundStyle(viewModel.filterType == filter ? .white : .secondary)
-                        .padding(.horizontal, Theme.Spacing.sm)
+                        .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(
-                            RoundedRectangle(cornerRadius: Theme.CornerRadius.small)
-                                .fill(viewModel.filterType == filter ? Color.blue : Color.white.opacity(0.05))
-                        )
+                        .background {
+                            if viewModel.filterType == filter {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(sectionColor.gradient)
+                            } else {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.white.opacity(0.05))
+                            }
+                        }
                     }
                     .buttonStyle(.plain)
                 }
@@ -257,7 +259,7 @@ struct PortManagementView: View {
                 }
             }
         }
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
@@ -294,7 +296,7 @@ struct PortStatCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
