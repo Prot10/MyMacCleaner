@@ -72,6 +72,16 @@ class PermissionsService: ObservableObject {
         let description: String
         let isRequired: Bool
         let features: [String]
+
+        var localizedFeatures: [String] {
+            [
+                L("permissions.fda.feature.systemCaches"),
+                L("permissions.fda.feature.appLogs"),
+                L("permissions.fda.feature.leftovers"),
+                L("permissions.fda.feature.mailAttachments"),
+                L("permissions.fda.feature.spaceLens")
+            ]
+        }
     }
 
     static let fullDiskAccessInfo = PermissionInfo(
@@ -116,10 +126,10 @@ enum PermissionStatus {
 
     var label: String {
         switch self {
-        case .granted: return "Granted"
-        case .denied: return "Not Granted"
-        case .notDetermined: return "Not Determined"
-        case .restricted: return "Restricted"
+        case .granted: return L("permissions.status.granted")
+        case .denied: return L("permissions.status.denied")
+        case .notDetermined: return L("permissions.status.notDetermined")
+        case .restricted: return L("permissions.status.restricted")
         }
     }
 }
