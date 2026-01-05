@@ -6,6 +6,9 @@ struct DiskCleanerView: View {
     @State private var isVisible = false
     @State private var selectedTab: DiskCleanerTab = .cleaner
 
+    // Section color for disk cleaner
+    private let sectionColor = Theme.Colors.storage
+
     enum DiskCleanerTab: String, CaseIterable {
         case cleaner = "Cleaner"
         case spaceLens = "Space Lens"
@@ -20,74 +23,23 @@ struct DiskCleanerView: View {
 
     var body: some View {
         ZStack {
-            if selectedTab == .cleaner {
-                cleanerContent
-            } else {
-                SpaceLensView(viewModel: spaceLensViewModel)
-            }
-        }
-        .animation(Theme.Animation.spring, value: selectedTab)
-        .safeAreaInset(edge: .top) {
-            tabPicker
-        }
-    }
-
-    // MARK: - Tab Picker
-
-    private var tabPicker: some View {
-        HStack(spacing: Theme.Spacing.sm) {
-            ForEach(DiskCleanerTab.allCases, id: \.self) { tab in
-                Button(action: { selectedTab = tab }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: tab.icon)
-                            .font(.system(size: 12, weight: .medium))
-
-                        Text(tab.rawValue)
-                            .font(Theme.Typography.subheadline)
-                    }
-                    .foregroundStyle(selectedTab == tab ? .white : .secondary)
-                    .padding(.horizontal, Theme.Spacing.md)
-                    .padding(.vertical, Theme.Spacing.sm)
-                    .background(
-                        RoundedRectangle(cornerRadius: Theme.CornerRadius.small)
-                            .fill(selectedTab == tab ? Color.blue : Color.clear)
-                    )
-                }
-                .buttonStyle(.plain)
-            }
-
-            Spacer()
-        }
-        .padding(.horizontal, Theme.Spacing.lg)
-        .padding(.vertical, Theme.Spacing.sm)
-        .background(.ultraThinMaterial)
-    }
-
-    // MARK: - Cleaner Content
-
-    private var cleanerContent: some View {
-        ZStack {
             ScrollView {
                 VStack(spacing: Theme.Spacing.lg) {
                     // Header
                     headerSection
                         .staggeredAnimation(index: 0, isActive: isVisible)
 
-                    if !viewModel.hasScanned {
-                        // Initial scan prompt
-                        scanPromptSection
-                            .staggeredAnimation(index: 1, isActive: isVisible)
-                    } else if viewModel.scanResults.isEmpty {
-                        // No junk found
-                        emptyStateSection
-                            .staggeredAnimation(index: 1, isActive: isVisible)
-                    } else {
-                        // Category list
-                        categoryListSection
-                            .staggeredAnimation(index: 1, isActive: isVisible)
+                    // Tab picker
+                    tabPicker
+                        .staggeredAnimation(index: 1, isActive: isVisible)
 
-                        // Clean button
-                        cleanButtonSection
+                    // Content based on selected tab
+                    switch selectedTab {
+                    case .cleaner:
+                        cleanerContent
+                            .staggeredAnimation(index: 2, isActive: isVisible)
+                    case .spaceLens:
+                        SpaceLensView(viewModel: spaceLensViewModel)
                             .staggeredAnimation(index: 2, isActive: isVisible)
                     }
                 }
@@ -96,20 +48,23 @@ struct DiskCleanerView: View {
 
             // Scanning overlay
             if viewModel.isScanning {
-                Color.black.opacity(0.4)
+                Rectangle()
+                    .fill(.ultraThinMaterial)
                     .ignoresSafeArea()
                     .transition(.opacity)
 
                 ScanningOverlay(
                     progress: viewModel.scanProgress,
-                    category: viewModel.currentScanCategory?.rawValue ?? "Preparing..."
+                    category: viewModel.currentScanCategory?.rawValue ?? "Preparing...",
+                    accentColor: sectionColor
                 )
                 .transition(.scale.combined(with: .opacity))
             }
 
             // Cleaning overlay
             if viewModel.isCleaning {
-                Color.black.opacity(0.4)
+                Rectangle()
+                    .fill(.ultraThinMaterial)
                     .ignoresSafeArea()
                     .transition(.opacity)
 
@@ -134,6 +89,7 @@ struct DiskCleanerView: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
+        .animation(Theme.Animation.spring, value: selectedTab)
         .animation(Theme.Animation.springSmooth, value: viewModel.isScanning)
         .animation(Theme.Animation.springSmooth, value: viewModel.isCleaning)
         .animation(Theme.Animation.spring, value: viewModel.showToast)
@@ -180,37 +136,84 @@ struct DiskCleanerView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Disk Cleaner")
-                    .font(Theme.Typography.largeTitle)
+                    .font(.system(size: 28, weight: .bold))
 
                 Text("Free up space by removing junk files")
-                    .font(Theme.Typography.subheadline)
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
             if viewModel.hasScanned && !viewModel.scanResults.isEmpty {
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text(viewModel.formattedTotalSize)
-                        .font(Theme.Typography.title)
-                        .foregroundStyle(.orange)
+                HStack(spacing: 16) {
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text(viewModel.formattedTotalSize)
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundStyle(sectionColor)
 
-                    Text("\(viewModel.totalItemCount) items found")
-                        .font(Theme.Typography.caption)
-                        .foregroundStyle(.secondary)
+                        Text("\(viewModel.totalItemCount) items found")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(sectionColor.opacity(0.1))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(sectionColor.opacity(0.2), lineWidth: 0.5)
+                        }
                 }
             }
+        }
+    }
+
+    // MARK: - Tab Picker
+
+    private var tabPicker: some View {
+        HStack {
+            GlassTabPicker(
+                tabs: DiskCleanerTab.allCases,
+                selection: $selectedTab,
+                icon: { $0.icon },
+                label: { $0.rawValue },
+                accentColor: sectionColor
+            )
+
+            Spacer()
+        }
+    }
+
+    // MARK: - Cleaner Content
+
+    @ViewBuilder
+    private var cleanerContent: some View {
+        if !viewModel.hasScanned {
+            // Initial scan prompt
+            scanPromptSection
+        } else if viewModel.scanResults.isEmpty {
+            // No junk found
+            emptyStateSection
+        } else {
+            // Category list
+            categoryListSection
+
+            // Clean button
+            cleanButtonSection
         }
     }
 
     // MARK: - Scan Prompt
 
     private var scanPromptSection: some View {
-        VStack(spacing: Theme.Spacing.xl) {
+        VStack(spacing: 28) {
             // Icon
             ZStack {
                 Circle()
-                    .fill(Color.blue.opacity(0.1))
+                    .fill(sectionColor.opacity(0.1))
                     .frame(width: 120, height: 120)
                     .blur(radius: 20)
 
@@ -218,87 +221,78 @@ struct DiskCleanerView: View {
                     Circle()
                         .fill(.ultraThinMaterial)
                         .frame(width: 80, height: 80)
+                        .overlay {
+                            Circle()
+                                .strokeBorder(sectionColor.opacity(0.3), lineWidth: 1)
+                        }
 
                     Image(systemName: "internaldrive.fill")
                         .font(.system(size: 32, weight: .medium))
-                        .foregroundStyle(.blue.gradient)
+                        .foregroundStyle(sectionColor.gradient)
                 }
             }
 
-            VStack(spacing: Theme.Spacing.sm) {
+            VStack(spacing: 8) {
                 Text("Scan Your Disk")
-                    .font(Theme.Typography.title2)
+                    .font(.system(size: 20, weight: .semibold))
 
                 Text("Find cache files, logs, and other junk that's taking up space")
-                    .font(Theme.Typography.body)
+                    .font(.system(size: 14))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
 
-            Button(action: viewModel.startScan) {
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                    Text("Start Scan")
-                }
-                .font(Theme.Typography.body.weight(.semibold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, Theme.Spacing.xl)
-                .padding(.vertical, Theme.Spacing.md)
-                .background(
-                    LinearGradient(
-                        colors: [.blue, .blue.opacity(0.8)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium))
+            GlassActionButton(
+                "Start Scan",
+                icon: "magnifyingglass",
+                color: sectionColor
+            ) {
+                viewModel.startScan()
             }
-            .buttonStyle(.plain)
-            .shadow(color: .blue.opacity(0.3), radius: 8, y: 4)
         }
-        .padding(Theme.Spacing.xl)
+        .padding(32)
         .frame(maxWidth: .infinity)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Empty State
 
     private var emptyStateSection: some View {
-        VStack(spacing: Theme.Spacing.lg) {
+        VStack(spacing: 20) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 64))
                 .foregroundStyle(.green)
 
-            VStack(spacing: Theme.Spacing.sm) {
+            VStack(spacing: 8) {
                 Text("Your Disk is Clean!")
-                    .font(Theme.Typography.title2)
+                    .font(.system(size: 20, weight: .semibold))
 
                 Text("No junk files were found. Your Mac is running efficiently.")
-                    .font(Theme.Typography.body)
+                    .font(.system(size: 14))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
 
             Button(action: viewModel.startScan) {
                 Text("Scan Again")
-                    .font(Theme.Typography.subheadline)
-                    .foregroundStyle(.blue)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(sectionColor)
             }
             .buttonStyle(.plain)
         }
-        .padding(Theme.Spacing.xl)
+        .padding(32)
         .frame(maxWidth: .infinity)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Category List
 
     private var categoryListSection: some View {
-        VStack(spacing: Theme.Spacing.md) {
+        VStack(spacing: 12) {
             // Selection controls
             HStack {
                 Text("Categories")
-                    .font(Theme.Typography.headline)
+                    .font(.system(size: 15, weight: .semibold))
 
                 Spacer()
 
@@ -306,7 +300,8 @@ struct DiskCleanerView: View {
                     viewModel.selectAll()
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.blue)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(sectionColor)
 
                 Text("·")
                     .foregroundStyle(.tertiary)
@@ -315,18 +310,25 @@ struct DiskCleanerView: View {
                     viewModel.deselectAll()
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.blue)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(sectionColor)
 
                 Button(action: viewModel.startScan) {
                     HStack(spacing: 4) {
                         Image(systemName: "arrow.clockwise")
                         Text("Rescan")
                     }
-                    .font(Theme.Typography.caption)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color.white.opacity(0.05))
+                    }
                 }
                 .buttonStyle(.plain)
-                .padding(.leading, Theme.Spacing.md)
+                .padding(.leading, 12)
             }
 
             // Category cards
@@ -357,39 +359,27 @@ struct DiskCleanerView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Selected: \(viewModel.formattedSelectedSize)")
-                    .font(Theme.Typography.headline)
+                    .font(.system(size: 15, weight: .semibold))
 
                 Text("\(viewModel.selectedItemCount) items")
-                    .font(Theme.Typography.caption)
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            Button(action: viewModel.prepareClean) {
-                HStack(spacing: 8) {
-                    Image(systemName: "trash.fill")
-                    Text("Clean")
-                }
-                .font(Theme.Typography.body.weight(.semibold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, Theme.Spacing.xl)
-                .padding(.vertical, Theme.Spacing.md)
-                .background(
-                    LinearGradient(
-                        colors: viewModel.selectedItemCount > 0 ? [.orange, .orange.opacity(0.8)] : [.gray, .gray.opacity(0.8)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium))
+            GlassActionButton(
+                "Clean",
+                icon: "trash.fill",
+                color: sectionColor,
+                disabled: viewModel.selectedItemCount == 0
+            ) {
+                viewModel.prepareClean()
             }
-            .buttonStyle(.plain)
-            .disabled(viewModel.selectedItemCount == 0)
-            .shadow(color: viewModel.selectedItemCount > 0 ? .orange.opacity(0.3) : .clear, radius: 8, y: 4)
         }
-        .padding(Theme.Spacing.lg)
-        .glassCardProminent()
+        .padding(20)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .shadow(color: sectionColor.opacity(0.2), radius: 15, y: 5)
     }
 }
 
@@ -398,14 +388,15 @@ struct DiskCleanerView: View {
 struct ScanningOverlay: View {
     let progress: Double
     let category: String
+    var accentColor: Color = .blue
 
     @State private var isAnimating = false
 
     var body: some View {
-        VStack(spacing: Theme.Spacing.lg) {
+        VStack(spacing: 20) {
             ZStack {
                 Circle()
-                    .fill(Color.blue.opacity(0.1))
+                    .fill(accentColor.opacity(0.1))
                     .frame(width: 120, height: 120)
                     .blur(radius: 20)
                     .scaleEffect(isAnimating ? 1.1 : 0.9)
@@ -417,11 +408,7 @@ struct ScanningOverlay: View {
                 Circle()
                     .trim(from: 0, to: progress)
                     .stroke(
-                        LinearGradient(
-                            colors: [.blue, .blue.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
+                        accentColor.gradient,
                         style: StrokeStyle(lineWidth: 4, lineCap: .round)
                     )
                     .frame(width: 80, height: 80)
@@ -430,20 +417,20 @@ struct ScanningOverlay: View {
 
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 28, weight: .medium))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(accentColor)
             }
 
-            VStack(spacing: Theme.Spacing.xs) {
+            VStack(spacing: 4) {
                 Text("Scanning...")
-                    .font(Theme.Typography.title2)
+                    .font(.system(size: 20, weight: .semibold))
 
                 Text(category)
-                    .font(Theme.Typography.subheadline)
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
 
                 Text("\(Int(progress * 100))%")
-                    .font(Theme.Typography.title.monospacedDigit())
-                    .foregroundStyle(.blue)
+                    .font(.system(size: 24, weight: .bold).monospacedDigit())
+                    .foregroundStyle(accentColor)
             }
 
             GeometryReader { geometry in
@@ -453,20 +440,14 @@ struct ScanningOverlay: View {
                         .frame(height: 8)
 
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(
-                            LinearGradient(
-                                colors: [.blue, .blue.opacity(0.7)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .fill(accentColor.gradient)
                         .frame(width: geometry.size.width * progress, height: 8)
                         .animation(Theme.Animation.spring, value: progress)
                 }
             }
             .frame(width: 200, height: 8)
         }
-        .padding(Theme.Spacing.xl)
+        .padding(28)
         .frame(width: 280)
         .glassCardProminent()
         .onAppear {
