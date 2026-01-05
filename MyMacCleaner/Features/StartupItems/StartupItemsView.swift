@@ -171,58 +171,50 @@ struct StartupItemsView: View {
     // MARK: - Scan Prompt Section
 
     private var scanPromptSection: some View {
-        VStack(spacing: Theme.Spacing.xl) {
+        VStack(spacing: 28) {
+            // Icon
             ZStack {
                 Circle()
-                    .fill(Color.cyan.opacity(0.1))
+                    .fill(sectionColor.opacity(0.1))
                     .frame(width: 120, height: 120)
+                    .blur(radius: 20)
 
-                Image(systemName: "power.circle")
-                    .font(.system(size: 50))
-                    .foregroundStyle(.cyan.gradient)
+                ZStack {
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                        .frame(width: 80, height: 80)
+                        .overlay {
+                            Circle()
+                                .strokeBorder(sectionColor.opacity(0.3), lineWidth: 1)
+                        }
+
+                    Image(systemName: "power")
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundStyle(sectionColor.gradient)
+                }
             }
 
-            VStack(spacing: Theme.Spacing.sm) {
+            VStack(spacing: 8) {
                 Text("Scan Startup Items")
-                    .font(Theme.Typography.title)
+                    .font(.system(size: 20, weight: .semibold))
 
                 Text("Discover all apps, agents, and daemons that run when your Mac starts")
-                    .font(Theme.Typography.subheadline)
+                    .font(.system(size: 14))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
             }
 
             GlassActionButton(
-                "Scan Startup Items",
+                "Start Scan",
                 icon: "magnifyingglass",
-                color: .cyan
+                color: sectionColor
             ) {
                 viewModel.scanItems()
             }
-
-            // Info about what will be scanned
-            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("What will be scanned:")
-                    .font(Theme.Typography.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
-
-                HStack(spacing: Theme.Spacing.lg) {
-                    ForEach(StartupItemType.allCases, id: \.self) { type in
-                        HStack(spacing: 4) {
-                            Image(systemName: type.icon)
-                                .font(.caption)
-                            Text(type.rawValue)
-                                .font(Theme.Typography.caption)
-                        }
-                        .foregroundStyle(.tertiary)
-                    }
-                }
-            }
-            .padding(.top, Theme.Spacing.md)
         }
+        .padding(32)
         .frame(maxWidth: .infinity)
-        .padding(Theme.Spacing.xxl)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 
