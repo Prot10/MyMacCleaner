@@ -137,51 +137,18 @@ struct PortManagementView: View {
     private var controlsSection: some View {
         HStack(spacing: Theme.Spacing.md) {
             // Search
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
+            GlassSearchField(text: $viewModel.searchText, placeholder: "Search by process or port...")
 
-                TextField("Search by process or port...", text: $viewModel.searchText)
-                    .textFieldStyle(.plain)
+            Spacer()
 
-                if !viewModel.searchText.isEmpty {
-                    Button(action: { viewModel.searchText = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(Theme.Spacing.sm)
-            .background(Color.white.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
-
-            // Filter
-            HStack(spacing: 4) {
-                ForEach(PortManagementViewModel.FilterType.allCases, id: \.self) { filter in
-                    Button(action: { viewModel.filterType = filter }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: filter.icon)
-                                .font(.caption)
-                            Text(filter.rawValue)
-                                .font(.system(size: 11, weight: .medium))
-                        }
-                        .foregroundStyle(viewModel.filterType == filter ? .white : .secondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background {
-                            if viewModel.filterType == filter {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(sectionColor.gradient)
-                            } else {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.white.opacity(0.05))
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
+            // Filter tabs
+            GlassTabPicker(
+                tabs: PortManagementViewModel.FilterType.allCases,
+                selection: $viewModel.filterType,
+                icon: { $0.icon },
+                label: { $0.rawValue },
+                accentColor: sectionColor
+            )
         }
     }
 
@@ -311,16 +278,10 @@ struct ConnectionRow: View {
     var body: some View {
         HStack {
             // Process name
-            HStack(spacing: Theme.Spacing.xs) {
-                Image(systemName: "app")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Text(connection.processName)
-                    .font(Theme.Typography.subheadline)
-                    .lineLimit(1)
-            }
-            .frame(width: 150, alignment: .leading)
+            Text(connection.processName)
+                .font(Theme.Typography.subheadline)
+                .lineLimit(1)
+                .frame(width: 150, alignment: .leading)
 
             // PID - use String() to avoid locale-based thousand separators
             Text(String(connection.pid))
@@ -328,8 +289,8 @@ struct ConnectionRow: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 60, alignment: .leading)
 
-            // Local port
-            Text("\(connection.localPort)")
+            // Local port - use String() to avoid locale-based thousand separators
+            Text(String(connection.localPort))
                 .font(Theme.Typography.subheadline.monospacedDigit().weight(.medium))
                 .foregroundStyle(.cyan)
                 .frame(width: 100, alignment: .leading)
