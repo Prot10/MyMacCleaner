@@ -72,7 +72,11 @@ MyMacCleaner/
     │   │   └── ToastView.swift
     │   ├── Services/
     │   │   ├── FileScanner.swift
-    │   │   └── PermissionsService.swift
+    │   │   ├── PermissionsService.swift
+    │   │   ├── AuthorizationService.swift
+    │   │   ├── AppUpdateChecker.swift
+    │   │   ├── HomebrewService.swift
+    │   │   └── LocalizationManager.swift
     │   ├── Models/
     │   │   └── ScanResult.swift
     │   └── Extensions/
@@ -104,9 +108,9 @@ MyMacCleaner/
 
 ## TODO Tracker
 
-### Current Phase: Phase 6 - Applications Manager
+### Current Phase: ALL PHASES COMPLETE
 
-### Overall Progress: 87.5% (7/8 phases complete)
+### Overall Progress: 100% (8/8 phases complete)
 
 ### Phase Status
 
@@ -117,7 +121,7 @@ MyMacCleaner/
 | 3 | Home - Smart Scan | COMPLETED | 100% |
 | 4 | Disk Cleaner + Space Lens | COMPLETED | 100% |
 | 5 | Performance | COMPLETED | 100% |
-| 6 | Applications Manager | IN PROGRESS | 50% |
+| 6 | Applications Manager | COMPLETED | 100% |
 | 7 | Port Management | COMPLETED | 100% |
 | 8 | System Health | COMPLETED | 100% |
 
@@ -184,16 +188,17 @@ MyMacCleaner/
 - [x] Test all maintenance tasks (build verified)
 
 #### Phase 6: Applications Manager
-- [ ] Create ApplicationsView.swift
-- [ ] Create ApplicationsViewModel.swift
-- [ ] Create InstalledApp model
-- [ ] Create AppCard.swift component
-- [ ] Implement app scanning
-- [ ] Create UninstallSheet.swift
-- [ ] Implement leftover detection
-- [ ] Create AppUpdateChecker.swift
-- [ ] Add Homebrew integration
-- [ ] Test uninstall functionality
+- [x] Create ApplicationsView.swift (with tabs: All Apps, Updates, Homebrew)
+- [x] Create ApplicationsViewModel.swift
+- [x] Create AppInfo model (with icon, version, size, dates)
+- [x] Create AppCard.swift component
+- [x] Implement app scanning (background discovery + full analysis)
+- [x] Create UninstallConfirmationSheet.swift
+- [x] Implement leftover detection (Library, Preferences, Caches, etc.)
+- [x] Create AppUpdateChecker.swift (Sparkle appcast.xml parsing)
+- [x] Create HomebrewService.swift (list, upgrade, uninstall casks)
+- [x] Add Homebrew integration UI (outdated casks, upgrade all, cleanup)
+- [x] Test uninstall functionality (build verified)
 
 #### Phase 7: Port Management
 - [x] Create PortManagementView.swift
@@ -574,6 +579,133 @@ MyMacCleaner/
 - Complete Phase 6: Applications Manager
 - Implement app scanning and uninstall functionality
 - Add Homebrew integration for updates
+
+---
+
+### 2026-01-05 - Language Switcher Feature
+
+**Session Goal**: Add multi-language support with runtime language switching
+
+**Completed**:
+- Created LocalizationManager.swift:
+  - AppLanguage enum with English, Italian, Spanish
+  - Flag emojis and native language names
+  - @Observable class with @AppStorage persistence
+  - System locale detection on first launch
+  - Runtime language switching without restart
+- Created LanguageSwitcherButton.swift:
+  - Liquid Glass styled button for top-right corner
+  - Globe icon with language code (EN/IT/ES)
+  - Popover with language picker
+  - Hover and press effects matching design system
+- Created Localizable.xcstrings String Catalog:
+  - Navigation section names and descriptions
+  - Settings labels and descriptions
+  - Common UI strings (Cancel, Delete, Clean, etc.)
+  - Coming Soon placeholder strings
+  - All strings translated to EN/IT/ES
+- Updated MyMacCleanerApp.swift:
+  - Integrated LocalizationManager as environment
+  - Applied .environment(\.locale, ...) at root
+  - Added Language tab to Settings window
+  - Localized all Settings tab labels
+- Updated ContentView.swift:
+  - Added LanguageSwitcherButton overlay in top-right
+  - Full-screen aware positioning (36pt top in fullscreen)
+  - Localized NavigationSection names and descriptions
+  - Localized System Status badge text
+  - Localized ComingSoonView strings
+
+**Files Created**:
+- `MyMacCleaner/Core/Services/LocalizationManager.swift`
+- `MyMacCleaner/Core/Design/LanguageSwitcherButton.swift`
+- `MyMacCleaner/Resources/Localizable.xcstrings`
+
+**Files Modified**:
+- `MyMacCleaner/App/MyMacCleanerApp.swift` (environment, settings tab)
+- `MyMacCleaner/App/ContentView.swift` (toolbar item, localized strings)
+
+**Key Technical Decisions**:
+- Uses Apple's String Catalogs (.xcstrings) - modern approach
+- Runtime switching via SwiftUI .environment(\.locale, ...)
+- @AppStorage for persistence across launches
+- Auto-detects system language on first launch (EN/IT/ES only)
+- Language switcher in toolbar using `.toolbar { ToolbarItem(placement: .primaryAction) }`
+- Gets automatic Liquid Glass styling from macOS 26 toolbar system
+
+**Build Status**: SUCCESS
+
+**Next Steps**:
+- Localize remaining feature views (Home, Disk Cleaner, Performance, etc.)
+- Complete Phase 6: Applications Manager
+
+---
+
+### 2026-01-05 - Phase 6 Applications Manager Complete
+
+**Session Goal**: Complete Phase 6 - Applications Manager with update checking and Homebrew integration
+
+**Completed**:
+
+**UI Consistency Audit**:
+- Fixed fullscreen top bar issue by adding conditional 28pt padding when in fullscreen mode
+- Standardized all scan prompt cards (Home, Disk Cleaner, Applications, Startup Items) with consistent styling:
+  - Circle with blur effect background
+  - Inner ultraThinMaterial circle with 80pt size
+  - 32pt icon with gradient
+  - 20pt semibold title
+  - 14pt secondary subtitle
+  - GlassActionButton
+
+**Phase 6 - Applications Manager**:
+- Created AppUpdateChecker.swift:
+  - Sparkle appcast.xml parsing via XMLParserDelegate
+  - checkSparkleUpdate() for individual apps
+  - checkUpdates() for batch checking with progress callback
+  - AppUpdate model with version comparison
+  - Supports download URL and release notes
+- Created HomebrewService.swift:
+  - isHomebrewInstalled() detection (Apple Silicon + Intel paths)
+  - listInstalledCasks() with detailed info
+  - getOutdatedCasks() for update checking
+  - upgradeCask(), upgradeAllCasks(), uninstallCask()
+  - cleanup() for cache cleaning
+  - HomebrewCask and HomebrewFormula models
+- Updated ApplicationsViewModel.swift:
+  - Integrated AppUpdateChecker and HomebrewService
+  - checkForUpdates() method with progress tracking
+  - loadHomebrewStatus() for cask management
+  - upgradeCask(), upgradeAllCasks(), uninstallCask(), cleanupHomebrew() methods
+- Updated ApplicationsView.swift:
+  - Added tab picker (All Apps, Updates, Homebrew)
+  - Created updatesSection with update checking UI
+  - Created homebrewSection with cask management
+  - Added UpdateRow component for displaying updates
+  - Added HomebrewCaskRow component with upgrade/uninstall actions
+  - Badge counts on tabs for available updates and outdated casks
+
+**Files Created**:
+- `MyMacCleaner/Core/Services/AppUpdateChecker.swift`
+- `MyMacCleaner/Core/Services/HomebrewService.swift`
+
+**Files Modified**:
+- `MyMacCleaner/App/ContentView.swift` (fullscreen padding fix)
+- `MyMacCleaner/Features/Home/HomeView.swift` (scan prompt styling)
+- `MyMacCleaner/Features/Applications/ApplicationsView.swift` (tabs, updates, homebrew UI)
+- `MyMacCleaner/Features/Applications/ApplicationsViewModel.swift` (update + homebrew methods)
+- `MyMacCleaner/Features/DiskCleaner/DiskCleanerView.swift` (scan prompt styling)
+- `MyMacCleaner/Features/StartupItems/StartupItemsView.swift` (scan prompt styling)
+
+**Key Technical Decisions**:
+- Sparkle update checking parses SUFeedURL from app's Info.plist
+- Homebrew service detects both /opt/homebrew/bin/brew (ARM) and /usr/local/bin/brew (Intel)
+- Uses Swift actors for thread-safe service implementations
+- Tab-based UI for Applications page to separate concerns
+- Homebrew cask operations run via Process with proper PATH setup
+
+**Build Status**: SUCCESS
+
+**Project Status**: ALL 8 PHASES COMPLETE (100%)
 
 ---
 
