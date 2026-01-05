@@ -33,10 +33,6 @@ class DiskCleanerViewModel: ObservableObject {
     // Errors
     @Published var errorMessage: String?
 
-    enum ToastType {
-        case success, error, info
-    }
-
     // MARK: - Computed Properties
 
     var totalCleanableSize: Int64 {
@@ -184,13 +180,9 @@ class DiskCleanerViewModel: ObservableObject {
                 cleaningCategory = item.category.localizedName
                 cleaningProgress = Double(index) / Double(totalItems)
 
-                do {
-                    let freed = try await fileScanner.trashItems([item])
-                    totalFreed += freed
-                } catch {
-                    print("Failed to clean \(item.name): \(error)")
-                    failedCount += 1
-                }
+                let result = await fileScanner.trashItems([item])
+                totalFreed += result.freedSpace
+                failedCount += result.failedCount
 
                 try? await Task.sleep(nanoseconds: 50_000_000)
             }

@@ -2,12 +2,9 @@ import Foundation
 import Security
 
 /// Service that manages admin authorization with a SINGLE password prompt
-class AuthorizationService {
+/// Uses AppleScript's "do shell script with administrator privileges" for secure elevation
+final class AuthorizationService {
     static let shared = AuthorizationService()
-
-    private var cachedPassword: String?
-    private var passwordExpiry: Date?
-    private let passwordTimeout: TimeInterval = 300 // 5 minutes
 
     private init() {}
 
@@ -114,10 +111,34 @@ class AuthorizationService {
         return "'" + string.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 
+    /// Escape a string for safe inclusion in AppleScript's "do shell script"
+    /// This prevents command injection by properly escaping all special characters
     private func escapeForAppleScript(_ string: String) -> String {
-        // Escape backslashes and double quotes for AppleScript
-        return string
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
+        var result = ""
+        result.reserveCapacity(string.count + 10)
+
+        for char in string {
+            switch char {
+            case "\\":
+                result += "\\\\"
+            case "\"":
+                result += "\\\""
+            case "\n":
+                result += "\\n"
+            case "\r":
+                result += "\\r"
+            case "\t":
+                result += "\\t"
+            default:
+                // Check for other control characters (ASCII 0-31 except those handled above)
+                if let ascii = char.asciiValue, ascii < 32 {
+                    // Skip control characters that could be malicious
+                    continue
+                }
+                result.append(char)
+            }
+        }
+
+        return result
     }
 }

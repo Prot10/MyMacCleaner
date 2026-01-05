@@ -105,6 +105,56 @@ enum Theme {
         static let springBouncy = SwiftUI.Animation.spring(response: 0.5, dampingFraction: 0.6)
         static let springSmooth = SwiftUI.Animation.spring(response: 0.6, dampingFraction: 0.85)
     }
+
+    // MARK: - Thresholds & Constants
+
+    enum Thresholds {
+        /// Minimum file size to include in scans (1 KB)
+        static let minimumFileSize: Int64 = 1024
+
+        /// Disk space thresholds for health warnings
+        enum DiskSpace {
+            /// Below this is critical (20 GB)
+            static let criticalFreeSpace: Int64 = 20 * 1024 * 1024 * 1024
+            /// Below this is warning (50 GB)
+            static let warningFreeSpace: Int64 = 50 * 1024 * 1024 * 1024
+        }
+
+        /// Startup items thresholds for health score
+        enum StartupItems {
+            /// Above this is warning
+            static let warningCount = 10
+            /// Above this is critical
+            static let criticalCount = 20
+        }
+
+        /// Memory usage thresholds (percentage)
+        enum Memory {
+            /// Above this is warning (80%)
+            static let warningUsage: Double = 0.80
+            /// Above this is critical (90%)
+            static let criticalUsage: Double = 0.90
+        }
+    }
+
+    // MARK: - Timing Constants
+
+    enum Timing {
+        /// Short delay for visual feedback (50ms)
+        static let visualFeedback: UInt64 = 50_000_000
+        /// Delay for progress display (80ms)
+        static let progressStep: UInt64 = 80_000_000
+        /// Medium delay (200ms)
+        static let shortPause: UInt64 = 200_000_000
+        /// Delay to show completion (300ms)
+        static let completionDisplay: UInt64 = 300_000_000
+        /// Auto-dismiss toast (3s)
+        static let toastDuration: UInt64 = 3_000_000_000
+        /// Clear results delay (5s)
+        static let clearResultsDelay: UInt64 = 5_000_000_000
+        /// Process refresh interval (seconds)
+        static let processRefreshInterval: TimeInterval = 2.0
+    }
 }
 
 // MARK: - Shadow Style

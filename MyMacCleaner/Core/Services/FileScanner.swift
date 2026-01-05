@@ -1,11 +1,136 @@
 import Foundation
 
+// MARK: - File Scanner Errors
+
+enum FileScannerError: LocalizedError {
+    case pathNotAllowed(URL)
+    case deletionFailed(URL, Error)
+    case trashFailed(URL, Error)
+    case emptyTrashFailed(Error)
+
+    var errorDescription: String? {
+        switch self {
+        case .pathNotAllowed(let url):
+            return "Path is not in an allowed directory for deletion: \(url.path)"
+        case .deletionFailed(let url, let error):
+            return "Failed to delete \(url.lastPathComponent): \(error.localizedDescription)"
+        case .trashFailed(let url, let error):
+            return "Failed to move \(url.lastPathComponent) to trash: \(error.localizedDescription)"
+        case .emptyTrashFailed(let error):
+            return "Failed to empty trash: \(error.localizedDescription)"
+        }
+    }
+}
+
 // MARK: - File Scanner
 
 actor FileScanner {
     static let shared = FileScanner()
 
-    private init() {}
+    /// Allowed base paths for file deletion operations
+    /// Files outside these directories will be rejected for safety
+    private let allowedDeletionPaths: [String]
+
+    private init() {
+        let home = NSHomeDirectory()
+
+        // Only allow deletion from known safe directories
+        self.allowedDeletionPaths = [
+            // User caches and logs
+            "\(home)/Library/Caches",
+            "\(home)/Library/Logs",
+
+            // Developer data
+            "\(home)/Library/Developer/Xcode/DerivedData",
+            "\(home)/Library/Developer/Xcode/Archives",
+            "\(home)/Library/Developer/CoreSimulator/Caches",
+
+            // Application support cleanup (be careful)
+            "\(home)/Library/Application Support",
+
+            // User trash
+            "\(home)/.Trash",
+
+            // Downloads (user-controlled)
+            "\(home)/Downloads",
+
+            // System caches (requires FDA)
+            "/Library/Caches",
+            "/Library/Logs",
+
+            // Mail attachments
+            "\(home)/Library/Containers/com.apple.mail/Data/Library/Mail Downloads",
+
+            // Browser caches
+            "\(home)/Library/Caches/com.apple.Safari",
+            "\(home)/Library/Caches/Google",
+            "\(home)/Library/Caches/Firefox"
+        ]
+    }
+
+    // MARK: - Path Validation
+
+    /// Validates that a path is within an allowed directory for deletion
+    /// Returns true if the path is safe to delete, false otherwise
+    private func isPathAllowedForDeletion(_ url: URL) -> Bool {
+        let path = url.standardizedFileURL.path
+
+        // Never allow deletion of the home directory itself
+        if path == NSHomeDirectory() {
+            return false
+        }
+
+        // Never allow deletion of root directories
+        let forbiddenPaths = [
+            "/",
+            "/System",
+            "/Library",
+            "/Applications",
+            "/Users",
+            "/usr",
+            "/bin",
+            "/sbin",
+            "/var",
+            "/private",
+            NSHomeDirectory() + "/Library",
+            NSHomeDirectory() + "/Documents",
+            NSHomeDirectory() + "/Desktop",
+            NSHomeDirectory() + "/Pictures",
+            NSHomeDirectory() + "/Music",
+            NSHomeDirectory() + "/Movies"
+        ]
+
+        for forbidden in forbiddenPaths {
+            if path == forbidden {
+                return false
+            }
+        }
+
+        // Check if the path is within an allowed directory
+        for allowedPath in allowedDeletionPaths {
+            if path.hasPrefix(allowedPath + "/") || path == allowedPath {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /// Validates multiple items and returns those that are safe to delete
+    private func validateItemsForDeletion(_ items: [CleanableItem]) -> (valid: [CleanableItem], invalid: [CleanableItem]) {
+        var valid: [CleanableItem] = []
+        var invalid: [CleanableItem] = []
+
+        for item in items where item.isSelected {
+            if isPathAllowedForDeletion(item.path) {
+                valid.append(item)
+            } else {
+                invalid.append(item)
+            }
+        }
+
+        return (valid, invalid)
+    }
 
     // MARK: - Scanning
 
@@ -177,39 +302,81 @@ actor FileScanner {
 
     // MARK: - Deletion
 
-    /// Delete selected items
-    func deleteItems(_ items: [CleanableItem]) async throws -> Int64 {
-        var freedSpace: Int64 = 0
+    /// Deletion result containing success info and any errors encountered
+    struct DeletionResult {
+        let freedSpace: Int64
+        let deletedCount: Int
+        let failedCount: Int
+        let errors: [FileScannerError]
+    }
 
-        for item in items where item.isSelected {
+    /// Delete selected items with path validation
+    /// - Parameter items: Items to delete (only selected items will be processed)
+    /// - Returns: Result with freed space and any errors
+    func deleteItems(_ items: [CleanableItem]) async -> DeletionResult {
+        let (validItems, invalidItems) = validateItemsForDeletion(items)
+
+        var freedSpace: Int64 = 0
+        var deletedCount = 0
+        var errors: [FileScannerError] = []
+
+        // Log invalid items
+        for item in invalidItems {
+            errors.append(.pathNotAllowed(item.path))
+        }
+
+        // Delete valid items
+        for item in validItems {
             do {
                 try FileManager.default.removeItem(at: item.path)
                 freedSpace += item.size
+                deletedCount += 1
             } catch {
-                print("Failed to delete \(item.path): \(error)")
-                throw error
+                errors.append(.deletionFailed(item.path, error))
             }
         }
 
-        return freedSpace
+        return DeletionResult(
+            freedSpace: freedSpace,
+            deletedCount: deletedCount,
+            failedCount: invalidItems.count + (validItems.count - deletedCount),
+            errors: errors
+        )
     }
 
-    /// Move items to trash instead of permanent deletion
-    func trashItems(_ items: [CleanableItem]) async throws -> Int64 {
-        var freedSpace: Int64 = 0
+    /// Move items to trash instead of permanent deletion (with path validation)
+    /// - Parameter items: Items to trash (only selected items will be processed)
+    /// - Returns: Result with freed space and any errors
+    func trashItems(_ items: [CleanableItem]) async -> DeletionResult {
+        let (validItems, invalidItems) = validateItemsForDeletion(items)
 
-        for item in items where item.isSelected {
+        var freedSpace: Int64 = 0
+        var deletedCount = 0
+        var errors: [FileScannerError] = []
+
+        // Log invalid items
+        for item in invalidItems {
+            errors.append(.pathNotAllowed(item.path))
+        }
+
+        // Trash valid items
+        for item in validItems {
             do {
                 var trashedURL: NSURL?
                 try FileManager.default.trashItem(at: item.path, resultingItemURL: &trashedURL)
                 freedSpace += item.size
+                deletedCount += 1
             } catch {
-                print("Failed to trash \(item.path): \(error)")
-                throw error
+                errors.append(.trashFailed(item.path, error))
             }
         }
 
-        return freedSpace
+        return DeletionResult(
+            freedSpace: freedSpace,
+            deletedCount: deletedCount,
+            failedCount: invalidItems.count + (validItems.count - deletedCount),
+            errors: errors
+        )
     }
 }
 
@@ -222,17 +389,54 @@ extension FileScanner {
         return (try? await getDirectorySize(trashURL)) ?? 0
     }
 
-    /// Empty the trash
-    func emptyTrash() async throws {
-        let trashURL = URL(fileURLWithPath: NSHomeDirectory() + "/.Trash")
+    /// Empty the trash safely
+    /// Only empties the current user's trash directory
+    func emptyTrash() async -> DeletionResult {
+        let trashPath = NSHomeDirectory() + "/.Trash"
+        let trashURL = URL(fileURLWithPath: trashPath)
 
-        let contents = try FileManager.default.contentsOfDirectory(
-            at: trashURL,
-            includingPropertiesForKeys: nil
-        )
-
-        for item in contents {
-            try FileManager.default.removeItem(at: item)
+        // Validate that we're actually dealing with the user's trash
+        guard trashURL.standardizedFileURL.path == trashPath else {
+            return DeletionResult(
+                freedSpace: 0,
+                deletedCount: 0,
+                failedCount: 1,
+                errors: [.pathNotAllowed(trashURL)]
+            )
         }
+
+        var freedSpace: Int64 = 0
+        var deletedCount = 0
+        var errors: [FileScannerError] = []
+
+        do {
+            let contents = try FileManager.default.contentsOfDirectory(
+                at: trashURL,
+                includingPropertiesForKeys: [.totalFileAllocatedSizeKey]
+            )
+
+            for item in contents {
+                do {
+                    // Get size before deletion
+                    if let size = try? item.resourceValues(forKeys: [.totalFileAllocatedSizeKey]).totalFileAllocatedSize {
+                        freedSpace += Int64(size)
+                    }
+
+                    try FileManager.default.removeItem(at: item)
+                    deletedCount += 1
+                } catch {
+                    errors.append(.deletionFailed(item, error))
+                }
+            }
+        } catch {
+            errors.append(.emptyTrashFailed(error))
+        }
+
+        return DeletionResult(
+            freedSpace: freedSpace,
+            deletedCount: deletedCount,
+            failedCount: errors.count,
+            errors: errors
+        )
     }
 }

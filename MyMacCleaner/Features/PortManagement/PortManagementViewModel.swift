@@ -40,10 +40,6 @@ class PortManagementViewModel: ObservableObject {
         }
     }
 
-    enum ToastType {
-        case success, error, info
-    }
-
     // MARK: - Computed Properties
 
     var filteredConnections: [NetworkConnection] {
