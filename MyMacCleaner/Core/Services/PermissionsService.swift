@@ -18,15 +18,17 @@ class PermissionsService: ObservableObject {
     // MARK: - Full Disk Access
 
     /// Check if the app has Full Disk Access permission
+    /// Uses safe test paths that don't trigger TCC prompts for other permissions
     func checkFullDiskAccess() {
         isCheckingPermissions = true
 
-        // Test by trying to read a protected file
-        // Safari's bookmarks is a common test file
+        // Test by trying to read protected files that ONLY require FDA
+        // These paths don't trigger separate TCC prompts (like Downloads, Music, etc.)
+        // The TCC database is the most reliable test - it requires FDA to read
         let testPaths = [
+            "/Library/Application Support/com.apple.TCC/TCC.db",
             NSHomeDirectory() + "/Library/Safari/Bookmarks.plist",
-            NSHomeDirectory() + "/Library/Safari/CloudTabs.db",
-            "/Library/Application Support/com.apple.TCC/TCC.db"
+            NSHomeDirectory() + "/Library/Safari/CloudTabs.db"
         ]
 
         var hasAccess = false
@@ -38,16 +40,9 @@ class PermissionsService: ObservableObject {
             }
         }
 
-        // Alternative: try to list contents of a protected directory
-        if !hasAccess {
-            let protectedURL = URL(fileURLWithPath: NSHomeDirectory() + "/Library/Mail")
-            do {
-                _ = try FileManager.default.contentsOfDirectory(at: protectedURL, includingPropertiesForKeys: nil)
-                hasAccess = true
-            } catch {
-                // Access denied
-            }
-        }
+        // Note: We intentionally don't try to access ~/Library/Mail or other
+        // TCC-protected directories here, as they would trigger separate
+        // permission prompts on macOS
 
         hasFullDiskAccess = hasAccess
         isCheckingPermissions = false

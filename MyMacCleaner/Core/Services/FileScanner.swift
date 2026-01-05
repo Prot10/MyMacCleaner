@@ -252,10 +252,17 @@ actor FileScanner {
     // MARK: - Quick Scan
 
     /// Quick estimate of cleanable space without full enumeration
-    func quickEstimate() async -> [ScanCategory: Int64] {
+    /// - Parameter includeConsentRequired: If false, skips categories that require user consent (TCC-protected directories)
+    func quickEstimate(includeConsentRequired: Bool = false) async -> [ScanCategory: Int64] {
         var estimates: [ScanCategory: Int64] = [:]
 
         for category in ScanCategory.allCases {
+            // Skip categories that require user consent unless explicitly requested
+            // This prevents TCC permission dialogs from appearing at startup
+            if !includeConsentRequired && category.requiresUserConsent {
+                continue
+            }
+
             var totalSize: Int64 = 0
 
             for pathString in category.paths {
