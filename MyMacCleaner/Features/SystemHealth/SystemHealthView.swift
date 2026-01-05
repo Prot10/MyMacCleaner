@@ -6,6 +6,9 @@ struct SystemHealthView: View {
     @ObservedObject var viewModel: SystemHealthViewModel
     @State private var isVisible = false
 
+    // Section color for system health
+    private let sectionColor = Theme.Colors.health
+
     var body: some View {
         ScrollView {
             VStack(spacing: Theme.Spacing.lg) {
@@ -40,35 +43,29 @@ struct SystemHealthView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("System Health")
-                    .font(Theme.Typography.largeTitle)
+                    .font(.system(size: 28, weight: .bold))
 
                 Text("Monitor your Mac's overall health and performance")
-                    .font(Theme.Typography.subheadline)
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            Button(action: viewModel.runHealthCheck) {
-                HStack(spacing: 6) {
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .controlSize(.small)
-                            .frame(width: 16, height: 16)
-                    } else {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                    Text("Refresh")
-                }
-                .font(Theme.Typography.subheadline)
-                .foregroundStyle(.white)
-                .padding(.horizontal, Theme.Spacing.md)
-                .padding(.vertical, Theme.Spacing.sm)
-                .background(Color.blue)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+            GlassActionButton(
+                "Refresh",
+                icon: viewModel.isLoading ? nil : "arrow.clockwise",
+                color: sectionColor,
+                disabled: viewModel.isLoading
+            ) {
+                viewModel.runHealthCheck()
             }
-            .buttonStyle(.plain)
-            .disabled(viewModel.isLoading)
+            .overlay {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+            }
         }
     }
 
@@ -132,7 +129,7 @@ struct SystemHealthView: View {
             Spacer()
         }
         .padding(Theme.Spacing.lg)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private var healthSummary: String {
@@ -239,7 +236,7 @@ struct HealthCheckCard: View {
             Spacer()
         }
         .padding(Theme.Spacing.md)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
     }
@@ -292,7 +289,7 @@ struct DiskInfoCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
     }
@@ -368,7 +365,7 @@ struct BatteryInfoCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
     }
@@ -463,7 +460,7 @@ struct MacInfoCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
     }
