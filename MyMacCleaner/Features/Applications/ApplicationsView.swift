@@ -6,6 +6,9 @@ struct ApplicationsView: View {
     @ObservedObject var viewModel: ApplicationsViewModel
     @State private var isVisible = false
 
+    // Section color for applications
+    private let sectionColor = Theme.Colors.apps
+
     var body: some View {
         ZStack {
             ScrollView {
@@ -88,24 +91,36 @@ struct ApplicationsView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Applications")
-                    .font(Theme.Typography.largeTitle)
+                    .font(.system(size: 28, weight: .bold))
 
                 Text("Manage and uninstall applications")
-                    .font(Theme.Typography.subheadline)
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
             if viewModel.analysisState == .completed {
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text(viewModel.formattedTotalSize)
-                        .font(Theme.Typography.title)
-                        .foregroundStyle(.cyan)
+                HStack(spacing: 16) {
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text(viewModel.formattedTotalSize)
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundStyle(sectionColor)
 
-                    Text("\(viewModel.applications.count) apps installed")
-                        .font(Theme.Typography.caption)
-                        .foregroundStyle(.secondary)
+                        Text("\(viewModel.applications.count) apps installed")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(sectionColor.opacity(0.1))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(sectionColor.opacity(0.2), lineWidth: 0.5)
+                        }
                 }
             }
         }
@@ -193,67 +208,54 @@ struct ApplicationsView: View {
                         }
                     }
                     .padding(Theme.Spacing.lg)
-                    .glassCard()
+                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
                 }
             } else {
                 // Start Analysis button
-                VStack(spacing: Theme.Spacing.lg) {
+                VStack(spacing: 24) {
                     // Description
-                    VStack(spacing: Theme.Spacing.sm) {
+                    VStack(spacing: 12) {
                         Image(systemName: "chart.bar.doc.horizontal")
                             .font(.system(size: 48))
-                            .foregroundStyle(.cyan.gradient)
+                            .foregroundStyle(sectionColor.gradient)
 
                         Text("Ready to Analyze")
-                            .font(Theme.Typography.title2)
+                            .font(.system(size: 20, weight: .semibold))
 
                         Text("Click the button below to calculate the size of each application.\nThis helps identify which apps are using the most disk space.")
-                            .font(Theme.Typography.subheadline)
+                            .font(.system(size: 14))
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: 400)
                     }
-                    .padding(.top, Theme.Spacing.lg)
+                    .padding(.top, 20)
 
                     // Start button
-                    Button(action: viewModel.startFullAnalysis) {
-                        HStack(spacing: Theme.Spacing.sm) {
-                            Image(systemName: "play.fill")
-                            Text("Start Analysis")
-                        }
-                        .font(Theme.Typography.headline)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, Theme.Spacing.xl)
-                        .padding(.vertical, Theme.Spacing.md)
-                        .background(
-                            LinearGradient(
-                                colors: [.cyan, .blue],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium))
-                        .shadow(color: .cyan.opacity(0.3), radius: 8, y: 4)
+                    GlassActionButton(
+                        "Start Analysis",
+                        icon: "play.fill",
+                        color: sectionColor,
+                        disabled: viewModel.discoveryState == .discovering && viewModel.applications.isEmpty
+                    ) {
+                        viewModel.startFullAnalysis()
                     }
-                    .buttonStyle(.plain)
-                    .disabled(viewModel.discoveryState == .discovering && viewModel.applications.isEmpty)
 
                     // Discovery status
                     if viewModel.discoveryState == .discovering {
-                        HStack(spacing: Theme.Spacing.sm) {
+                        HStack(spacing: 8) {
                             ProgressView()
                                 .controlSize(.small)
                                 .frame(width: 16, height: 16)
 
                             Text("Discovering apps in background...")
-                                .font(Theme.Typography.caption)
+                                .font(.system(size: 11))
                                 .foregroundStyle(.tertiary)
                         }
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .padding(Theme.Spacing.xl)
-                .glassCard()
+                .padding(32)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
             }
 
             // App preview (show some apps without sizes during discovery)
@@ -289,7 +291,7 @@ struct ApplicationsView: View {
                     }
                 }
                 .padding(Theme.Spacing.lg)
-                .glassCard()
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
             }
         }
     }
@@ -328,15 +330,13 @@ struct ApplicationsView: View {
             .frame(width: 120)
 
             // Refresh button
-            Button(action: viewModel.refresh) {
-                HStack(spacing: 4) {
-                    Image(systemName: "arrow.clockwise")
-                    Text("Refresh")
-                }
-                .font(Theme.Typography.caption)
-                .foregroundStyle(.secondary)
+            GlassActionButton(
+                "Refresh",
+                icon: "arrow.clockwise",
+                color: sectionColor
+            ) {
+                viewModel.refresh()
             }
-            .buttonStyle(.plain)
         }
     }
 
@@ -413,7 +413,7 @@ struct InfoCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(Theme.Spacing.md)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
     }
@@ -538,7 +538,7 @@ struct AppCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
         .contextMenu {
