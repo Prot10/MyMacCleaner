@@ -80,12 +80,23 @@ struct SystemHealthView: View {
                     .stroke(Color.white.opacity(0.1), lineWidth: 12)
                     .frame(width: 140, height: 140)
 
-                // Progress circle
+                // Progress circle - border (drawn first, slightly wider)
                 Circle()
                     .trim(from: 0, to: CGFloat(viewModel.healthScore) / 100)
                     .stroke(
-                        viewModel.healthStatus.color.gradient,
+                        viewModel.healthStatus.color.opacity(0.5),
                         style: StrokeStyle(lineWidth: 12, lineCap: .round)
+                    )
+                    .frame(width: 140, height: 140)
+                    .rotationEffect(.degrees(-90))
+                    .animation(Theme.Animation.springSmooth, value: viewModel.healthScore)
+
+                // Progress circle - fill (on top, narrower)
+                Circle()
+                    .trim(from: 0, to: CGFloat(viewModel.healthScore) / 100)
+                    .stroke(
+                        viewModel.healthStatus.color.opacity(0.15),
+                        style: StrokeStyle(lineWidth: 9, lineCap: .round)
                     )
                     .frame(width: 140, height: 140)
                     .rotationEffect(.degrees(-90))
@@ -201,14 +212,13 @@ struct HealthCheckCard: View {
         HStack(spacing: Theme.Spacing.md) {
             // Status icon
             ZStack {
-                Circle()
+                RoundedRectangle(cornerRadius: 10)
                     .fill(check.status.color.opacity(0.15))
                     .frame(width: 44, height: 44)
 
                 if check.status == .checking {
                     ProgressView()
                         .controlSize(.small)
-                        .frame(width: 16, height: 16)
                 } else {
                     Image(systemName: check.status.icon)
                         .font(.system(size: 18, weight: .semibold))
