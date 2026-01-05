@@ -10,7 +10,8 @@ struct MyMacCleanerApp: App {
             ContentView()
                 .environmentObject(appState)
         }
-        .windowStyle(.hiddenTitleBar)
+        .windowStyle(.automatic)
+        .windowToolbarStyle(.unified(showsTitle: false))
         .defaultSize(width: 1100, height: 700)
         .windowResizability(.contentMinSize)
 

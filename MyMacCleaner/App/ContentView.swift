@@ -3,31 +3,29 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var appState: AppState
     @State private var selectedSection: NavigationSection = .home
-    @State private var columnVisibility: NavigationSplitViewVisibility = .all
-    @State private var isDetailVisible = false
 
     var body: some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
+        NavigationSplitView {
+            // Sidebar
             SidebarView(selection: $selectedSection)
         } detail: {
-            DetailView(section: selectedSection, appState: appState, onNavigate: { sectionName in
-                // Handle navigation requests from child views
-                if let section = NavigationSection.allCases.first(where: { $0.rawValue.lowercased().replacingOccurrences(of: " ", with: "") == sectionName.lowercased() }) {
-                    withAnimation(Theme.Animation.spring) {
-                        selectedSection = section
+            // Detail content
+            DetailContentView(
+                section: selectedSection,
+                appState: appState,
+                onNavigate: { sectionName in
+                    if let section = NavigationSection.allCases.first(where: {
+                        $0.rawValue.lowercased().replacingOccurrences(of: " ", with: "") == sectionName.lowercased()
+                    }) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            selectedSection = section
+                        }
                     }
                 }
-            })
-                // Removed .id() to preserve state when switching sections
-                .transition(.opacity.combined(with: .move(edge: .trailing)))
+            )
         }
         .navigationSplitViewStyle(.balanced)
-        .frame(minWidth: 900, minHeight: 600)
-        .onAppear {
-            withAnimation(Theme.Animation.springSmooth) {
-                isDetailVisible = true
-            }
-        }
+        .frame(minWidth: 1000, minHeight: 650)
     }
 }
 
@@ -70,58 +68,67 @@ enum NavigationSection: String, CaseIterable, Identifiable {
 
     var color: Color {
         switch self {
-        case .home: return Theme.Colors.accent
-        case .diskCleaner: return Theme.Colors.storage
-        case .performance: return Theme.Colors.memory
-        case .applications: return Theme.Colors.apps
-        case .startupItems: return .cyan
-        case .portManagement: return Theme.Colors.ports
-        case .systemHealth: return Theme.Colors.health
+        case .home: return Theme.Colors.home              // Blue
+        case .diskCleaner: return Theme.Colors.storage    // Orange
+        case .performance: return Theme.Colors.memory     // Purple
+        case .applications: return Theme.Colors.apps      // Green
+        case .startupItems: return Theme.Colors.startup   // Yellow
+        case .portManagement: return Theme.Colors.ports   // Cyan
+        case .systemHealth: return Theme.Colors.health    // Red
         }
     }
 }
 
-// MARK: - Sidebar
+// MARK: - Sidebar View
 
 struct SidebarView: View {
     @Binding var selection: NavigationSection
     @State private var hoveredSection: NavigationSection?
 
     var body: some View {
-        List(NavigationSection.allCases, selection: $selection) { section in
-            NavigationLink(value: section) {
-                SidebarRow(
-                    section: section,
-                    isSelected: selection == section,
-                    isHovered: hoveredSection == section
-                )
-            }
-            .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
-            .onHover { isHovered in
-                withAnimation(Theme.Animation.fast) {
-                    hoveredSection = isHovered ? section : nil
-                }
-            }
-        }
-        .listStyle(.sidebar)
-        .navigationSplitViewColumnWidth(min: 220, ideal: 250, max: 300)
-        .safeAreaInset(edge: .top) {
+        VStack(spacing: 0) {
             // App header
-            HStack(spacing: 12) {
-                Image(systemName: "sparkles")
-                    .font(.title2)
-                    .foregroundStyle(.blue.gradient)
+            SidebarHeader()
+                .padding(.top, 8)
+                .padding(.bottom, 8)
 
-                Text("MyMacCleaner")
-                    .font(.headline)
+            // Divider
+            Rectangle()
+                .fill(Color.white.opacity(0.1))
+                .frame(height: 1)
+                .padding(.horizontal, 16)
+
+            // Navigation items
+            ScrollView {
+                VStack(spacing: 4) {
+                    ForEach(NavigationSection.allCases) { section in
+                        SidebarRow(
+                            section: section,
+                            isSelected: selection == section,
+                            isHovered: hoveredSection == section
+                        )
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                selection = section
+                            }
+                        }
+                        .onHover { isHovered in
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                hoveredSection = isHovered ? section : nil
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal)
-            .padding(.vertical, 12)
-        }
-        .safeAreaInset(edge: .bottom) {
+
+            Spacer()
+
+            // Bottom status
             SystemStatusBadge()
         }
+        .navigationSplitViewColumnWidth(min: 240, ideal: 260, max: 300)
     }
 }
 
@@ -136,35 +143,75 @@ struct SidebarRow: View {
         HStack(spacing: 12) {
             // Icon with background
             ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? section.color.opacity(0.2) : Color.clear)
-                    .frame(width: 32, height: 32)
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(isSelected ? section.color.opacity(0.2) : (isHovered ? Color.white.opacity(0.05) : Color.clear))
+                    .frame(width: 36, height: 36)
 
                 Image(systemName: section.icon)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(isSelected ? section.color : .secondary)
             }
 
             // Text
             VStack(alignment: .leading, spacing: 2) {
                 Text(section.rawValue)
-                    .font(.body)
+                    .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
                     .foregroundStyle(isSelected ? .primary : .secondary)
 
                 Text(section.description)
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
+                    .lineLimit(1)
             }
 
             Spacer()
+
+            // Selection indicator
+            if isSelected {
+                Circle()
+                    .fill(section.color)
+                    .frame(width: 6, height: 6)
+                    .shadow(color: section.color.opacity(0.5), radius: 4)
+            }
         }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(isHovered && !isSelected ? Color.white.opacity(0.05) : Color.clear)
-        )
+        .padding(.vertical, 8)
+        .padding(.horizontal, 10)
+        .background {
+            if isSelected {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(section.color.opacity(0.1))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(section.color.opacity(0.2), lineWidth: 0.5)
+                    }
+            } else if isHovered {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.white.opacity(0.05))
+            }
+        }
         .contentShape(Rectangle())
+        .scaleEffect(isHovered && !isSelected ? 1.02 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
+    }
+}
+
+// MARK: - Sidebar Header
+
+struct SidebarHeader: View {
+    var body: some View {
+        HStack(spacing: 10) {
+            Image("SidebarLogo")
+                .resizable()
+                .renderingMode(.original)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 26, height: 26)
+
+            Text("MyMacCleaner")
+                .font(.headline)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
     }
 }
 
@@ -188,16 +235,12 @@ struct SystemStatusBadge: View {
                     .foregroundStyle(.secondary)
 
                 Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .background(isHovered ? Color.white.opacity(0.03) : Color.clear)
             .onHover { hovering in
-                withAnimation(Theme.Animation.fast) {
+                withAnimation(.easeInOut(duration: 0.15)) {
                     isHovered = hovering
                 }
             }
@@ -205,58 +248,89 @@ struct SystemStatusBadge: View {
     }
 }
 
-// MARK: - Detail View
+// MARK: - Detail Content View
 
-struct DetailView: View {
+struct DetailContentView: View {
     let section: NavigationSection
     let appState: AppState
     let onNavigate: (String) -> Void
-    @State private var isVisible = false
 
     var body: some View {
         ZStack {
-            // Background
-            Theme.Colors.background
+            // Dynamic background gradient
+            backgroundGradient
                 .ignoresSafeArea()
 
-            // Content - pass ViewModels from AppState to preserve state
-            Group {
-                switch section {
-                case .home:
-                    HomeView(viewModel: appState.homeViewModel)
-                        .onAppear {
-                            // Wire up navigation callback for HomeViewModel
-                            appState.homeViewModel.onNavigateToSection = onNavigate
-                        }
-                case .diskCleaner:
-                    DiskCleanerView(
-                        viewModel: appState.diskCleanerViewModel,
-                        spaceLensViewModel: appState.spaceLensViewModel
-                    )
-                case .performance:
-                    PerformanceView(viewModel: appState.performanceViewModel)
-                case .applications:
-                    ApplicationsView(viewModel: appState.applicationsViewModel)
-                case .startupItems:
-                    StartupItemsView(viewModel: appState.startupItemsViewModel)
-                case .portManagement:
-                    PortManagementView(viewModel: appState.portManagementViewModel)
-                case .systemHealth:
-                    SystemHealthView(viewModel: appState.systemHealthViewModel)
+            // Content
+            contentView
+        }
+        .ignoresSafeArea(edges: .top)
+        .toolbarBackground(.hidden, for: .windowToolbar)
+    }
+
+    private var backgroundGradient: some View {
+        ZStack {
+            // Base gradient with section color
+            LinearGradient(
+                colors: [
+                    section.color.opacity(0.15),
+                    section.color.opacity(0.08),
+                    section.color.opacity(0.03),
+                    Color.clear
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            // Secondary radial for depth
+            RadialGradient(
+                colors: [
+                    section.color.opacity(0.12),
+                    section.color.opacity(0.05),
+                    Color.clear
+                ],
+                center: .topLeading,
+                startRadius: 50,
+                endRadius: 500
+            )
+
+            // Accent glow at bottom
+            RadialGradient(
+                colors: [
+                    section.color.opacity(0.08),
+                    Color.clear
+                ],
+                center: .bottomTrailing,
+                startRadius: 100,
+                endRadius: 400
+            )
+        }
+        .animation(.easeInOut(duration: 0.4), value: section)
+    }
+
+    @ViewBuilder
+    private var contentView: some View {
+        switch section {
+        case .home:
+            HomeView(viewModel: appState.homeViewModel)
+                .onAppear {
+                    appState.homeViewModel.onNavigateToSection = onNavigate
                 }
-            }
-            .opacity(isVisible ? 1 : 0)
-            .offset(y: isVisible ? 0 : 20)
-        }
-        .onAppear {
-            withAnimation(Theme.Animation.springSmooth.delay(0.1)) {
-                isVisible = true
-            }
-            // Also wire up the callback when view appears
-            appState.homeViewModel.onNavigateToSection = onNavigate
-        }
-        .onDisappear {
-            isVisible = false
+        case .diskCleaner:
+            DiskCleanerView(
+                viewModel: appState.diskCleanerViewModel,
+                spaceLensViewModel: appState.spaceLensViewModel
+            )
+        case .performance:
+            PerformanceView(viewModel: appState.performanceViewModel)
+        case .applications:
+            ApplicationsView(viewModel: appState.applicationsViewModel)
+        case .startupItems:
+            StartupItemsView(viewModel: appState.startupItemsViewModel)
+        case .portManagement:
+            PortManagementView(viewModel: appState.portManagementViewModel)
+        case .systemHealth:
+            SystemHealthView(viewModel: appState.systemHealthViewModel)
         }
     }
 }
@@ -304,7 +378,7 @@ struct ComingSoonView: View {
                 .scaleEffect(isHovered ? 1.05 : 1.0)
             }
             .onHover { hovering in
-                withAnimation(Theme.Animation.spring) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                     isHovered = hovering
                 }
             }
