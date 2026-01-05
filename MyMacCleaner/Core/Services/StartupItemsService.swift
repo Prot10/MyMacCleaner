@@ -62,22 +62,17 @@ struct StartupItem: Identifiable, Hashable {
 // MARK: - Startup Item Type
 
 enum StartupItemType: String, CaseIterable {
-    case launchAgent = "Launch Agent"
-    case launchDaemon = "Launch Daemon"
-    case loginItem = "Login Item"
-    case userLaunchAgent = "User Agent"
+    case launchAgent
+    case launchDaemon
+    case loginItem
+    case userLaunchAgent
 
-    var description: String {
-        switch self {
-        case .launchAgent:
-            return "System-wide per-user background services"
-        case .launchDaemon:
-            return "System-wide background services (root)"
-        case .loginItem:
-            return "Apps that open when you log in"
-        case .userLaunchAgent:
-            return "Your personal background services"
-        }
+    var localizedName: String {
+        L(key: "startupItems.type.\(rawValue)")
+    }
+
+    var localizedDescription: String {
+        L(key: "startupItems.typeDesc.\(rawValue)")
     }
 
     var icon: String {
@@ -193,7 +188,7 @@ actor StartupItemsService {
         }
     }
 
-    private func parseBTMOutput(_ output: String) -> [StartupItem] {
+    nonisolated private func parseBTMOutput(_ output: String) -> [StartupItem] {
         var items: [StartupItem] = []
         let lines = output.components(separatedBy: "\n")
 
@@ -238,7 +233,7 @@ actor StartupItemsService {
         return items
     }
 
-    private func createItemFromBTMData(_ data: [String: String]) -> StartupItem? {
+    nonisolated private func createItemFromBTMData(_ data: [String: String]) -> StartupItem? {
         guard let name = data["Name"], !name.isEmpty,
               let identifier = data["Identifier"]
         else { return nil }
@@ -510,7 +505,8 @@ actor StartupItemsService {
 
                             let name = parts[0]
                             let path = parts[1]
-                            let isHidden = parts.count >= 3 ? parts[2] == "true" : false
+                            // isHidden is parsed but not used currently
+                            _ = parts.count >= 3 ? parts[2] == "true" : false
 
                             let item = StartupItem(
                                 id: "loginitem:\(path)",
@@ -684,7 +680,7 @@ actor StartupItemsService {
 
     // MARK: - Code Signing
 
-    private func getCodeSigningTeam(for path: String) -> String? {
+    nonisolated private func getCodeSigningTeam(for path: String) -> String? {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
         process.arguments = ["-dv", "--verbose=2", path]

@@ -29,9 +29,9 @@ class StartupItemsViewModel: ObservableObject {
     }
 
     enum SortOrder: String, CaseIterable {
-        case name = "Name"
-        case type = "Type"
-        case status = "Status"
+        case name
+        case type
+        case status
 
         var icon: String {
             switch self {
@@ -39,6 +39,10 @@ class StartupItemsViewModel: ObservableObject {
             case .type: return "folder"
             case .status: return "circle.lefthalf.filled"
             }
+        }
+
+        var localizedName: String {
+            L(key: "startupItems.sortOrder.\(rawValue)")
         }
     }
 
@@ -118,7 +122,7 @@ class StartupItemsViewModel: ObservableObject {
             isLoading = false
 
             if scannedItems.isEmpty {
-                showToastMessage("No startup items found", type: .info)
+                showToastMessage(L("startupItems.toast.noItemsFound"), type: .info)
             }
         }
     }
@@ -130,7 +134,7 @@ class StartupItemsViewModel: ObservableObject {
     func prepareToggle(_ item: StartupItem) {
         // System items cannot be toggled
         if item.isSystemItem {
-            showToastMessage("System items cannot be modified", type: .info)
+            showToastMessage(L("startupItems.toast.systemCannotModify"), type: .info)
             return
         }
 
@@ -146,8 +150,8 @@ class StartupItemsViewModel: ObservableObject {
 
             // For BTM login items, we open System Settings
             if item.id.hasPrefix("btm:") && item.type == .loginItem {
-                await service.setItemEnabled(item, enabled: newState)
-                showToastMessage("Opening System Settings - toggle \(item.displayName) there", type: .info)
+                _ = await service.setItemEnabled(item, enabled: newState)
+                showToastMessage(LFormat("startupItems.toast.openSystemSettings %@", item.displayName), type: .info)
                 showDisableConfirmation = false
                 itemToToggle = nil
                 return
@@ -173,10 +177,13 @@ class StartupItemsViewModel: ObservableObject {
                     )
                 }
 
-                let action = newState ? "enabled" : "disabled"
-                showToastMessage("\(item.displayName) \(action)", type: .success)
+                if newState {
+                    showToastMessage(L("startupItems.toast.enabled \(item.displayName)"), type: .success)
+                } else {
+                    showToastMessage(L("startupItems.toast.disabled \(item.displayName)"), type: .success)
+                }
             } else {
-                showToastMessage("Failed to modify \(item.displayName)", type: .error)
+                showToastMessage(L("startupItems.toast.modifyFailed \(item.displayName)"), type: .error)
             }
 
             showDisableConfirmation = false
@@ -192,7 +199,7 @@ class StartupItemsViewModel: ObservableObject {
     func prepareRemove(_ item: StartupItem) {
         // System items cannot be removed
         if item.isSystemItem {
-            showToastMessage("System items cannot be removed", type: .info)
+            showToastMessage(L("startupItems.toast.systemCannotRemove"), type: .info)
             return
         }
 
@@ -208,9 +215,9 @@ class StartupItemsViewModel: ObservableObject {
 
             if success {
                 items.removeAll { $0.id == item.id }
-                showToastMessage("\(item.displayName) removed", type: .success)
+                showToastMessage(L("startupItems.toast.removed \(item.displayName)"), type: .success)
             } else {
-                showToastMessage("Failed to remove \(item.displayName)", type: .error)
+                showToastMessage(L("startupItems.toast.removeFailed \(item.displayName)"), type: .error)
             }
 
             showRemoveConfirmation = false
