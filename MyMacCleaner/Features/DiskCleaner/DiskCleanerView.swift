@@ -159,14 +159,7 @@ struct DiskCleanerView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(sectionColor.opacity(0.1))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 12)
-                                .strokeBorder(sectionColor.opacity(0.2), lineWidth: 0.5)
-                        }
-                }
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
             }
         }
     }
@@ -260,7 +253,7 @@ struct DiskCleanerView: View {
     private var emptyStateSection: some View {
         VStack(spacing: 20) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 64))
+                .font(.system(size: 48))
                 .foregroundStyle(.green)
 
             VStack(spacing: 8) {
@@ -292,7 +285,7 @@ struct DiskCleanerView: View {
             // Selection controls
             HStack {
                 Text("Categories")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(Theme.Typography.headline)
 
                 Spacer()
 
@@ -318,14 +311,11 @@ struct DiskCleanerView: View {
                         Image(systemName: "arrow.clockwise")
                         Text("Rescan")
                     }
-                    .font(.system(size: 11))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background {
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(Color.white.opacity(0.05))
-                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
                 .padding(.leading, 12)
