@@ -18,47 +18,38 @@ class PermissionsService: ObservableObject {
     // MARK: - Full Disk Access
 
     /// Check if the app has Full Disk Access permission
-    /// Uses safe test paths that don't trigger TCC prompts for other permissions
+    /// Tests multiple FDA-protected paths to reliably detect permission status
     func checkFullDiskAccess() {
         isCheckingPermissions = true
 
-        // Test by trying to read protected files that ONLY require FDA
-        // These paths don't trigger separate TCC prompts (like Downloads, Music, Desktop, Documents)
-        //
-        // IMPORTANT: The paths we test here:
-        // - ~/Library/Safari/* - Requires FDA, fails silently without it
-        // - ~/Library/Mail - Requires FDA, fails silently without it
-        //
-        // Paths we DON'T use:
-        // - /Library/Application Support/com.apple.TCC/TCC.db - Requires ROOT, not just FDA
-        // - ~/Downloads, ~/Desktop, ~/Documents - These trigger TCC prompts!
-        // - ~/Music - Triggers Apple Music TCC prompt!
-
-        let testPaths = [
-            NSHomeDirectory() + "/Library/Safari/Bookmarks.plist",
-            NSHomeDirectory() + "/Library/Safari/CloudTabs.db"
-        ]
-
         var hasAccess = false
 
-        // First, try to read Safari files (these require FDA but don't trigger prompts)
-        for path in testPaths {
-            if FileManager.default.isReadableFile(atPath: path) {
+        // Method 1: Try to read the user's TCC database (most reliable)
+        // This file ALWAYS requires FDA to read
+        let tccPath = NSHomeDirectory() + "/Library/Application Support/com.apple.TCC/TCC.db"
+        if FileManager.default.isReadableFile(atPath: tccPath) {
+            hasAccess = true
+        }
+
+        // Method 2: Try Safari bookmarks
+        if !hasAccess {
+            let safariPath = NSHomeDirectory() + "/Library/Safari/Bookmarks.plist"
+            if FileManager.default.fileExists(atPath: safariPath) &&
+               FileManager.default.isReadableFile(atPath: safariPath) {
                 hasAccess = true
-                break
             }
         }
 
-        // Fallback: Try to list contents of ~/Library/Mail
-        // This directory requires FDA but does NOT trigger a TCC prompt
-        // (unlike Downloads, Documents, Desktop which DO trigger prompts)
+        // Method 3: Try to list ~/Library/Mail contents
         if !hasAccess {
             let mailURL = URL(fileURLWithPath: NSHomeDirectory() + "/Library/Mail")
-            do {
-                _ = try FileManager.default.contentsOfDirectory(at: mailURL, includingPropertiesForKeys: nil)
-                hasAccess = true
-            } catch {
-                // Access denied - FDA not granted
+            if FileManager.default.fileExists(atPath: mailURL.path) {
+                do {
+                    _ = try FileManager.default.contentsOfDirectory(at: mailURL, includingPropertiesForKeys: nil)
+                    hasAccess = true
+                } catch {
+                    // Access denied
+                }
             }
         }
 
