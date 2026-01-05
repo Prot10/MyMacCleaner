@@ -4,6 +4,8 @@ struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     @State private var isVisible = false
 
+    private let sectionColor = Theme.Colors.home
+
     var body: some View {
         ZStack {
             ScrollView {
@@ -28,7 +30,6 @@ struct HomeView: View {
                             results: viewModel.scanResults,
                             onClean: viewModel.cleanSelectedItems,
                             onViewDetails: { result in
-                                // TODO: Navigate to detail view
                                 print("View details for \(result.category.rawValue)")
                             }
                         )
@@ -48,7 +49,8 @@ struct HomeView: View {
 
             // Permission prompt overlay
             if viewModel.showPermissionPrompt {
-                Color.black.opacity(0.4)
+                Rectangle()
+                    .fill(.ultraThinMaterial)
                     .ignoresSafeArea()
                     .transition(.opacity)
 
@@ -62,7 +64,8 @@ struct HomeView: View {
 
             // Cleaning progress overlay
             if viewModel.isCleaning {
-                Color.black.opacity(0.4)
+                Rectangle()
+                    .fill(.ultraThinMaterial)
                     .ignoresSafeArea()
                     .transition(.opacity)
 
@@ -91,14 +94,12 @@ struct HomeView: View {
         .animation(Theme.Animation.springSmooth, value: viewModel.showPermissionPrompt)
         .animation(Theme.Animation.springSmooth, value: viewModel.isCleaning)
         .animation(Theme.Animation.spring, value: viewModel.showToast)
-        .navigationTitle("Home")
         .onAppear {
             withAnimation(Theme.Animation.springSmooth) {
                 isVisible = true
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            // Refresh permissions when app becomes active (user might have granted FDA)
             viewModel.refreshPermissions()
         }
     }
@@ -107,12 +108,12 @@ struct HomeView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Welcome to MyMacCleaner")
-                    .font(Theme.Typography.largeTitle)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Home")
+                    .font(.system(size: 28, weight: .bold))
 
                 Text("Keep your Mac running smoothly")
-                    .font(Theme.Typography.title3)
+                    .font(.system(size: 15))
                     .foregroundStyle(.secondary)
             }
 
@@ -136,7 +137,8 @@ struct HomeView: View {
         VStack(spacing: Theme.Spacing.md) {
             SmartScanButton(
                 isScanning: viewModel.isScanning,
-                progress: viewModel.scanProgress
+                progress: viewModel.scanProgress,
+                color: sectionColor
             ) {
                 viewModel.startSmartScan()
             }
@@ -145,7 +147,7 @@ struct HomeView: View {
                 VStack(spacing: 8) {
                     ProgressView(value: viewModel.scanProgress)
                         .progressViewStyle(.linear)
-                        .tint(.blue)
+                        .tint(sectionColor)
 
                     if let category = viewModel.currentScanCategory {
                         Text("Scanning \(category.rawValue)...")
@@ -171,7 +173,7 @@ struct HomeView: View {
                         .foregroundStyle(.secondary)
                 }
                 .padding(Theme.Spacing.sm)
-                .glassCard()
+                .glassEffect(.regular.tint(.orange), in: RoundedRectangle(cornerRadius: 12))
             }
         }
         .animation(Theme.Animation.spring, value: viewModel.isScanning)
@@ -182,7 +184,8 @@ struct HomeView: View {
     private var quickStatsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             Text("Quick Stats")
-                .font(Theme.Typography.headline)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.secondary)
 
             LazyVGrid(columns: [
                 GridItem(.flexible()),
@@ -211,7 +214,7 @@ struct HomeView: View {
                     value: viewModel.junkSize,
                     subtitle: "cleanable",
                     icon: "trash.fill",
-                    color: Theme.Colors.junk
+                    color: Theme.Colors.storage
                 )
 
                 StatCard(
@@ -230,27 +233,28 @@ struct HomeView: View {
     private var quickActionsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             Text("Quick Actions")
-                .font(Theme.Typography.headline)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.secondary)
 
             HStack(spacing: Theme.Spacing.md) {
                 QuickActionButton(
                     title: "Empty Trash",
                     icon: "trash",
-                    color: .orange,
+                    color: Theme.Colors.storage,
                     action: viewModel.emptyTrash
                 )
 
                 QuickActionButton(
                     title: "Free Memory",
                     icon: "memorychip",
-                    color: .purple,
+                    color: Theme.Colors.memory,
                     action: viewModel.freeMemory
                 )
 
                 QuickActionButton(
                     title: "Large Files",
                     icon: "doc.fill",
-                    color: .blue,
+                    color: Theme.Colors.home,
                     action: viewModel.viewLargeFiles
                 )
 
@@ -269,17 +273,17 @@ struct SystemHealthPill: View {
     @State private var isHovered = false
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.Spacing.sm) {
             Circle()
                 .fill(color)
-                .frame(width: 10, height: 10)
+                .frame(width: 8, height: 8)
                 .shadow(color: color.opacity(0.5), radius: 4)
 
             Text(status)
-                .font(Theme.Typography.subheadline)
+                .font(Theme.Typography.caption)
                 .foregroundStyle(.secondary)
         }
-        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.horizontal, Theme.Spacing.sm)
         .padding(.vertical, Theme.Spacing.xs)
         .glassPill()
         .scaleEffect(isHovered ? 1.02 : 1.0)
@@ -296,6 +300,7 @@ struct SystemHealthPill: View {
 struct SmartScanButton: View {
     let isScanning: Bool
     let progress: Double
+    let color: Color
     let action: () -> Void
 
     @State private var isHovered = false
@@ -307,36 +312,29 @@ struct SmartScanButton: View {
                 // Icon
                 ZStack {
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [.blue, .blue.opacity(0.8)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 56, height: 56)
+                        .fill(color.gradient)
+                        .frame(width: 52, height: 52)
 
                     if isScanning {
                         ProgressView()
                             .progressViewStyle(.circular)
                             .controlSize(.small)
-                            .frame(width: 16, height: 16)
                             .tint(.white)
                     } else {
                         Image(systemName: "magnifyingglass")
-                            .font(.title2.bold())
+                            .font(.system(size: 20, weight: .bold))
                             .foregroundStyle(.white)
                     }
                 }
-                .shadow(color: .blue.opacity(0.3), radius: 8, y: 4)
+                .shadow(color: color.opacity(isHovered ? 0.6 : 0.4), radius: isHovered ? 16 : 10, y: 4)
 
                 // Text
                 VStack(alignment: .leading, spacing: 4) {
                     Text(isScanning ? "Scanning..." : "Smart Scan")
-                        .font(Theme.Typography.title2)
+                        .font(.system(size: 18, weight: .semibold))
 
                     Text(isScanning ? "Analyzing your system" : "Scan all categories at once")
-                        .font(Theme.Typography.subheadline)
+                        .font(.system(size: 13))
                         .foregroundStyle(.secondary)
                 }
 
@@ -344,18 +342,19 @@ struct SmartScanButton: View {
 
                 // Chevron
                 Image(systemName: "chevron.right")
-                    .font(.title3)
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(.tertiary)
                     .offset(x: isHovered ? 4 : 0)
             }
             .padding(Theme.Spacing.lg)
-            .glassCardProminent()
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
         .disabled(isScanning)
         .scaleEffect(isPressed ? 0.98 : (isHovered ? 1.01 : 1.0))
-        .animation(Theme.Animation.spring, value: isHovered)
-        .animation(Theme.Animation.fast, value: isPressed)
+        .shadow(color: color.opacity(isHovered ? 0.3 : 0.15), radius: isHovered ? 20 : 12, y: 6)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
+        .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isPressed)
         .onHover { hovering in
             isHovered = hovering
         }
@@ -379,45 +378,49 @@ struct StatCard: View {
     @State private var isHovered = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+        VStack(alignment: .leading, spacing: 0) {
             // Icon
-            HStack {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(color.opacity(0.15))
-                        .frame(width: 36, height: 36)
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(color.opacity(0.2))
+                    .frame(width: 40, height: 40)
 
-                    Image(systemName: icon)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(color)
-                }
-
-                Spacer()
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(color)
             }
+            .shadow(color: color.opacity(isHovered ? 0.4 : 0.2), radius: 8)
 
             Spacer()
 
-            // Value
-            VStack(alignment: .leading, spacing: 2) {
+            // Value and subtitle
+            VStack(alignment: .leading, spacing: 4) {
                 Text(value)
-                    .font(Theme.Typography.title2)
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
 
                 Text(subtitle)
-                    .font(Theme.Typography.caption)
+                    .font(.system(size: 12))
                     .foregroundStyle(.tertiary)
             }
 
+            Spacer()
+                .frame(height: 12)
+
             // Title
             Text(title)
-                .font(Theme.Typography.subheadline)
+                .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(.secondary)
         }
-        .padding(Theme.Spacing.md)
-        .frame(height: 140)
+        .padding(16)
+        .frame(height: 160)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard()
-        .hoverEffect(isHovered: isHovered)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .scaleEffect(isHovered ? 1.02 : 1.0)
+        .shadow(color: color.opacity(isHovered ? 0.25 : 0.1), radius: isHovered ? 15 : 8, y: 5)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
         .onHover { hovering in
             isHovered = hovering
         }
@@ -437,31 +440,32 @@ struct QuickActionButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: Theme.Spacing.xs) {
+            VStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(color.opacity(isHovered ? 0.2 : 0.1))
+                        .fill(color.opacity(0.2))
                         .frame(width: 44, height: 44)
 
                     Image(systemName: icon)
-                        .font(.system(size: 18, weight: .medium))
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(color)
                 }
+                .shadow(color: color.opacity(isHovered ? 0.4 : 0.2), radius: 8)
 
                 Text(title)
-                    .font(Theme.Typography.caption)
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(.secondary)
             }
-            .frame(width: 90, height: 80)
-            .glassCardSubtle()
+            .frame(width: 120, height: 100)
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
-        .scaleEffect(isPressed ? 0.95 : 1.0)
-        .animation(Theme.Animation.fast, value: isPressed)
+        .scaleEffect(isPressed ? 0.95 : (isHovered ? 1.02 : 1.0))
+        .shadow(color: .black.opacity(isHovered ? 0.15 : 0.1), radius: isHovered ? 12 : 6, y: 4)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
+        .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isPressed)
         .onHover { hovering in
-            withAnimation(Theme.Animation.fast) {
-                isHovered = hovering
-            }
+            isHovered = hovering
         }
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
