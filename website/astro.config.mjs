@@ -3,7 +3,7 @@ import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://andreaperinu.github.io',
+  site: 'https://Prot10.github.io',
   base: '/MyMacCleaner',
   integrations: [
     tailwind(),
