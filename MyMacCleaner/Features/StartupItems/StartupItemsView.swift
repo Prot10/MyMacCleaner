@@ -104,12 +104,12 @@ struct StartupItemsView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text("Startup Items")
                     .font(.system(size: 28, weight: .bold))
 
                 Text("Manage apps and services that launch at startup")
-                    .font(.system(size: 15))
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
 
@@ -142,27 +142,27 @@ struct StartupItemsView: View {
                 title: "Total Items",
                 value: "\(viewModel.items.filter { !$0.isSystemItem }.count)",
                 icon: "list.bullet",
-                color: .blue
+                color: .cyan
             )
 
             StartupStatCard(
                 title: "Enabled",
                 value: "\(viewModel.enabledCount)",
-                icon: "checkmark.circle.fill",
+                icon: "checkmark",
                 color: .green
             )
 
             StartupStatCard(
                 title: "Disabled",
                 value: "\(viewModel.disabledCount)",
-                icon: "xmark.circle.fill",
+                icon: "xmark",
                 color: .orange
             )
 
             StartupStatCard(
                 title: "Running",
                 value: "\(viewModel.runningCount)",
-                icon: "play.circle.fill",
+                icon: "play.fill",
                 color: .purple
             )
         }
@@ -248,25 +248,8 @@ struct StartupItemsView: View {
     private var controlsSection: some View {
         HStack(spacing: Theme.Spacing.md) {
             // Search
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-
-                TextField("Search items...", text: $viewModel.searchText)
-                    .textFieldStyle(.plain)
-
-                if !viewModel.searchText.isEmpty {
-                    Button(action: { viewModel.searchText = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(Theme.Spacing.sm)
-            .background(Color.white.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
-            .frame(maxWidth: 300)
+            GlassSearchField(text: $viewModel.searchText, placeholder: "Search items...")
+                .frame(maxWidth: 300)
 
             // Type filter
             Menu {
@@ -299,12 +282,11 @@ struct StartupItemsView: View {
                     Image(systemName: "chevron.down")
                         .font(.caption2)
                 }
-                .font(Theme.Typography.caption)
+                .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, Theme.Spacing.sm)
-                .padding(.vertical, 6)
-                .background(Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
             }
 
             // Sort order
@@ -327,24 +309,28 @@ struct StartupItemsView: View {
                     Image(systemName: "chevron.down")
                         .font(.caption2)
                 }
-                .font(Theme.Typography.caption)
+                .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, Theme.Spacing.sm)
-                .padding(.vertical, 6)
-                .background(Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
             }
 
             Spacer()
 
             // Show system items toggle
-            Toggle(isOn: $viewModel.showSystemItems) {
+            HStack(spacing: 8) {
                 Text("System Items")
-                    .font(Theme.Typography.caption)
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(.secondary)
+
+                Toggle("", isOn: $viewModel.showSystemItems)
+                    .toggleStyle(.switch)
+                    .controlSize(.small)
             }
-            .toggleStyle(.switch)
-            .controlSize(.small)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
         }
     }
 
@@ -370,7 +356,7 @@ struct StartupItemsView: View {
     private var emptyFilterSection: some View {
         VStack(spacing: Theme.Spacing.md) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 40))
+                .font(.system(size: 48))
                 .foregroundStyle(.tertiary)
 
             Text("No matching items")
@@ -461,7 +447,7 @@ struct StartupItemRow: View {
                                 Circle()
                                     .stroke(Color.black.opacity(0.2), lineWidth: 1)
                             )
-                            .offset(x: 14, y: -14)
+                            .offset(x: 16, y: -16)
                     }
                 }
 
@@ -565,18 +551,15 @@ struct StartupItemRow: View {
                     .help("Show in Finder")
                     .opacity(isHovered ? 1 : 0.6)
                 }
-
-                // Expand button
-                Button(action: { withAnimation(Theme.Animation.spring) { isExpanded.toggle() } }) {
-                    Image(systemName: "chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                }
-                .buttonStyle(.plain)
             }
             .padding(Theme.Spacing.md)
             .background(isHovered ? Color.white.opacity(0.03) : Color.clear)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation(Theme.Animation.spring) {
+                    isExpanded.toggle()
+                }
+            }
             .onHover { isHovered = $0 }
 
             // Expanded details
