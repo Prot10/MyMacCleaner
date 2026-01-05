@@ -19,15 +19,23 @@ class PortManagementViewModel: ObservableObject {
     @Published var toastType: ToastType = .success
 
     enum FilterType: String, CaseIterable {
-        case all = "All"
-        case listening = "Listening"
-        case established = "Established"
+        case all
+        case listening
+        case established
 
         var icon: String {
             switch self {
             case .all: return "network"
             case .listening: return "antenna.radiowaves.left.and.right"
             case .established: return "link"
+            }
+        }
+
+        var localizedName: String {
+            switch self {
+            case .all: return L("portManagement.filter.all")
+            case .listening: return L("portManagement.filter.listening")
+            case .established: return L("portManagement.filter.established")
             }
         }
     }
@@ -100,9 +108,9 @@ class PortManagementViewModel: ObservableObject {
 
             if success {
                 connections.removeAll { $0.id == connection.id }
-                showToastMessage("Process \(connection.processName) terminated", type: .success)
+                showToastMessage(L("portManagement.toast.terminated \(connection.processName)"), type: .success)
             } else {
-                showToastMessage("Failed to terminate process (requires admin)", type: .error)
+                showToastMessage(L("portManagement.toast.failedAdmin"), type: .error)
             }
 
             showKillConfirmation = false

@@ -53,16 +53,16 @@ struct PortManagementView: View {
             }
         }
         .animation(Theme.Animation.spring, value: viewModel.showToast)
-        .alert("Kill Process?", isPresented: $viewModel.showKillConfirmation) {
-            Button("Cancel", role: .cancel) {
+        .alert(L("portManagement.kill.title"), isPresented: $viewModel.showKillConfirmation) {
+            Button(L("common.cancel"), role: .cancel) {
                 viewModel.cancelKill()
             }
-            Button("Kill", role: .destructive) {
+            Button(L("portManagement.kill.button"), role: .destructive) {
                 viewModel.confirmKill()
             }
         } message: {
             if let connection = viewModel.connectionToKill {
-                Text("This will terminate \(connection.processName) (PID: \(String(connection.pid))) using port \(connection.localPort).")
+                Text(L("portManagement.kill.message \(connection.processName) \(String(connection.pid)) \(connection.localPort)"))
             }
         }
         .onAppear {
@@ -85,10 +85,10 @@ struct PortManagementView: View {
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Port Management")
+                Text(L("navigation.portManagement"))
                     .font(.system(size: 28, weight: .bold))
 
-                Text("Monitor network connections and active ports")
+                Text(L("portManagement.subtitle"))
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
@@ -96,7 +96,7 @@ struct PortManagementView: View {
             Spacer()
 
             GlassActionButton(
-                "Refresh",
+                L("common.refresh"),
                 icon: "arrow.clockwise",
                 color: sectionColor
             ) {
@@ -110,21 +110,21 @@ struct PortManagementView: View {
     private var statsSection: some View {
         HStack(spacing: Theme.Spacing.md) {
             PortStatCard(
-                title: "Total Connections",
+                title: L("portManagement.stats.total"),
                 value: "\(viewModel.connections.count)",
                 icon: "network",
                 color: .blue
             )
 
             PortStatCard(
-                title: "Listening",
+                title: L("portManagement.stats.listening"),
                 value: "\(viewModel.listeningCount)",
                 icon: "antenna.radiowaves.left.and.right",
                 color: .green
             )
 
             PortStatCard(
-                title: "Established",
+                title: L("portManagement.stats.established"),
                 value: "\(viewModel.establishedCount)",
                 icon: "link",
                 color: .orange
@@ -137,7 +137,7 @@ struct PortManagementView: View {
     private var controlsSection: some View {
         HStack(spacing: Theme.Spacing.md) {
             // Search
-            GlassSearchField(text: $viewModel.searchText, placeholder: "Search by process or port...")
+            GlassSearchField(text: $viewModel.searchText, placeholder: L("portManagement.search"))
 
             Spacer()
 
@@ -146,7 +146,7 @@ struct PortManagementView: View {
                 tabs: PortManagementViewModel.FilterType.allCases,
                 selection: $viewModel.filterType,
                 icon: { $0.icon },
-                label: { $0.rawValue },
+                label: { $0.localizedName },
                 accentColor: sectionColor
             )
         }
@@ -160,7 +160,7 @@ struct PortManagementView: View {
                 .controlSize(.large)
                 .frame(width: 32, height: 32)
 
-            Text("Scanning network connections...")
+            Text(L("portManagement.scanning"))
                 .font(Theme.Typography.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -176,10 +176,10 @@ struct PortManagementView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(.tertiary)
 
-            Text("No connections found")
+            Text(L("portManagement.empty.title"))
                 .font(Theme.Typography.headline)
 
-            Text("No active network connections match your criteria")
+            Text(L("portManagement.empty.message"))
                 .font(Theme.Typography.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -193,15 +193,15 @@ struct PortManagementView: View {
         VStack(spacing: Theme.Spacing.sm) {
             // Table header
             HStack {
-                Text("Process")
+                Text(L("portManagement.table.process"))
                     .frame(width: 150, alignment: .leading)
-                Text("PID")
+                Text(L("portManagement.table.pid"))
                     .frame(width: 60, alignment: .leading)
-                Text("Local Port")
+                Text(L("portManagement.table.localPort"))
                     .frame(width: 100, alignment: .leading)
-                Text("Remote")
+                Text(L("portManagement.table.remote"))
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Text("State")
+                Text(L("portManagement.table.state"))
                     .frame(width: 100, alignment: .leading)
                 Text("")
                     .frame(width: 80)
@@ -316,7 +316,7 @@ struct ConnectionRow: View {
 
             // Kill button
             Button(action: onKill) {
-                Text("Kill")
+                Text(L("portManagement.kill.button"))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.red)
                     .padding(.horizontal, Theme.Spacing.sm)
