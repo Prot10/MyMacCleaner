@@ -1,145 +1,429 @@
 import SwiftUI
 
-// MARK: - Liquid Glass View Modifiers
+// MARK: - Liquid Glass Design System for macOS 26 Tahoe
+// Native .glassEffect() API for authentic Liquid Glass appearance
+
+// MARK: - Glass Card Modifiers
 
 extension View {
-    /// Applies a glass card effect with material background
-    func glassCard(cornerRadius: CGFloat = Theme.CornerRadius.large) -> some View {
+    /// Standard glass card with rounded corners
+    func glassCard() -> some View {
         self
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.2),
-                                Color.white.opacity(0.05)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 0.5
-                    )
-            )
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 
-    /// Applies a prominent glass effect for important elements
-    func glassCardProminent(cornerRadius: CGFloat = Theme.CornerRadius.large) -> some View {
+    /// Glass card with custom corner radius
+    func glassCard(cornerRadius: CGFloat) -> some View {
         self
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.3),
-                                Color.white.opacity(0.1)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-            )
-            .shadow(color: .black.opacity(0.1), radius: 10, y: 5)
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
     }
 
-    /// Applies a subtle glass effect for secondary elements
-    func glassCardSubtle(cornerRadius: CGFloat = Theme.CornerRadius.medium) -> some View {
+    /// Prominent glass card for important elements
+    func glassCardProminent(cornerRadius: CGFloat = 16) -> some View {
         self
-            .background(.ultraThinMaterial.opacity(0.5), in: RoundedRectangle(cornerRadius: cornerRadius))
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
+            .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
     }
 
-    /// Applies a pill-shaped glass effect (for buttons, tags)
+    /// Subtle glass card - uses clear variant for high transparency
+    func glassCardSubtle(cornerRadius: CGFloat = 12) -> some View {
+        self
+            .glassEffect(.clear, in: RoundedRectangle(cornerRadius: cornerRadius))
+    }
+
+    /// Pill-shaped glass (for tags, buttons)
     func glassPill() -> some View {
         self
-            .background(.ultraThinMaterial, in: Capsule())
-            .overlay(
-                Capsule()
-                    .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
-            )
+            .glassEffect(.regular, in: .capsule)
     }
 
-    /// Applies hover effect with scale and glow
+    /// Circle glass effect
+    func glassCircle() -> some View {
+        self
+            .glassEffect(.regular, in: .circle)
+    }
+
+    /// Glass effect with tint color
+    func glassCard(tint: Color, cornerRadius: CGFloat = 16) -> some View {
+        self
+            .glassEffect(.regular.tint(tint), in: RoundedRectangle(cornerRadius: cornerRadius))
+    }
+}
+
+// MARK: - Interactive Effects
+
+extension View {
+    /// Applies hover effect with scale
     func hoverEffect(isHovered: Bool, scale: CGFloat = 1.02) -> some View {
         self
             .scaleEffect(isHovered ? scale : 1.0)
-            .animation(Theme.Animation.spring, value: isHovered)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
     }
 
     /// Applies press effect
     func pressEffect(isPressed: Bool) -> some View {
         self
-            .scaleEffect(isPressed ? 0.97 : 1.0)
+            .scaleEffect(isPressed ? 0.96 : 1.0)
             .opacity(isPressed ? 0.9 : 1.0)
-            .animation(Theme.Animation.fast, value: isPressed)
+            .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isPressed)
+    }
+
+    /// Floating effect with shadow on hover
+    func floatingEffect(isHovered: Bool) -> some View {
+        self
+            .scaleEffect(isHovered ? 1.02 : 1.0)
+            .shadow(
+                color: .black.opacity(isHovered ? 0.2 : 0.1),
+                radius: isHovered ? 20 : 10,
+                y: isHovered ? 8 : 4
+            )
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
     }
 }
 
-// MARK: - Glass Card Component
+// MARK: - Glass Button Style (macOS 26 native)
 
-struct GlassCard<Content: View>: View {
+struct LiquidGlassButtonStyle: ButtonStyle {
+    enum Variant {
+        case regular
+        case prominent
+        case tinted(Color)
+    }
+
+    let variant: Variant
     let cornerRadius: CGFloat
-    let padding: CGFloat
-    @ViewBuilder let content: () -> Content
 
-    @State private var isHovered = false
-
-    init(
-        cornerRadius: CGFloat = Theme.CornerRadius.large,
-        padding: CGFloat = Theme.Spacing.md,
-        @ViewBuilder content: @escaping () -> Content
-    ) {
+    init(_ variant: Variant = .regular, cornerRadius: CGFloat = 12) {
+        self.variant = variant
         self.cornerRadius = cornerRadius
-        self.padding = padding
-        self.content = content
     }
-
-    var body: some View {
-        content()
-            .padding(padding)
-            .glassCard(cornerRadius: cornerRadius)
-            .hoverEffect(isHovered: isHovered)
-            .onHover { hovering in
-                isHovered = hovering
-            }
-    }
-}
-
-// MARK: - Glass Button Style
-
-struct GlassButtonStyle: ButtonStyle {
-    var isProminent: Bool = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(.horizontal, Theme.Spacing.md)
-            .padding(.vertical, Theme.Spacing.sm)
-            .background(
-                Group {
-                    if isProminent {
-                        RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
-                            .fill(.blue.gradient)
-                    } else {
-                        RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
-                            .fill(.ultraThinMaterial)
-                    }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background {
+                switch variant {
+                case .prominent:
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.blue, Color.blue.opacity(0.8)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                default:
+                    Color.clear
                 }
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
-                    .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
-            )
-            .foregroundStyle(isProminent ? .white : .primary)
+            }
+            .glassEffect(glassVariant, in: RoundedRectangle(cornerRadius: cornerRadius))
+            .foregroundStyle(foregroundColor)
             .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
             .opacity(configuration.isPressed ? 0.9 : 1.0)
-            .animation(Theme.Animation.fast, value: configuration.isPressed)
+            .animation(.spring(response: 0.2, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+
+    private var glassVariant: Glass {
+        switch variant {
+        case .regular:
+            return .regular
+        case .prominent:
+            return .regular
+        case .tinted(let color):
+            return .regular.tint(color)
+        }
+    }
+
+    private var foregroundColor: Color {
+        switch variant {
+        case .regular: return .primary
+        case .prominent: return .white
+        case .tinted(let color): return color
+        }
     }
 }
 
-extension ButtonStyle where Self == GlassButtonStyle {
-    static var glass: GlassButtonStyle { GlassButtonStyle() }
-    static var glassProminent: GlassButtonStyle { GlassButtonStyle(isProminent: true) }
+extension ButtonStyle where Self == LiquidGlassButtonStyle {
+    static var liquidGlass: LiquidGlassButtonStyle { LiquidGlassButtonStyle(.regular) }
+    static var liquidGlassProminent: LiquidGlassButtonStyle { LiquidGlassButtonStyle(.prominent) }
+    static func liquidGlassTinted(_ color: Color) -> LiquidGlassButtonStyle {
+        LiquidGlassButtonStyle(.tinted(color))
+    }
+}
+
+// MARK: - Floating Action Button
+
+struct FloatingActionButton: View {
+    let icon: String
+    let color: Color
+    let action: () -> Void
+
+    @State private var isHovered = false
+    @State private var isPressed = false
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 56, height: 56)
+                .background {
+                    Circle()
+                        .fill(color.gradient)
+                }
+                .glassEffect(.regular.tint(color), in: .circle)
+                .shadow(color: color.opacity(0.4), radius: isHovered ? 20 : 12, y: isHovered ? 8 : 4)
+        }
+        .buttonStyle(.plain)
+        .scaleEffect(isPressed ? 0.92 : (isHovered ? 1.05 : 1.0))
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
+        .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isPressed)
+        .onHover { isHovered = $0 }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
+    }
+}
+
+// MARK: - Glass Action Button
+
+struct GlassActionButton: View {
+    let title: String
+    let icon: String?
+    let color: Color
+    let action: () -> Void
+    var isDisabled: Bool = false
+
+    @State private var isHovered = false
+    @State private var isPressed = false
+
+    init(_ title: String, icon: String? = nil, color: Color, disabled: Bool = false, action: @escaping () -> Void) {
+        self.title = title
+        self.icon = icon
+        self.color = color
+        self.isDisabled = disabled
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                if let icon = icon {
+                    Image(systemName: icon)
+                        .font(.system(size: 13, weight: .medium))
+                }
+                Text(title)
+                    .font(.system(size: 13, weight: .semibold))
+            }
+            .foregroundStyle(isDisabled ? color.opacity(0.3) : color)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(color.opacity(isDisabled ? 0.05 : (isHovered ? 0.2 : 0.12)))
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(
+                        color.opacity(isDisabled ? 0.1 : (isHovered ? 0.5 : 0.3)),
+                        lineWidth: 1
+                    )
+            }
+        }
+        .buttonStyle(.plain)
+        .disabled(isDisabled)
+        .scaleEffect(isPressed ? 0.96 : (isHovered ? 1.02 : 1.0))
+        .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isHovered)
+        .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isPressed)
+        .onHover { isHovered = $0 }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in if !isDisabled { isPressed = true } }
+                .onEnded { _ in isPressed = false }
+        )
+    }
+}
+
+// MARK: - Glass Toolbar
+
+struct GlassToolbar<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        HStack(spacing: 8) {
+            content()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .glassEffect(.regular, in: .capsule)
+        .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
+    }
+}
+
+// MARK: - Glass Segmented Control
+
+struct GlassSegmentedControl<T: Hashable>: View {
+    let options: [T]
+    @Binding var selection: T
+    let label: (T) -> String
+
+    @Namespace private var glassNamespace
+
+    var body: some View {
+        GlassEffectContainer {
+            HStack(spacing: 4) {
+                ForEach(options, id: \.self) { option in
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            selection = option
+                        }
+                    } label: {
+                        Text(label(option))
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(selection == option ? .primary : .secondary)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .glassEffect(
+                                selection == option ? .regular : .clear,
+                                in: .capsule
+                            )
+                            .glassEffectID(option, in: glassNamespace)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(4)
+            .background {
+                Capsule()
+                    .fill(Color.white.opacity(0.05))
+            }
+        }
+    }
+}
+
+// MARK: - Glass Tab Picker (Apple Inspector Style)
+
+struct GlassTabPicker<T: Hashable>: View {
+    let tabs: [T]
+    @Binding var selection: T
+    let icon: (T) -> String
+    let label: (T) -> String
+    let accentColor: Color
+
+    @Namespace private var tabNamespace
+
+    init(
+        tabs: [T],
+        selection: Binding<T>,
+        icon: @escaping (T) -> String,
+        label: @escaping (T) -> String,
+        accentColor: Color = .blue
+    ) {
+        self.tabs = tabs
+        self._selection = selection
+        self.icon = icon
+        self.label = label
+        self.accentColor = accentColor
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(tabs, id: \.self) { tab in
+                GlassTabButton(
+                    icon: icon(tab),
+                    label: label(tab),
+                    isSelected: selection == tab,
+                    accentColor: accentColor,
+                    namespace: tabNamespace
+                ) {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                        selection = tab
+                    }
+                }
+            }
+        }
+        .padding(4)
+        .glassEffect(.regular, in: .capsule)
+    }
+}
+
+struct GlassTabButton: View {
+    let icon: String
+    let label: String
+    let isSelected: Bool
+    let accentColor: Color
+    let namespace: Namespace.ID
+    let action: () -> Void
+
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 12, weight: .medium))
+
+                Text(label)
+                    .font(.system(size: 13, weight: .medium))
+            }
+            .foregroundStyle(isSelected ? .white : (isHovered ? .primary : .secondary))
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background {
+                if isSelected {
+                    Capsule()
+                        .fill(accentColor.gradient)
+                        .matchedGeometryEffect(id: "selectedTab", in: namespace)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+    }
+}
+
+// MARK: - Glass Search Field
+
+struct GlassSearchField: View {
+    @Binding var text: String
+    let placeholder: String
+
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.secondary)
+
+            TextField(placeholder, text: $text)
+                .textFieldStyle(.plain)
+                .font(.system(size: 14))
+                .focused($isFocused)
+
+            if !text.isEmpty {
+                Button {
+                    text = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .glassEffect(
+            isFocused ? .regular : .clear,
+            in: RoundedRectangle(cornerRadius: 12)
+        )
+        .scaleEffect(isFocused ? 1.01 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isFocused)
+    }
 }
 
 // MARK: - Shimmer Effect
@@ -149,7 +433,7 @@ struct ShimmerModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .overlay(
+            .overlay {
                 GeometryReader { geometry in
                     LinearGradient(
                         colors: [
@@ -164,7 +448,7 @@ struct ShimmerModifier: ViewModifier {
                     .offset(x: -geometry.size.width + (phase * geometry.size.width * 2))
                 }
                 .mask(content)
-            )
+            }
             .onAppear {
                 withAnimation(.linear(duration: 2).repeatForever(autoreverses: false)) {
                     phase = 1
@@ -181,91 +465,90 @@ extension View {
 
 // MARK: - Glow Effect
 
-struct GlowModifier: ViewModifier {
-    let color: Color
-    let radius: CGFloat
-
-    func body(content: Content) -> some View {
-        content
-            .background(
-                content
-                    .blur(radius: radius)
-                    .opacity(0.5)
-            )
-    }
-}
-
 extension View {
     func glow(color: Color = .blue, radius: CGFloat = 10) -> some View {
-        modifier(GlowModifier(color: color, radius: radius))
+        self
+            .shadow(color: color.opacity(0.5), radius: radius)
+            .shadow(color: color.opacity(0.3), radius: radius * 2)
     }
 }
 
-// MARK: - Animated Border
+// MARK: - Color Extension
 
-struct AnimatedBorderModifier: ViewModifier {
-    let cornerRadius: CGFloat
-    let lineWidth: CGFloat
-
-    @State private var rotation: Double = 0
-
-    func body(content: Content) -> some View {
-        content
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(
-                        AngularGradient(
-                            colors: [.blue, .purple, .pink, .blue],
-                            center: .center,
-                            startAngle: .degrees(rotation),
-                            endAngle: .degrees(rotation + 360)
-                        ),
-                        lineWidth: lineWidth
-                    )
-                    .opacity(0.5)
-            )
-            .onAppear {
-                withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
-                    rotation = 360
-                }
-            }
-    }
-}
-
-extension View {
-    func animatedBorder(cornerRadius: CGFloat = Theme.CornerRadius.large, lineWidth: CGFloat = 2) -> some View {
-        modifier(AnimatedBorderModifier(cornerRadius: cornerRadius, lineWidth: lineWidth))
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: Double(a) / 255
+        )
     }
 }
 
 // MARK: - Preview
 
-#Preview {
-    VStack(spacing: 20) {
-        Text("Glass Card")
-            .padding()
-            .glassCard()
+#Preview("Liquid Glass Components") {
+    ZStack {
+        LinearGradient(
+            colors: [Color(hex: "1a1a2e"), Color(hex: "16213e")],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
 
-        Text("Prominent Glass")
-            .padding()
-            .glassCardProminent()
+        VStack(spacing: 24) {
+            Text("Glass Card")
+                .padding()
+                .glassCard()
 
-        Text("Glass Pill")
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .glassPill()
+            Text("Prominent Glass")
+                .padding()
+                .glassCardProminent()
 
-        Button("Glass Button") {}
-            .buttonStyle(.glass)
+            Text("Glass Pill")
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .glassPill()
 
-        Button("Prominent Button") {}
-            .buttonStyle(.glassProminent)
+            HStack(spacing: 12) {
+                Button("Glass") {}
+                    .buttonStyle(.liquidGlass)
 
-        GlassCard {
-            Text("GlassCard Component")
+                Button("Prominent") {}
+                    .buttonStyle(.liquidGlassProminent)
+
+                Button("Tinted") {}
+                    .buttonStyle(.liquidGlassTinted(.green))
+            }
+
+            GlassSearchField(text: .constant(""), placeholder: "Search...")
+                .frame(width: 300)
+
+            GlassSegmentedControl(
+                options: ["All", "Active", "Inactive"],
+                selection: .constant("All"),
+                label: { $0 }
+            )
+
+            FloatingActionButton(icon: "plus", color: .blue) {}
         }
+        .padding()
     }
-    .padding()
-    .frame(width: 400, height: 400)
-    .background(Color.black)
+    .frame(width: 500, height: 600)
 }
