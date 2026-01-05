@@ -41,13 +41,13 @@ struct ContentView: View {
 // MARK: - Navigation Section
 
 enum NavigationSection: String, CaseIterable, Identifiable {
-    case home = "Home"
-    case diskCleaner = "Disk Cleaner"
-    case performance = "Performance"
-    case applications = "Applications"
-    case startupItems = "Startup Items"
-    case portManagement = "Port Management"
-    case systemHealth = "System Health"
+    case home
+    case diskCleaner
+    case performance
+    case applications
+    case startupItems
+    case portManagement
+    case systemHealth
 
     var id: String { rawValue }
 
@@ -63,15 +63,27 @@ enum NavigationSection: String, CaseIterable, Identifiable {
         }
     }
 
-    var description: String {
+    var localizedName: String {
         switch self {
-        case .home: return "Smart scan and overview"
-        case .diskCleaner: return "Clean junk files"
-        case .performance: return "Optimize your Mac"
-        case .applications: return "Manage installed apps"
-        case .startupItems: return "Control startup programs"
-        case .portManagement: return "View active ports"
-        case .systemHealth: return "Monitor system health"
+        case .home: return String(localized: "navigation.home")
+        case .diskCleaner: return String(localized: "navigation.diskCleaner")
+        case .performance: return String(localized: "navigation.performance")
+        case .applications: return String(localized: "navigation.applications")
+        case .startupItems: return String(localized: "navigation.startupItems")
+        case .portManagement: return String(localized: "navigation.portManagement")
+        case .systemHealth: return String(localized: "navigation.systemHealth")
+        }
+    }
+
+    var localizedDescription: String {
+        switch self {
+        case .home: return String(localized: "navigation.home.description")
+        case .diskCleaner: return String(localized: "navigation.diskCleaner.description")
+        case .performance: return String(localized: "navigation.performance.description")
+        case .applications: return String(localized: "navigation.applications.description")
+        case .startupItems: return String(localized: "navigation.startupItems.description")
+        case .portManagement: return String(localized: "navigation.portManagement.description")
+        case .systemHealth: return String(localized: "navigation.systemHealth.description")
         }
     }
 
@@ -163,11 +175,11 @@ struct SidebarRow: View {
 
             // Text
             VStack(alignment: .leading, spacing: 2) {
-                Text(section.rawValue)
+                Text(section.localizedName)
                     .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
                     .foregroundStyle(isSelected ? .primary : .secondary)
 
-                Text(section.description)
+                Text(section.localizedDescription)
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
@@ -239,7 +251,7 @@ struct SystemStatusBadge: View {
                     .frame(width: 8, height: 8)
                     .shadow(color: .green.opacity(0.5), radius: 4)
 
-                Text("System Healthy")
+                Text(String(localized: "sidebar.systemHealthy"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
@@ -271,11 +283,17 @@ struct DetailContentView: View {
             backgroundGradient
                 .ignoresSafeArea()
 
-            // Content with top padding in fullscreen
+            // Content with top padding when not in fullscreen (for toolbar spacing)
             contentView
-                .padding(.top, isFullScreen ? 28 : 0)
+                .padding(.top, isFullScreen ? 28 : 16)
         }
         .ignoresSafeArea(edges: .top)
+        .toolbar {
+            ToolbarSpacer(.flexible)
+            ToolbarItem {
+                LanguageSwitcherButton()
+            }
+        }
     }
 
     private var backgroundGradient: some View {
@@ -395,14 +413,14 @@ struct ComingSoonView: View {
 
             // Text content
             VStack(spacing: 12) {
-                Text(section.rawValue)
+                Text(section.localizedName)
                     .font(.largeTitle.bold())
 
-                Text("Coming Soon")
+                Text(String(localized: "comingSoon.title"))
                     .font(.title2)
                     .foregroundStyle(.secondary)
 
-                Text("This feature is under development")
+                Text(String(localized: "comingSoon.description"))
                     .font(.body)
                     .foregroundStyle(.tertiary)
                     .padding(.top, 4)
@@ -413,7 +431,7 @@ struct ComingSoonView: View {
                 Image(systemName: "hammer.fill")
                     .font(.caption)
 
-                Text("In Development")
+                Text(String(localized: "comingSoon.inDevelopment"))
                     .font(.caption.weight(.medium))
             }
             .padding(.horizontal, 16)
