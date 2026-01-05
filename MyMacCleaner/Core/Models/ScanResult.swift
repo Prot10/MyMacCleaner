@@ -25,16 +25,24 @@ struct ScanResult: Identifiable {
 // MARK: - Scan Category
 
 enum ScanCategory: String, CaseIterable, Identifiable {
-    case systemCache = "System Cache"
-    case userCache = "User Cache"
-    case applicationLogs = "Application Logs"
-    case xcodeData = "Xcode Data"
-    case browserCache = "Browser Cache"
-    case trash = "Trash"
-    case downloads = "Old Downloads"
-    case mailAttachments = "Mail Attachments"
+    case systemCache
+    case userCache
+    case applicationLogs
+    case xcodeData
+    case browserCache
+    case trash
+    case downloads
+    case mailAttachments
 
     var id: String { rawValue }
+
+    var localizedName: String {
+        L(key: "category.\(rawValue).name")
+    }
+
+    var localizedDescription: String {
+        L(key: "category.\(rawValue).description")
+    }
 
     var icon: String {
         switch self {
@@ -62,17 +70,9 @@ enum ScanCategory: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Legacy description for compatibility - use localizedDescription instead
     var description: String {
-        switch self {
-        case .systemCache: return "System-level cached data"
-        case .userCache: return "User application caches"
-        case .applicationLogs: return "App crash reports and logs"
-        case .xcodeData: return "DerivedData and build files"
-        case .browserCache: return "Safari, Chrome, Firefox caches"
-        case .trash: return "Items in your Trash"
-        case .downloads: return "Files older than 30 days"
-        case .mailAttachments: return "Downloaded email attachments"
-        }
+        localizedDescription
     }
 
     var requiresFullDiskAccess: Bool {
@@ -134,7 +134,7 @@ struct CleanableItem: Identifiable {
     }
 
     var formattedDate: String {
-        guard let date = modificationDate else { return "Unknown" }
+        guard let date = modificationDate else { return L("common.unknown") }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: date, relativeTo: Date())
