@@ -7,6 +7,9 @@ struct PerformanceView: View {
     @State private var isVisible = false
     @State private var selectedTab: PerformanceTab = .memory
 
+    // Section color for performance
+    private let sectionColor = Theme.Colors.memory
+
     enum PerformanceTab: String, CaseIterable {
         case memory = "Memory"
         case processes = "Processes"
@@ -101,31 +104,43 @@ struct PerformanceView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Performance")
-                    .font(Theme.Typography.largeTitle)
+                    .font(.system(size: 28, weight: .bold))
 
                 Text("Monitor and optimize your Mac's performance")
-                    .font(Theme.Typography.subheadline)
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
             // CPU indicator
-            VStack(alignment: .trailing, spacing: 4) {
-                HStack(spacing: 8) {
-                    Text("CPU")
-                        .font(Theme.Typography.caption)
-                        .foregroundStyle(.secondary)
+            HStack(spacing: 16) {
+                VStack(alignment: .trailing, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text("CPU")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
 
-                    Text("\(Int(viewModel.cpuUsage))%")
-                        .font(Theme.Typography.title.monospacedDigit())
-                        .foregroundStyle(cpuColor)
+                        Text("\(Int(viewModel.cpuUsage))%")
+                            .font(.system(size: 22, weight: .semibold).monospacedDigit())
+                            .foregroundStyle(cpuColor)
+                    }
+
+                    ProgressView(value: viewModel.cpuUsage, total: 100)
+                        .progressViewStyle(.linear)
+                        .tint(cpuColor)
+                        .frame(width: 100)
                 }
-
-                ProgressView(value: viewModel.cpuUsage, total: 100)
-                    .progressViewStyle(.linear)
-                    .tint(cpuColor)
-                    .frame(width: 100)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(sectionColor.opacity(0.1))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(sectionColor.opacity(0.2), lineWidth: 0.5)
+                    }
             }
         }
     }
@@ -142,26 +157,14 @@ struct PerformanceView: View {
     // MARK: - Tab Picker
 
     private var tabPicker: some View {
-        HStack(spacing: Theme.Spacing.sm) {
-            ForEach(PerformanceTab.allCases, id: \.self) { tab in
-                Button(action: { selectedTab = tab }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: tab.icon)
-                            .font(.system(size: 12, weight: .medium))
-
-                        Text(tab.rawValue)
-                            .font(Theme.Typography.subheadline)
-                    }
-                    .foregroundStyle(selectedTab == tab ? .white : .secondary)
-                    .padding(.horizontal, Theme.Spacing.md)
-                    .padding(.vertical, Theme.Spacing.sm)
-                    .background(
-                        RoundedRectangle(cornerRadius: Theme.CornerRadius.small)
-                            .fill(selectedTab == tab ? Color.purple : Color.clear)
-                    )
-                }
-                .buttonStyle(.plain)
-            }
+        HStack {
+            GlassTabPicker(
+                tabs: PerformanceTab.allCases,
+                selection: $selectedTab,
+                icon: { $0.icon },
+                label: { $0.rawValue },
+                accentColor: sectionColor
+            )
 
             Spacer()
         }
@@ -202,36 +205,24 @@ struct PerformanceView: View {
                 freeableRamInfo
 
                 // Purge cache button
-                Button(action: { viewModel.runTask(MaintenanceTask.allTasks[0]) }) {
-                    HStack(spacing: 8) {
-                        if viewModel.runningTaskId == "purge_ram" {
-                            ProgressView()
-                                .controlSize(.small)
-                                .frame(width: 16, height: 16)
-                        } else {
-                            Image(systemName: "bolt.fill")
-                        }
-                        Text("Purge Disk Cache")
-                    }
-                    .font(Theme.Typography.body.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Theme.Spacing.sm)
-                    .background(
-                        LinearGradient(
-                            colors: [.purple, .purple.opacity(0.8)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+                GlassActionButton(
+                    "Purge Disk Cache",
+                    icon: viewModel.runningTaskId == "purge_ram" ? nil : "bolt.fill",
+                    color: sectionColor,
+                    disabled: viewModel.runningTaskId != nil
+                ) {
+                    viewModel.runTask(MaintenanceTask.allTasks[0])
                 }
-                .buttonStyle(.plain)
-                .disabled(viewModel.runningTaskId != nil)
+                .overlay {
+                    if viewModel.runningTaskId == "purge_ram" {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                }
             }
         }
         .padding(Theme.Spacing.lg)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private var memoryGauge: some View {
@@ -340,7 +331,7 @@ struct PerformanceView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(Theme.Spacing.xl)
-                .glassCard()
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
             } else if viewModel.topProcesses.isEmpty {
                 // Empty state
                 VStack(spacing: Theme.Spacing.md) {
@@ -354,7 +345,7 @@ struct PerformanceView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(Theme.Spacing.xl)
-                .glassCard()
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
             } else {
                 // Process list
                 VStack(spacing: 0) {
@@ -393,7 +384,7 @@ struct PerformanceView: View {
                         }
                     }
                 }
-                .glassCard()
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
             }
 
             // Info text
@@ -509,7 +500,7 @@ struct PerformanceView: View {
         }
         .padding(Theme.Spacing.md)
         .frame(width: 280)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private var swapColor: Color {
@@ -551,25 +542,25 @@ struct PerformanceView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(Theme.Spacing.md)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Maintenance Section
 
     private var maintenanceSection: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+        VStack(alignment: .leading, spacing: 12) {
             // Header with Run All button
             HStack {
                 Text("Maintenance Tasks")
-                    .font(Theme.Typography.headline)
+                    .font(.system(size: 15, weight: .semibold))
 
                 Spacer()
 
                 if viewModel.isRunningAll {
                     // Progress indicator during run all
-                    HStack(spacing: Theme.Spacing.sm) {
+                    HStack(spacing: 8) {
                         Text("Task \(viewModel.runAllCurrentIndex) of \(viewModel.runAllTotalCount)")
-                            .font(Theme.Typography.caption)
+                            .font(.system(size: 11))
                             .foregroundStyle(.secondary)
 
                         Button(action: viewModel.cancelRunAll) {
@@ -577,36 +568,24 @@ struct PerformanceView: View {
                                 Image(systemName: "xmark")
                                 Text("Stop")
                             }
-                            .font(Theme.Typography.caption.weight(.medium))
+                            .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(.red)
-                            .padding(.horizontal, Theme.Spacing.sm)
+                            .padding(.horizontal, 10)
                             .padding(.vertical, 4)
                             .background(Color.red.opacity(0.15))
-                            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
                         }
                         .buttonStyle(.plain)
                     }
                 } else {
-                    Button(action: viewModel.runAllTasks) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "play.fill")
-                            Text("Run All")
-                        }
-                        .font(Theme.Typography.subheadline.weight(.medium))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, Theme.Spacing.md)
-                        .padding(.vertical, Theme.Spacing.sm)
-                        .background(
-                            LinearGradient(
-                                colors: [.purple, .purple.opacity(0.8)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+                    GlassActionButton(
+                        "Run All",
+                        icon: "play.fill",
+                        color: sectionColor,
+                        disabled: viewModel.runningTaskId != nil
+                    ) {
+                        viewModel.runAllTasks()
                     }
-                    .buttonStyle(.plain)
-                    .disabled(viewModel.runningTaskId != nil)
                 }
             }
 
@@ -699,7 +678,7 @@ struct MaintenanceTaskCard: View {
             }
             .padding(Theme.Spacing.md)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .glassCard()
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .stroke(borderColor, lineWidth: borderColor == .clear ? 0 : 2)
@@ -996,7 +975,7 @@ struct RunAllProgressView: View {
             .frame(height: 8)
         }
         .padding(Theme.Spacing.md)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
         .animation(Theme.Animation.spring, value: currentIndex)
         .animation(Theme.Animation.spring, value: taskProgress)
     }
