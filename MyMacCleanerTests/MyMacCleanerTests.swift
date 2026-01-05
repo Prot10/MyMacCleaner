@@ -63,6 +63,17 @@ struct ScanCategoryTests {
         // User cache doesn't require FDA
         #expect(ScanCategory.userCache.requiresFullDiskAccess == false)
     }
+
+    @Test("User consent requirement is properly set for TCC-protected directories")
+    func userConsentRequirements() async throws {
+        // Downloads and mail attachments require user consent (TCC-protected)
+        #expect(ScanCategory.downloads.requiresUserConsent == true)
+        #expect(ScanCategory.mailAttachments.requiresUserConsent == true)
+        // Other categories don't require explicit user consent
+        #expect(ScanCategory.userCache.requiresUserConsent == false)
+        #expect(ScanCategory.systemCache.requiresUserConsent == false)
+        #expect(ScanCategory.browserCache.requiresUserConsent == false)
+    }
 }
 
 // MARK: - Cleanable Item Tests
@@ -340,7 +351,7 @@ struct MaintenanceTaskTests {
     @Test("All tasks have descriptions")
     func allTasksHaveDescriptions() async throws {
         for task in MaintenanceTask.allTasks {
-            #expect(!task.description.isEmpty, "Task \(task.id) should have a description")
+            #expect(!task.localizedDescription.isEmpty, "Task \(task.id) should have a description")
         }
     }
 

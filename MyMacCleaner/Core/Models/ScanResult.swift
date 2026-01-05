@@ -84,6 +84,17 @@ enum ScanCategory: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Whether this category requires explicit user consent before scanning
+    /// These directories are TCC-protected and will trigger system permission dialogs
+    var requiresUserConsent: Bool {
+        switch self {
+        case .downloads, .mailAttachments:
+            return true
+        default:
+            return false
+        }
+    }
+
     var paths: [String] {
         let home = NSHomeDirectory()
         switch self {
