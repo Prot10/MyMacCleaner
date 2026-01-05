@@ -73,10 +73,10 @@ struct CleanupCategoryCard: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(result.category.color.opacity(0.15))
-                    .frame(width: 40, height: 40)
+                    .frame(width: 44, height: 44)
 
                 Image(systemName: result.category.icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(result.category.color)
             }
 
@@ -305,10 +305,10 @@ struct CategoryDetailSheet: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(result.category.color.opacity(0.15))
-                        .frame(width: 40, height: 40)
+                        .frame(width: 44, height: 44)
 
                     Image(systemName: result.category.icon)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(result.category.color)
                 }
 
