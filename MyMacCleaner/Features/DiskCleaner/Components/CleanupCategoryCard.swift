@@ -82,10 +82,10 @@ struct CleanupCategoryCard: View {
 
             // Category info
             VStack(alignment: .leading, spacing: 2) {
-                Text(result.category.rawValue)
+                Text(result.category.localizedName)
                     .font(Theme.Typography.body)
 
-                Text(result.category.description)
+                Text(result.category.localizedDescription)
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -98,7 +98,7 @@ struct CleanupCategoryCard: View {
                     .font(Theme.Typography.subheadline.monospacedDigit())
                     .foregroundStyle(result.category.color)
 
-                Text("\(result.itemCount) items")
+                Text(LFormat("common.items %lld", result.itemCount))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -147,7 +147,7 @@ struct CleanupCategoryCard: View {
 
                 Button(action: onViewDetails) {
                     HStack {
-                        Text("View all \(result.items.count) items")
+                        Text(LFormat("diskCleaner.viewAllItems %lld", result.items.count))
                             .font(Theme.Typography.subheadline)
 
                         Image(systemName: "arrow.right")
@@ -265,11 +265,15 @@ struct CategoryDetailSheet: View {
     @State private var sortOrder: SortOrder = .sizeDesc
 
     enum SortOrder: String, CaseIterable {
-        case sizeDesc = "Size (Largest)"
-        case sizeAsc = "Size (Smallest)"
-        case dateDesc = "Date (Newest)"
-        case dateAsc = "Date (Oldest)"
-        case name = "Name"
+        case sizeDesc
+        case sizeAsc
+        case dateDesc
+        case dateAsc
+        case name
+
+        var localizedName: String {
+            L(key: "diskCleaner.sort.\(rawValue)")
+        }
     }
 
     private var filteredItems: [CleanableItem] {
@@ -313,10 +317,10 @@ struct CategoryDetailSheet: View {
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(result.category.rawValue)
+                    Text(result.category.localizedName)
                         .font(Theme.Typography.title3)
 
-                    Text("\(result.itemCount) items · \(ByteCountFormatter.string(fromByteCount: result.totalSize, countStyle: .file))")
+                    Text(LFormat("diskCleaner.itemsSummary %lld %@", result.itemCount, ByteCountFormatter.string(fromByteCount: result.totalSize, countStyle: .file)))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -340,16 +344,16 @@ struct CategoryDetailSheet: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(.secondary)
 
-                    TextField("Search files...", text: $searchText)
+                    TextField(L("diskCleaner.searchFiles"), text: $searchText)
                         .textFieldStyle(.plain)
                 }
                 .padding(Theme.Spacing.sm)
                 .background(Color.white.opacity(0.05))
                 .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
 
-                Picker("Sort", selection: $sortOrder) {
+                Picker(L("diskCleaner.sort"), selection: $sortOrder) {
                     ForEach(SortOrder.allCases, id: \.self) { order in
-                        Text(order.rawValue).tag(order)
+                        Text(order.localizedName).tag(order)
                     }
                 }
                 .pickerStyle(.menu)
