@@ -25,7 +25,6 @@ class PermissionsService: ObservableObject {
         var hasAccess = false
 
         // Method 1: Try to read the user's TCC database (most reliable)
-        // This file ALWAYS requires FDA to read
         let tccPath = NSHomeDirectory() + "/Library/Application Support/com.apple.TCC/TCC.db"
         if FileManager.default.isReadableFile(atPath: tccPath) {
             hasAccess = true
@@ -42,14 +41,25 @@ class PermissionsService: ObservableObject {
 
         // Method 3: Try to list ~/Library/Mail contents
         if !hasAccess {
-            let mailURL = URL(fileURLWithPath: NSHomeDirectory() + "/Library/Mail")
-            if FileManager.default.fileExists(atPath: mailURL.path) {
+            let mailPath = NSHomeDirectory() + "/Library/Mail"
+            if FileManager.default.fileExists(atPath: mailPath) {
                 do {
-                    _ = try FileManager.default.contentsOfDirectory(at: mailURL, includingPropertiesForKeys: nil)
+                    _ = try FileManager.default.contentsOfDirectory(atPath: mailPath)
                     hasAccess = true
                 } catch {
                     // Access denied
                 }
+            }
+        }
+
+        // Method 4: Try to actually READ a protected file (not just check isReadableFile)
+        if !hasAccess {
+            let safariPath = NSHomeDirectory() + "/Library/Safari/Bookmarks.plist"
+            do {
+                _ = try Data(contentsOf: URL(fileURLWithPath: safariPath))
+                hasAccess = true
+            } catch {
+                // Access denied
             }
         }
 

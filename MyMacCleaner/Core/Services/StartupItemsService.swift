@@ -188,7 +188,7 @@ actor StartupItemsService {
         }
     }
 
-    private static func parseBTMOutput(_ output: String) -> [StartupItem] {
+    nonisolated private static func parseBTMOutput(_ output: String) -> [StartupItem] {
         var items: [StartupItem] = []
         let lines = output.components(separatedBy: "\n")
 
@@ -706,7 +706,7 @@ actor StartupItemsService {
 
     // MARK: - Code Signing
 
-    private static func getCodeSigningTeam(for path: String) -> String? {
+    nonisolated private static func getCodeSigningTeam(for path: String) -> String? {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
         process.arguments = ["-dv", "--verbose=2", path]
