@@ -32,13 +32,33 @@ MyMacCleaner is a free, open-source alternative to commercial Mac cleaning apps 
 ## Requirements
 
 - macOS 14.0 (Sonoma) or later
-- For full Liquid Glass effects: macOS 15.0 (Sequoia) or later
+- For native Liquid Glass effects: macOS 26.0 (Tahoe) or later
+- On macOS 14-15: Beautiful material-based fallback UI
 
 ## Installation
 
 ### Download
 
-Download the latest release from the [Releases](https://github.com/Prot10/MyMacCleaner/releases) page.
+1. Download the latest `.dmg` from the [Releases](https://github.com/Prot10/MyMacCleaner/releases) page
+2. Open the DMG and drag **MyMacCleaner** to your **Applications** folder
+3. **First Launch** - Since the app is not notarized, macOS will show a security warning
+
+### Bypassing Gatekeeper (Required on First Launch)
+
+Since MyMacCleaner is distributed for free without Apple Developer signing, macOS Gatekeeper will block it initially. This is normal for open-source apps distributed outside the App Store.
+
+**To open the app:**
+
+1. Try to open MyMacCleaner → You'll see *"Apple cannot check it for malicious software"*
+2. Open **System Settings** → **Privacy & Security**
+3. Scroll down to the **Security** section
+4. Find the message about MyMacCleaner being blocked
+5. Click **"Open Anyway"**
+6. Enter your password to confirm
+
+After this one-time setup, the app will open normally.
+
+> **Alternative:** Right-click the app and select "Open" from the context menu, then click "Open" in the dialog.
 
 ### Build from Source
 

@@ -42,8 +42,8 @@
             ]]></description>
             <enclosure
                 url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.0.0/MyMacCleaner-v1.0.0.zip"
-                sparkle:edSignature="YOUR_SIGNATURE_HERE"
-                length="0"
+                sparkle:edSignature="8SOtnSXkGRn0ILs5OI7ZY8y0fKcrcosICE9YJ4WUvxzCbKbP2SrZcv9UG2JqN7ss5FuYpTUepUgFss2Y/JJoBQ=="
+                length="3835102"
                 type="application/octet-stream"/>
         </item>
     </channel>
