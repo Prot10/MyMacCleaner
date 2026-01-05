@@ -5,10 +5,15 @@ struct MyMacCleanerApp: App {
     /// Shared app state that persists across section switches
     @StateObject private var appState = AppState()
 
+    /// Localization manager for language switching
+    @State private var localizationManager = LocalizationManager.shared
+
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
+                .environment(localizationManager)
+                .environment(\.locale, localizationManager.locale)
         }
         .windowStyle(.automatic)
         .windowToolbarStyle(.unified(showsTitle: false))
@@ -18,6 +23,8 @@ struct MyMacCleanerApp: App {
         #if os(macOS)
         Settings {
             SettingsView()
+                .environment(localizationManager)
+                .environment(\.locale, localizationManager.locale)
         }
         #endif
     }
@@ -28,17 +35,22 @@ struct SettingsView: View {
         TabView {
             GeneralSettingsView()
                 .tabItem {
-                    Label("General", systemImage: "gear")
+                    Label(String(localized: "settings.general"), systemImage: "gear")
+                }
+
+            LanguageSettingsView()
+                .tabItem {
+                    Label(String(localized: "settings.language"), systemImage: "globe")
                 }
 
             PermissionsSettingsView()
                 .tabItem {
-                    Label("Permissions", systemImage: "lock.shield")
+                    Label(String(localized: "settings.permissions"), systemImage: "lock.shield")
                 }
 
             AboutSettingsView()
                 .tabItem {
-                    Label("About", systemImage: "info.circle")
+                    Label(String(localized: "settings.about"), systemImage: "info.circle")
                 }
         }
         .frame(width: 450, height: 300)
@@ -51,8 +63,37 @@ struct GeneralSettingsView: View {
 
     var body: some View {
         Form {
-            Toggle("Launch at login", isOn: $launchAtLogin)
-            Toggle("Show in menu bar", isOn: $showInMenuBar)
+            Toggle(String(localized: "settings.launchAtLogin"), isOn: $launchAtLogin)
+            Toggle(String(localized: "settings.showInMenuBar"), isOn: $showInMenuBar)
+        }
+        .padding()
+    }
+}
+
+struct LanguageSettingsView: View {
+    @Environment(LocalizationManager.self) var localization
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(String(localized: "settings.language"))
+                .font(.headline)
+
+            Picker(String(localized: "settings.language"), selection: Binding(
+                get: { localization.currentLanguage },
+                set: { localization.setLanguage($0) }
+            )) {
+                ForEach(AppLanguage.allCases) { language in
+                    Text(language.displayName).tag(language)
+                }
+            }
+            .pickerStyle(.radioGroup)
+            .labelsHidden()
+
+            Text(String(localized: "settings.languageNote"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Spacer()
         }
         .padding()
     }
@@ -61,20 +102,20 @@ struct GeneralSettingsView: View {
 struct PermissionsSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Permissions")
+            Text(String(localized: "settings.permissions"))
                 .font(.headline)
 
             HStack {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.green)
-                Text("Full Disk Access")
+                Text(String(localized: "settings.fullDiskAccess"))
                 Spacer()
-                Button("Open Settings") {
+                Button(String(localized: "settings.openSettings")) {
                     openSystemPreferences()
                 }
             }
 
-            Text("Full Disk Access is required to scan system caches and logs.")
+            Text(String(localized: "settings.fdaDescription"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -102,11 +143,11 @@ struct AboutSettingsView: View {
             Text("Version 1.0.0")
                 .foregroundStyle(.secondary)
 
-            Text("A modern, open-source macOS system utility")
+            Text(String(localized: "settings.aboutDescription"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Link("View on GitHub", destination: URL(string: "https://github.com/yourusername/MyMacCleaner")!)
+            Link(String(localized: "settings.viewOnGitHub"), destination: URL(string: "https://github.com/yourusername/MyMacCleaner")!)
                 .font(.caption)
 
             Spacer()
