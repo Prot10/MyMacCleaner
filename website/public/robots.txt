@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://andreaperinu.github.io/MyMacCleaner/sitemap-index.xml

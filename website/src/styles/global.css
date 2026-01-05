@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 0 122 255;
+    --color-surface: 30 30 30;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[#0a0a0a] text-gray-100 antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  ::selection {
+    @apply bg-primary/30 text-white;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply rounded-2xl p-6;
+    @apply bg-white/5 backdrop-blur-xl;
+    @apply border border-white/10;
+    @apply shadow-glass;
+    @apply transition-all duration-300;
+  }
+
+  .glass-card:hover {
+    @apply shadow-glass-hover border-white/20 -translate-y-1;
+  }
+
+  .glass-button {
+    @apply px-6 py-3 rounded-xl font-semibold;
+    @apply bg-primary hover:bg-primary-600;
+    @apply transition-all duration-200;
+    @apply shadow-lg shadow-primary/25;
+  }
+
+  .glass-button:hover {
+    @apply shadow-xl shadow-primary/30 -translate-y-0.5;
+  }
+
+  .glass-button-secondary {
+    @apply px-6 py-3 rounded-xl font-semibold;
+    @apply bg-white/10 hover:bg-white/15;
+    @apply border border-white/20;
+    @apply transition-all duration-200;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-white via-gray-200 to-gray-400;
+    @apply bg-clip-text text-transparent;
+  }
+
+  .gradient-text-primary {
+    @apply bg-gradient-to-r from-primary-400 via-primary to-primary-600;
+    @apply bg-clip-text text-transparent;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Prose styling for docs */
+.prose {
+  @apply max-w-none;
+}
+
+.prose h1 {
+  @apply text-4xl font-bold text-white mb-6 mt-0;
+}
+
+.prose h2 {
+  @apply text-2xl font-semibold text-white mt-12 mb-4;
+  @apply pb-2 border-b border-white/10;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold text-white mt-8 mb-3;
+}
+
+.prose p {
+  @apply text-gray-300 leading-relaxed mb-4;
+}
+
+.prose a {
+  @apply text-primary hover:text-primary-400 underline decoration-primary/30 hover:decoration-primary transition-colors;
+}
+
+.prose strong {
+  @apply text-white font-semibold;
+}
+
+.prose code {
+  @apply bg-white/10 px-1.5 py-0.5 rounded text-sm text-primary-300;
+}
+
+.prose pre {
+  @apply bg-black/50 border border-white/10 rounded-xl p-4 overflow-x-auto;
+}
+
+.prose pre code {
+  @apply bg-transparent p-0 text-gray-300;
+}
+
+.prose ul {
+  @apply list-disc list-inside space-y-2 mb-4 text-gray-300;
+}
+
+.prose ol {
+  @apply list-decimal list-inside space-y-2 mb-4 text-gray-300;
+}
+
+.prose li {
+  @apply pl-2;
+}
+
+.prose table {
+  @apply w-full border-collapse mb-6;
+}
+
+.prose th {
+  @apply bg-white/5 text-left px-4 py-3 border border-white/10 font-semibold text-white;
+}
+
+.prose td {
+  @apply px-4 py-3 border border-white/10 text-gray-300;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-primary pl-4 italic text-gray-400 my-6;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-white/20 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-white/30;
+}

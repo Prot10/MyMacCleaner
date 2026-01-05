@@ -1,0 +1,52 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import DocsSidebar from '../components/DocsSidebar.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+
+interface Props {
+  title: string;
+  headings?: { depth: number; slug: string; text: string }[];
+}
+
+const { title, headings = [] } = Astro.props;
+---
+
+<BaseLayout title={`${title} | MyMacCleaner Docs`}>
+  <div class="min-h-screen pt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex gap-8">
+        <!-- Sidebar -->
+        <aside class="hidden lg:block w-64 flex-shrink-0">
+          <div class="sticky top-24 overflow-y-auto max-h-[calc(100vh-8rem)] pr-4">
+            <DocsSidebar />
+          </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 min-w-0">
+          <article class="prose max-w-3xl">
+            <slot />
+          </article>
+
+          <!-- Navigation Links -->
+          <div class="mt-16 pt-8 border-t border-white/10">
+            <a
+              href="/MyMacCleaner/docs/"
+              class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-primary transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Documentation
+            </a>
+          </div>
+        </main>
+
+        <!-- Table of Contents -->
+        <aside class="hidden xl:block w-56 flex-shrink-0">
+          <TableOfContents headings={headings} />
+        </aside>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
