@@ -24,6 +24,17 @@ class ApplicationsViewModel: ObservableObject {
     @Published var relatedFiles: [URL] = []
     @Published var isScanning = false
 
+    // Updates
+    @Published var appUpdates: [AppUpdate] = []
+    @Published var isCheckingUpdates = false
+    @Published var updateCheckProgress: Double = 0
+
+    // Homebrew
+    @Published var homebrewCasks: [HomebrewCask] = []
+    @Published var isHomebrewInstalled = false
+    @Published var isLoadingHomebrew = false
+    @Published var outdatedCasks: [HomebrewCask] = []
+
     // Toast
     @Published var showToast = false
     @Published var toastMessage = ""
@@ -55,6 +66,8 @@ class ApplicationsViewModel: ObservableObject {
 
     private var discoveryTask: Task<Void, Never>?
     private var analysisTask: Task<Void, Never>?
+    private let updateChecker = AppUpdateChecker()
+    private let homebrewService = HomebrewService()
 
     // MARK: - Computed Properties
 
@@ -224,6 +237,145 @@ class ApplicationsViewModel: ObservableObject {
 
     func dismissToast() {
         showToast = false
+    }
+
+    // MARK: - Update Checking
+
+    /// Check for updates for all installed apps
+    func checkForUpdates() {
+        guard !isCheckingUpdates else { return }
+
+        isCheckingUpdates = true
+        updateCheckProgress = 0
+
+        Task {
+            let appURLs = applications.map { $0.url }
+            let updates = await updateChecker.checkUpdates(for: appURLs) { progress in
+                Task { @MainActor in
+                    self.updateCheckProgress = progress
+                }
+            }
+
+            await MainActor.run {
+                appUpdates = updates
+                isCheckingUpdates = false
+                if updates.isEmpty {
+                    showToastMessage("All apps are up to date", type: .success)
+                } else {
+                    showToastMessage("Found \(updates.count) app(s) with updates", type: .info)
+                }
+            }
+        }
+    }
+
+    // MARK: - Homebrew Integration
+
+    /// Check Homebrew status and load casks
+    func loadHomebrewStatus() {
+        isLoadingHomebrew = true
+
+        Task {
+            let installed = await homebrewService.isHomebrewInstalled()
+
+            await MainActor.run {
+                isHomebrewInstalled = installed
+            }
+
+            if installed {
+                do {
+                    let casks = try await homebrewService.listInstalledCasks()
+                    let outdated = try await homebrewService.getOutdatedCasks()
+
+                    await MainActor.run {
+                        homebrewCasks = casks
+                        outdatedCasks = outdated
+                        isLoadingHomebrew = false
+                    }
+                } catch {
+                    await MainActor.run {
+                        isLoadingHomebrew = false
+                        showToastMessage("Failed to load Homebrew casks", type: .error)
+                    }
+                }
+            } else {
+                await MainActor.run {
+                    isLoadingHomebrew = false
+                }
+            }
+        }
+    }
+
+    /// Upgrade a Homebrew cask
+    func upgradeCask(_ cask: HomebrewCask) {
+        Task {
+            do {
+                try await homebrewService.upgradeCask(cask.name)
+                await MainActor.run {
+                    // Remove from outdated list
+                    outdatedCasks.removeAll { $0.name == cask.name }
+                    showToastMessage("\(cask.displayName) upgraded successfully", type: .success)
+                }
+                // Refresh cask list
+                loadHomebrewStatus()
+            } catch {
+                await MainActor.run {
+                    showToastMessage("Failed to upgrade \(cask.displayName)", type: .error)
+                }
+            }
+        }
+    }
+
+    /// Upgrade all outdated casks
+    func upgradeAllCasks() {
+        Task {
+            do {
+                try await homebrewService.upgradeAllCasks()
+                await MainActor.run {
+                    outdatedCasks = []
+                    showToastMessage("All casks upgraded successfully", type: .success)
+                }
+                // Refresh cask list
+                loadHomebrewStatus()
+            } catch {
+                await MainActor.run {
+                    showToastMessage("Failed to upgrade casks", type: .error)
+                }
+            }
+        }
+    }
+
+    /// Uninstall a Homebrew cask
+    func uninstallCask(_ cask: HomebrewCask) {
+        Task {
+            do {
+                try await homebrewService.uninstallCask(cask.name)
+                await MainActor.run {
+                    homebrewCasks.removeAll { $0.name == cask.name }
+                    outdatedCasks.removeAll { $0.name == cask.name }
+                    showToastMessage("\(cask.displayName) uninstalled", type: .success)
+                }
+            } catch {
+                await MainActor.run {
+                    showToastMessage("Failed to uninstall \(cask.displayName)", type: .error)
+                }
+            }
+        }
+    }
+
+    /// Clean up Homebrew cache
+    func cleanupHomebrew() {
+        Task {
+            do {
+                try await homebrewService.cleanup()
+                await MainActor.run {
+                    showToastMessage("Homebrew cache cleaned", type: .success)
+                }
+            } catch {
+                await MainActor.run {
+                    showToastMessage("Failed to clean Homebrew cache", type: .error)
+                }
+            }
+        }
     }
 
     // MARK: - Private Methods
