@@ -80,10 +80,9 @@ Email attachments that take up space.
 - System-critical files are protected
 - Recently modified files are flagged
 
-### Undo Support
-- Deleted items are moved to a recovery location
-- 24-hour recovery window
-- Permanent deletion after confirmation
+### Trash Option
+- Option to move items to Trash instead of permanent deletion
+- Recover from Trash if needed before emptying
 
 ### Size Thresholds
 - Items under 1MB grouped as "Small Files"

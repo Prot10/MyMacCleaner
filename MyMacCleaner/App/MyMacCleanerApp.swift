@@ -199,7 +199,7 @@ struct AboutSettingsView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Link(String(localized: "settings.viewOnGitHub"), destination: URL(string: "https://github.com/yourusername/MyMacCleaner")!)
+            Link(String(localized: "settings.viewOnGitHub"), destination: URL(string: "https://github.com/Prot10/MyMacCleaner")!)
                 .font(.caption)
 
             Spacer()

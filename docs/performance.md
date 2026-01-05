@@ -111,12 +111,6 @@ As of **macOS Sequoia (15.0)**, Apple has removed the traditional periodic maint
 
 Most maintenance tasks require administrator privileges. You'll be prompted for your password when running these operations.
 
-## Scheduled Maintenance
+## Run All Feature
 
-You can optionally schedule maintenance tasks:
-
-- **Weekly** - Recommended for most users
-- **Daily** - For heavy users
-- **Manual** - Run only when needed
-
-Configure in Settings > Maintenance Schedule.
+The "Run All" button executes all maintenance tasks with a single password prompt, making it convenient to perform regular maintenance without multiple authentication dialogs.
