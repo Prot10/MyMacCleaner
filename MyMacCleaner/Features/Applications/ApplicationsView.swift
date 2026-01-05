@@ -148,7 +148,7 @@ struct ApplicationsView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
+                .glassCard(cornerRadius: 12)
             }
         }
     }
@@ -235,7 +235,7 @@ struct ApplicationsView: View {
                         }
                     }
                     .padding(Theme.Spacing.lg)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                    .glassCard()
                 }
             } else {
                 // Start Analysis button
@@ -298,7 +298,7 @@ struct ApplicationsView: View {
                 }
                 .padding(32)
                 .frame(maxWidth: .infinity)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                .glassCard()
             }
 
             // App preview (show some apps without sizes during discovery)
@@ -334,7 +334,7 @@ struct ApplicationsView: View {
                     }
                 }
                 .padding(Theme.Spacing.lg)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                .glassCard()
             }
         }
     }
@@ -391,7 +391,7 @@ struct ApplicationsView: View {
                 }
             }
             .padding(Theme.Spacing.lg)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+            .glassCard()
 
             // Updates list
             if viewModel.appUpdates.isEmpty {
@@ -409,7 +409,7 @@ struct ApplicationsView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(Theme.Spacing.xxl)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                .glassCard()
             } else {
                 VStack(alignment: .leading, spacing: Theme.Spacing.md) {
                     Text(LFormat("applications.updates.available %lld", viewModel.appUpdates.count))
@@ -420,7 +420,7 @@ struct ApplicationsView: View {
                     }
                 }
                 .padding(Theme.Spacing.lg)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                .glassCard()
             }
         }
     }
@@ -456,7 +456,7 @@ struct ApplicationsView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(Theme.Spacing.xxl)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                .glassCard()
             } else {
                 // Homebrew header with actions
                 HStack {
@@ -505,7 +505,7 @@ struct ApplicationsView: View {
                     }
                 }
                 .padding(Theme.Spacing.lg)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                .glassCard()
 
                 // Outdated casks
                 if !viewModel.outdatedCasks.isEmpty {
@@ -527,7 +527,7 @@ struct ApplicationsView: View {
                         }
                     }
                     .padding(Theme.Spacing.lg)
-                    .glassEffect(.regular.tint(.orange), in: RoundedRectangle(cornerRadius: 16))
+                    .glassCard(tint: .orange)
                 }
 
                 // All casks
@@ -546,7 +546,7 @@ struct ApplicationsView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(Theme.Spacing.xxl)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                    .glassCard()
                 } else {
                     VStack(alignment: .leading, spacing: Theme.Spacing.md) {
                         Text(L("applications.homebrew.installed"))
@@ -564,7 +564,7 @@ struct ApplicationsView: View {
                         }
                     }
                     .padding(Theme.Spacing.lg)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                    .glassCard()
                 }
             }
         }
@@ -603,7 +603,7 @@ struct ApplicationsView: View {
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
+                .glassCard(cornerRadius: 12)
             }
 
             // Refresh button
@@ -693,7 +693,7 @@ struct InfoCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
     }
@@ -818,7 +818,7 @@ struct AppCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
         .contextMenu {

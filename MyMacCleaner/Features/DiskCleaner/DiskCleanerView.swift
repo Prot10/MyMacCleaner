@@ -166,7 +166,7 @@ struct DiskCleanerView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
+                .glassCard(cornerRadius: 12)
             }
         }
     }
@@ -252,7 +252,7 @@ struct DiskCleanerView: View {
         }
         .padding(32)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 
     // MARK: - Empty State
@@ -282,7 +282,7 @@ struct DiskCleanerView: View {
         }
         .padding(32)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 
     // MARK: - Category List
@@ -322,7 +322,7 @@ struct DiskCleanerView: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
+                    .glassCard(cornerRadius: 8)
                 }
                 .buttonStyle(.plain)
                 .padding(.leading, 12)
@@ -375,7 +375,7 @@ struct DiskCleanerView: View {
             }
         }
         .padding(20)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
         .shadow(color: sectionColor.opacity(0.2), radius: 15, y: 5)
     }
 }

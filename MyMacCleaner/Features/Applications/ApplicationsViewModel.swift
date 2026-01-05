@@ -491,8 +491,11 @@ class ApplicationsViewModel: ObservableObject {
                 options: [.skipsHiddenFiles]
             ) else { return urls }
 
-            for case let fileURL as URL in enumerator {
-                urls.append(fileURL)
+            // Use while let instead of for-in to avoid makeIterator() async issue
+            while let element = enumerator.nextObject() {
+                if let fileURL = element as? URL {
+                    urls.append(fileURL)
+                }
             }
             return urls
         }.value

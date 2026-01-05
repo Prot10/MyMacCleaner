@@ -201,7 +201,7 @@ struct HomeView: View {
             }
             .padding(32)
             .frame(maxWidth: .infinity)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+            .glassCard()
 
             // Error display
             if let error = viewModel.scanError {
@@ -214,7 +214,7 @@ struct HomeView: View {
                         .foregroundStyle(.secondary)
                 }
                 .padding(Theme.Spacing.sm)
-                .glassEffect(.regular.tint(.orange), in: RoundedRectangle(cornerRadius: 12))
+                .glassCard(tint: .orange, cornerRadius: 12)
             }
         }
         .animation(Theme.Animation.spring, value: viewModel.isScanning)
@@ -398,7 +398,7 @@ struct SmartScanButton: View {
         }
         .padding(32)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 }
 
@@ -452,7 +452,7 @@ struct StatCard: View {
         .padding(16)
         .frame(height: 160)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
         .scaleEffect(isHovered ? 1.02 : 1.0)
         .shadow(color: color.opacity(isHovered ? 0.25 : 0.1), radius: isHovered ? 15 : 8, y: 5)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
@@ -492,7 +492,7 @@ struct QuickActionButton: View {
                     .foregroundStyle(.secondary)
             }
             .frame(width: 120, height: 100)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+            .glassCard()
         }
         .buttonStyle(.plain)
         .scaleEffect(isPressed ? 0.95 : (isHovered ? 1.02 : 1.0))

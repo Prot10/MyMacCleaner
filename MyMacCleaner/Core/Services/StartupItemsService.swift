@@ -177,7 +177,7 @@ actor StartupItemsService {
 
                     let data = pipe.fileHandleForReading.readDataToEndOfFile()
                     if let output = String(data: data, encoding: .utf8) {
-                        items = self.parseBTMOutput(output)
+                        items = StartupItemsService.parseBTMOutput(output)
                     }
                 } catch {
                     print("Error running sfltool: \(error)")
@@ -188,7 +188,7 @@ actor StartupItemsService {
         }
     }
 
-    nonisolated private func parseBTMOutput(_ output: String) -> [StartupItem] {
+    private static func parseBTMOutput(_ output: String) -> [StartupItem] {
         var items: [StartupItem] = []
         let lines = output.components(separatedBy: "\n")
 
@@ -201,7 +201,7 @@ actor StartupItemsService {
             // Start of a new item
             if trimmed.hasPrefix("#") && trimmed.contains(":") {
                 // Save previous item if exists
-                if inItem, let item = createItemFromBTMData(currentItem) {
+                if inItem, let item = StartupItemsService.createItemFromBTMData(currentItem) {
                     items.append(item)
                 }
                 currentItem = [:]
@@ -226,14 +226,14 @@ actor StartupItemsService {
         }
 
         // Don't forget the last item
-        if inItem, let item = createItemFromBTMData(currentItem) {
+        if inItem, let item = StartupItemsService.createItemFromBTMData(currentItem) {
             items.append(item)
         }
 
         return items
     }
 
-    nonisolated private func createItemFromBTMData(_ data: [String: String]) -> StartupItem? {
+    private static func createItemFromBTMData(_ data: [String: String]) -> StartupItem? {
         guard let name = data["Name"], !name.isEmpty,
               let identifier = data["Identifier"]
         else { return nil }
@@ -376,7 +376,7 @@ actor StartupItemsService {
         // Try to get developer info from executable
         var developer: String?
         if let execPath = executablePath {
-            developer = getCodeSigningTeam(for: execPath)
+            developer = Self.getCodeSigningTeam(for: execPath)
         }
 
         return StartupItem(
@@ -505,8 +505,7 @@ actor StartupItemsService {
 
                             let name = parts[0]
                             let path = parts[1]
-                            // isHidden is parsed but not used currently
-                            _ = parts.count >= 3 ? parts[2] == "true" : false
+                            // isHidden is parsed but not used currently (parts[2])
 
                             let item = StartupItem(
                                 id: "loginitem:\(path)",
@@ -518,7 +517,7 @@ actor StartupItemsService {
                                 isEnabled: true,
                                 isRunning: false, // We can't easily determine this
                                 isSystemItem: false,
-                                developer: self.getCodeSigningTeam(for: path),
+                                developer: StartupItemsService.getCodeSigningTeam(for: path),
                                 bundleIdentifier: nil
                             )
                             items.append(item)
@@ -535,6 +534,7 @@ actor StartupItemsService {
 
     // MARK: - Management Actions
 
+    @discardableResult
     func setItemEnabled(_ item: StartupItem, enabled: Bool) async -> Bool {
         // BTM items (from sfltool) need special handling
         if item.id.hasPrefix("btm:") {
@@ -680,7 +680,7 @@ actor StartupItemsService {
 
     // MARK: - Code Signing
 
-    nonisolated private func getCodeSigningTeam(for path: String) -> String? {
+    private static func getCodeSigningTeam(for path: String) -> String? {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
         process.arguments = ["-dv", "--verbose=2", path]

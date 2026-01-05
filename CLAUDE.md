@@ -709,6 +709,85 @@ MyMacCleaner/
 
 ---
 
+### 2026-01-05 - Deployment & Auto-Update Setup
+
+**Session Goal**: Add backward compatibility for macOS 14.0+ and Sparkle auto-update integration
+
+**Completed**:
+
+**Phase 1 - Backward Compatibility:**
+- Changed deployment target from macOS 26.0 to 14.0 (Sonoma)
+- Refactored LiquidGlass.swift with `#available(macOS 26, *)` checks:
+  - `glassCard()`, `glassCardProminent()`, `glassCardSubtle()` modifiers
+  - `glassPill()`, `glassCircle()` shape modifiers
+  - `GlassSegmentedControl`, `GlassTabPicker`, `GlassSearchField` components
+  - `LiquidGlassButtonStyle`, `FloatingActionButton`, `GlassToolbar` components
+  - Fallback to `.ultraThinMaterial` on macOS 14-15, native `.glassEffect()` on 26+
+- Fixed all direct `.glassEffect()` calls in feature views (10 files)
+- Fixed `ToolbarSpacer(.flexible)` usage (macOS 26 only) in ContentView
+- Fixed `Material.opacity` type error in LiquidGlass.swift
+
+**Phase 2 - Sparkle Integration:**
+- Created UpdateManager.swift with conditional compilation:
+  - Uses Sparkle when available (via `#if canImport(Sparkle)`)
+  - Fallback implementation when Sparkle not installed
+  - `checkForUpdates()` and `checkForUpdatesInBackground()` methods
+- Updated MyMacCleanerApp.swift:
+  - Added UpdateManager as environment object
+  - Added "Check for Updates..." menu command (Cmd+U)
+- Added UpdateSettingsView to Settings:
+  - Automatic update check toggle
+  - Check Now button
+  - Last check date display
+
+**Phase 3 - CI/CD Pipeline:**
+- Created `.github/workflows/build-release.yml`:
+  - Triggers on version tags (v*)
+  - Builds unsigned app for free distribution
+  - Creates DMG with Applications symlink
+  - Creates ZIP for Sparkle updates
+  - Auto-generates release notes from commits
+  - Uploads to GitHub Releases
+  - Includes commented signed build job for future Apple Developer setup
+- Created `ExportOptions.plist` for signed exports
+- Created `appcast.xml` template for Sparkle update feed
+
+**Localization:**
+- Added update settings strings (EN/IT/ES):
+  - settings.updates, settings.autoCheckUpdates, settings.checkNow
+  - settings.lastChecked, settings.updatesDescription
+
+**Files Created**:
+- `MyMacCleaner/Core/Services/UpdateManager.swift`
+- `.github/workflows/build-release.yml`
+- `ExportOptions.plist`
+- `appcast.xml`
+
+**Files Modified**:
+- `MyMacCleaner.xcodeproj/project.pbxproj` (deployment target 14.0)
+- `MyMacCleaner/Core/Design/LiquidGlass.swift` (complete rewrite for compatibility)
+- `MyMacCleaner/App/ContentView.swift` (fixed ToolbarSpacer)
+- `MyMacCleaner/App/MyMacCleanerApp.swift` (added UpdateManager, menu command)
+- `MyMacCleaner/Features/*/` (8 feature views - replaced .glassEffect() calls)
+- `MyMacCleaner/Resources/Localizable.xcstrings` (added update strings)
+
+**Key Technical Decisions**:
+- Target macOS 14.0+ with runtime availability checks
+- Native Liquid Glass on macOS 26 Tahoe, material fallback on older versions
+- Single binary works on all supported versions
+- Sparkle via conditional compilation to allow building without it
+- GitHub Releases for update distribution (free, no Apple Developer fee)
+
+**Build Status**: SUCCESS
+
+**Next Steps for User**:
+1. In Xcode: File > Add Package Dependencies > https://github.com/sparkle-project/Sparkle
+2. Run Sparkle's generate_keys tool to create EdDSA key pair
+3. Add SUFeedURL and SUPublicEDKey to Info.plist
+4. Push to GitHub and create first tag (v1.0.0) to trigger release workflow
+
+---
+
 ## Constraints & Guidelines
 
 ### Code Quality

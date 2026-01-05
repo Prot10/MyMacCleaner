@@ -293,8 +293,10 @@ struct DetailContentView: View {
         // CRITICAL: Force complete re-render of ALL child views when language changes
         .id(localization.languageCode)
         .toolbar {
-            ToolbarSpacer(.flexible)
-            ToolbarItem {
+            ToolbarItem(placement: .automatic) {
+                Spacer()
+            }
+            ToolbarItem(placement: .automatic) {
                 LanguageSwitcherButton()
             }
         }

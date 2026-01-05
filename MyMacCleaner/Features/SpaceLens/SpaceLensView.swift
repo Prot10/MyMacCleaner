@@ -10,11 +10,11 @@ struct SpaceLensView: View {
         ZStack {
             if viewModel.rootNode == nil && !viewModel.isScanning {
                 startScanSection
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                    .glassCard()
             } else if let currentNode = viewModel.currentNode {
                 mainContent(currentNode)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                    .glassCard()
             }
 
             // Scanning overlay
