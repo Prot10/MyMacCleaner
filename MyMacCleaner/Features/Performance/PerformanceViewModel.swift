@@ -209,12 +209,12 @@ class PerformanceViewModel: ObservableObject {
                 taskResults[task.id] = success ? .success : .failed
 
                 if success {
-                    showToastMessage("\(task.name) completed successfully", type: .success)
+                    showToastMessage(LFormat("performance.maintenance.toast.completed %@", task.localizedName), type: .success)
                 } else {
                     if task.requiresAdmin {
-                        showToastMessage("\(task.name) was cancelled", type: .info)
+                        showToastMessage(LFormat("performance.maintenance.toast.cancelled %@", task.localizedName), type: .info)
                     } else {
-                        showToastMessage("\(task.name) failed", type: .error)
+                        showToastMessage(LFormat("performance.maintenance.toast.failed %@", task.localizedName), type: .error)
                     }
                 }
 
@@ -635,73 +635,65 @@ struct MemoryUsage {
 
 struct MaintenanceTask: Identifiable {
     let id: String
-    let name: String
-    let description: String
     let icon: String
     let color: Color
     let requiresAdmin: Bool
 
+    /// Localized name using the task id
+    var localizedName: String {
+        L("performance.maintenance.\(id).name")
+    }
+
+    /// Localized description using the task id
+    var localizedDescription: String {
+        L("performance.maintenance.\(id).description")
+    }
+
     static let allTasks: [MaintenanceTask] = [
         MaintenanceTask(
             id: "purge_ram",
-            name: "Purge Disk Cache",
-            description: "Clear filesystem cache to free memory",
             icon: "memorychip",
             color: .blue,
             requiresAdmin: true
         ),
         MaintenanceTask(
             id: "flush_dns",
-            name: "Flush DNS Cache",
-            description: "Clear the DNS cache to fix network issues",
             icon: "network",
             color: .green,
             requiresAdmin: false
         ),
         MaintenanceTask(
             id: "kill_dns",
-            name: "Restart DNS Service",
-            description: "Restart the mDNSResponder service",
             icon: "arrow.clockwise",
             color: .orange,
             requiresAdmin: true
         ),
         MaintenanceTask(
             id: "clear_font_cache",
-            name: "Clear Font Cache",
-            description: "Remove cached font data to fix font issues",
             icon: "textformat",
             color: .purple,
             requiresAdmin: false
         ),
         MaintenanceTask(
             id: "rebuild_spotlight",
-            name: "Rebuild Spotlight Index",
-            description: "Recreate the Spotlight search index",
             icon: "magnifyingglass",
             color: .pink,
             requiresAdmin: true
         ),
         MaintenanceTask(
             id: "rebuild_launch",
-            name: "Rebuild Launch Services",
-            description: "Clean up and refresh app associations database",
             icon: "square.grid.2x2",
             color: .cyan,
             requiresAdmin: false
         ),
         MaintenanceTask(
             id: "clear_quicklook",
-            name: "Clear QuickLook Cache",
-            description: "Reset QuickLook preview cache",
             icon: "eye",
             color: .indigo,
             requiresAdmin: false
         ),
         MaintenanceTask(
             id: "verify_disk",
-            name: "Verify Disk",
-            description: "Check disk for errors",
             icon: "internaldrive",
             color: .red,
             requiresAdmin: true
