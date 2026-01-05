@@ -205,23 +205,39 @@ struct ApplicationsView: View {
                 }
             } else {
                 // Start Analysis button
-                VStack(spacing: 24) {
-                    // Description
-                    VStack(spacing: 12) {
-                        Image(systemName: "chart.bar.doc.horizontal")
-                            .font(.system(size: 48))
-                            .foregroundStyle(sectionColor.gradient)
+                VStack(spacing: 28) {
+                    // Icon
+                    ZStack {
+                        Circle()
+                            .fill(sectionColor.opacity(0.1))
+                            .frame(width: 120, height: 120)
+                            .blur(radius: 20)
 
-                        Text("Ready to Analyze")
+                        ZStack {
+                            Circle()
+                                .fill(.ultraThinMaterial)
+                                .frame(width: 80, height: 80)
+                                .overlay {
+                                    Circle()
+                                        .strokeBorder(sectionColor.opacity(0.3), lineWidth: 1)
+                                }
+
+                            Image(systemName: "square.grid.2x2")
+                                .font(.system(size: 32, weight: .medium))
+                                .foregroundStyle(sectionColor.gradient)
+                        }
+                    }
+
+                    VStack(spacing: 8) {
+                        Text("Analyze Applications")
                             .font(.system(size: 20, weight: .semibold))
 
-                        Text("Click the button below to calculate the size of each application.\nThis helps identify which apps are using the most disk space.")
+                        Text("Calculate the size of each application to identify which apps are using the most disk space")
                             .font(.system(size: 14))
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: 400)
                     }
-                    .padding(.top, 20)
 
                     // Start button
                     GlassActionButton(
@@ -246,8 +262,8 @@ struct ApplicationsView: View {
                         }
                     }
                 }
-                .frame(maxWidth: .infinity)
                 .padding(32)
+                .frame(maxWidth: .infinity)
                 .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
             }
 

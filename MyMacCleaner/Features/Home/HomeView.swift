@@ -135,32 +135,73 @@ struct HomeView: View {
 
     private var smartScanSection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            SmartScanButton(
-                isScanning: viewModel.isScanning,
-                progress: viewModel.scanProgress,
-                color: sectionColor
-            ) {
-                viewModel.startSmartScan()
-            }
+            VStack(spacing: 28) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(sectionColor.opacity(0.1))
+                        .frame(width: 120, height: 120)
+                        .blur(radius: 20)
 
-            if viewModel.isScanning {
-                VStack(spacing: 8) {
-                    ProgressView(value: viewModel.scanProgress)
-                        .progressViewStyle(.linear)
-                        .tint(sectionColor)
+                    ZStack {
+                        Circle()
+                            .fill(.ultraThinMaterial)
+                            .frame(width: 80, height: 80)
+                            .overlay {
+                                Circle()
+                                    .strokeBorder(sectionColor.opacity(0.3), lineWidth: 1)
+                            }
 
-                    if let category = viewModel.currentScanCategory {
-                        Text("Scanning \(category.rawValue)...")
-                            .font(Theme.Typography.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("Preparing scan...")
-                            .font(Theme.Typography.caption)
-                            .foregroundStyle(.secondary)
+                        if viewModel.isScanning {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .controlSize(.regular)
+                                .tint(sectionColor)
+                        } else {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 32, weight: .medium))
+                                .foregroundStyle(sectionColor.gradient)
+                        }
                     }
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+
+                VStack(spacing: 8) {
+                    Text(viewModel.isScanning ? "Scanning..." : "Smart Scan")
+                        .font(.system(size: 20, weight: .semibold))
+
+                    Text(viewModel.isScanning ? "Analyzing your system" : "Scan all categories at once to find junk files")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 400)
+                }
+
+                if viewModel.isScanning {
+                    VStack(spacing: 8) {
+                        ProgressView(value: viewModel.scanProgress)
+                            .progressViewStyle(.linear)
+                            .tint(sectionColor)
+                            .frame(maxWidth: 300)
+
+                        if let category = viewModel.currentScanCategory {
+                            Text("Scanning \(category.rawValue)...")
+                                .font(Theme.Typography.caption)
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                } else {
+                    GlassActionButton(
+                        "Start Scan",
+                        icon: "magnifyingglass",
+                        color: sectionColor
+                    ) {
+                        viewModel.startSmartScan()
+                    }
+                }
             }
+            .padding(32)
+            .frame(maxWidth: .infinity)
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
 
             // Error display
             if let error = viewModel.scanError {
@@ -303,66 +344,61 @@ struct SmartScanButton: View {
     let color: Color
     let action: () -> Void
 
-    @State private var isHovered = false
-    @State private var isPressed = false
-
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: Theme.Spacing.md) {
-                // Icon
+        VStack(spacing: 28) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.1))
+                    .frame(width: 120, height: 120)
+                    .blur(radius: 20)
+
                 ZStack {
                     Circle()
-                        .fill(color.gradient)
-                        .frame(width: 52, height: 52)
+                        .fill(.ultraThinMaterial)
+                        .frame(width: 80, height: 80)
+                        .overlay {
+                            Circle()
+                                .strokeBorder(color.opacity(0.3), lineWidth: 1)
+                        }
 
                     if isScanning {
                         ProgressView()
                             .progressViewStyle(.circular)
-                            .controlSize(.small)
-                            .tint(.white)
+                            .controlSize(.regular)
+                            .tint(color)
                     } else {
                         Image(systemName: "magnifyingglass")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(.white)
+                            .font(.system(size: 32, weight: .medium))
+                            .foregroundStyle(color.gradient)
                     }
                 }
-                .shadow(color: color.opacity(isHovered ? 0.6 : 0.4), radius: isHovered ? 16 : 10, y: 4)
-
-                // Text
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(isScanning ? "Scanning..." : "Smart Scan")
-                        .font(.system(size: 18, weight: .semibold))
-
-                    Text(isScanning ? "Analyzing your system" : "Scan all categories at once")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                // Chevron
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.tertiary)
-                    .offset(x: isHovered ? 4 : 0)
             }
-            .padding(Theme.Spacing.lg)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+
+            VStack(spacing: 8) {
+                Text(isScanning ? "Scanning..." : "Smart Scan")
+                    .font(.system(size: 20, weight: .semibold))
+
+                Text(isScanning ? "Analyzing your system" : "Scan all categories at once to find junk files")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 400)
+            }
+
+            if !isScanning {
+                GlassActionButton(
+                    "Start Scan",
+                    icon: "magnifyingglass",
+                    color: color
+                ) {
+                    action()
+                }
+            }
         }
-        .buttonStyle(.plain)
-        .disabled(isScanning)
-        .scaleEffect(isPressed ? 0.98 : (isHovered ? 1.01 : 1.0))
-        .shadow(color: color.opacity(isHovered ? 0.3 : 0.15), radius: isHovered ? 20 : 12, y: 6)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovered)
-        .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isPressed)
-        .onHover { hovering in
-            isHovered = hovering
-        }
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in isPressed = true }
-                .onEnded { _ in isPressed = false }
-        )
+        .padding(32)
+        .frame(maxWidth: .infinity)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
