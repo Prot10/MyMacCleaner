@@ -6,6 +6,9 @@ struct StartupItemsView: View {
     @ObservedObject var viewModel: StartupItemsViewModel
     @State private var isVisible = false
 
+    // Section color for startup items
+    private let sectionColor = Theme.Colors.startup
+
     var body: some View {
         ZStack {
             ScrollView {
@@ -101,38 +104,32 @@ struct StartupItemsView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text("Startup Items")
-                    .font(Theme.Typography.largeTitle)
+                    .font(.system(size: 28, weight: .bold))
 
                 Text("Manage apps and services that launch at startup")
-                    .font(Theme.Typography.subheadline)
+                    .font(.system(size: 15))
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
             if !viewModel.items.isEmpty {
-                Button(action: viewModel.refreshItems) {
-                    HStack(spacing: 6) {
-                        if viewModel.isLoading {
-                            ProgressView()
-                                .controlSize(.small)
-                                .frame(width: 16, height: 16)
-                        } else {
-                            Image(systemName: "arrow.clockwise")
-                        }
-                        Text("Refresh")
-                    }
-                    .font(Theme.Typography.subheadline)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, Theme.Spacing.md)
-                    .padding(.vertical, Theme.Spacing.sm)
-                    .background(Color.blue)
-                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+                GlassActionButton(
+                    "Refresh",
+                    icon: viewModel.isLoading ? nil : "arrow.clockwise",
+                    color: sectionColor,
+                    disabled: viewModel.isLoading
+                ) {
+                    viewModel.refreshItems()
                 }
-                .buttonStyle(.plain)
-                .disabled(viewModel.isLoading)
+                .overlay {
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                }
             }
         }
     }
@@ -196,25 +193,13 @@ struct StartupItemsView: View {
                     .frame(maxWidth: 400)
             }
 
-            Button(action: viewModel.scanItems) {
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                    Text("Scan Startup Items")
-                }
-                .font(Theme.Typography.body.weight(.semibold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, Theme.Spacing.xl)
-                .padding(.vertical, Theme.Spacing.md)
-                .background(
-                    LinearGradient(
-                        colors: [.cyan, .cyan.opacity(0.8)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium))
+            GlassActionButton(
+                "Scan Startup Items",
+                icon: "magnifyingglass",
+                color: .cyan
+            ) {
+                viewModel.scanItems()
             }
-            .buttonStyle(.plain)
 
             // Info about what will be scanned
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
@@ -238,7 +223,7 @@ struct StartupItemsView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(Theme.Spacing.xxl)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Loading Section
@@ -255,7 +240,7 @@ struct StartupItemsView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(Theme.Spacing.xxl)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Controls Section
@@ -397,7 +382,7 @@ struct StartupItemsView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(Theme.Spacing.xxl)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
@@ -408,6 +393,8 @@ struct StartupStatCard: View {
     let value: String
     let icon: String
     let color: Color
+
+    @State private var isHovered = false
 
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
@@ -434,7 +421,9 @@ struct StartupStatCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .hoverEffect(isHovered: isHovered)
+        .onHover { isHovered = $0 }
     }
 }
 
@@ -609,7 +598,7 @@ struct StartupItemRow: View {
                 .background(Color.white.opacity(0.02))
             }
         }
-        .glassCard()
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
