@@ -53,9 +53,13 @@ class ApplicationsViewModel: ObservableObject {
     }
 
     enum SortOrder: String, CaseIterable {
-        case name = "Name"
-        case size = "Size"
-        case date = "Date Added"
+        case name
+        case size
+        case date
+
+        var localizedName: String {
+            L(key: "applications.sortOrder.\(rawValue)")
+        }
     }
 
     enum ToastType {
@@ -213,10 +217,10 @@ class ApplicationsViewModel: ObservableObject {
                 appToUninstall = nil
                 relatedFiles = []
 
-                showToastMessage("\(app.name) uninstalled successfully", type: .success)
+                showToastMessage(L("applications.toast.uninstalled \(app.name)"), type: .success)
 
             } catch {
-                showToastMessage("Failed to uninstall: \(error.localizedDescription)", type: .error)
+                showToastMessage(L("applications.toast.uninstallFailed \(error.localizedDescription)"), type: .error)
             }
         }
     }
@@ -260,9 +264,9 @@ class ApplicationsViewModel: ObservableObject {
                 appUpdates = updates
                 isCheckingUpdates = false
                 if updates.isEmpty {
-                    showToastMessage("All apps are up to date", type: .success)
+                    showToastMessage(L("applications.toast.allUpToDate"), type: .success)
                 } else {
-                    showToastMessage("Found \(updates.count) app(s) with updates", type: .info)
+                    showToastMessage(L("applications.toast.updatesFound \(updates.count)"), type: .info)
                 }
             }
         }
@@ -294,7 +298,7 @@ class ApplicationsViewModel: ObservableObject {
                 } catch {
                     await MainActor.run {
                         isLoadingHomebrew = false
-                        showToastMessage("Failed to load Homebrew casks", type: .error)
+                        showToastMessage(L("applications.toast.homebrewLoadFailed"), type: .error)
                     }
                 }
             } else {
@@ -313,13 +317,13 @@ class ApplicationsViewModel: ObservableObject {
                 await MainActor.run {
                     // Remove from outdated list
                     outdatedCasks.removeAll { $0.name == cask.name }
-                    showToastMessage("\(cask.displayName) upgraded successfully", type: .success)
+                    showToastMessage(L("applications.toast.caskUpgraded \(cask.displayName)"), type: .success)
                 }
                 // Refresh cask list
                 loadHomebrewStatus()
             } catch {
                 await MainActor.run {
-                    showToastMessage("Failed to upgrade \(cask.displayName)", type: .error)
+                    showToastMessage(L("applications.toast.caskUpgradeFailed \(cask.displayName)"), type: .error)
                 }
             }
         }
@@ -332,13 +336,13 @@ class ApplicationsViewModel: ObservableObject {
                 try await homebrewService.upgradeAllCasks()
                 await MainActor.run {
                     outdatedCasks = []
-                    showToastMessage("All casks upgraded successfully", type: .success)
+                    showToastMessage(L("applications.toast.allCasksUpgraded"), type: .success)
                 }
                 // Refresh cask list
                 loadHomebrewStatus()
             } catch {
                 await MainActor.run {
-                    showToastMessage("Failed to upgrade casks", type: .error)
+                    showToastMessage(L("applications.toast.casksUpgradeFailed"), type: .error)
                 }
             }
         }
@@ -352,11 +356,11 @@ class ApplicationsViewModel: ObservableObject {
                 await MainActor.run {
                     homebrewCasks.removeAll { $0.name == cask.name }
                     outdatedCasks.removeAll { $0.name == cask.name }
-                    showToastMessage("\(cask.displayName) uninstalled", type: .success)
+                    showToastMessage(L("applications.toast.caskUninstalled \(cask.displayName)"), type: .success)
                 }
             } catch {
                 await MainActor.run {
-                    showToastMessage("Failed to uninstall \(cask.displayName)", type: .error)
+                    showToastMessage(L("applications.toast.caskUninstallFailed \(cask.displayName)"), type: .error)
                 }
             }
         }
@@ -368,11 +372,11 @@ class ApplicationsViewModel: ObservableObject {
             do {
                 try await homebrewService.cleanup()
                 await MainActor.run {
-                    showToastMessage("Homebrew cache cleaned", type: .success)
+                    showToastMessage(L("applications.toast.homebrewCleaned"), type: .success)
                 }
             } catch {
                 await MainActor.run {
-                    showToastMessage("Failed to clean Homebrew cache", type: .error)
+                    showToastMessage(L("applications.toast.homebrewCleanFailed"), type: .error)
                 }
             }
         }
@@ -478,16 +482,25 @@ class ApplicationsViewModel: ObservableObject {
     }
 
     private func calculateDirectorySize(_ url: URL) async -> Int64 {
+        // Collect file URLs synchronously to avoid Swift 6 async iterator issues
+        let fileURLs: [URL] = await Task.detached {
+            var urls: [URL] = []
+            guard let enumerator = FileManager.default.enumerator(
+                at: url,
+                includingPropertiesForKeys: [.fileSizeKey, .totalFileAllocatedSizeKey],
+                options: [.skipsHiddenFiles]
+            ) else { return urls }
+
+            for case let fileURL as URL in enumerator {
+                urls.append(fileURL)
+            }
+            return urls
+        }.value
+
         var totalSize: Int64 = 0
-
-        guard let enumerator = FileManager.default.enumerator(
-            at: url,
-            includingPropertiesForKeys: [.fileSizeKey, .totalFileAllocatedSizeKey],
-            options: [.skipsHiddenFiles]
-        ) else { return 0 }
-
         var fileCount = 0
-        for case let fileURL as URL in enumerator {
+
+        for fileURL in fileURLs {
             if Task.isCancelled { return totalSize }
 
             guard let resourceValues = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .totalFileAllocatedSizeKey]) else {
