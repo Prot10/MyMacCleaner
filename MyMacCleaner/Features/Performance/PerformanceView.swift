@@ -11,15 +11,23 @@ struct PerformanceView: View {
     private let sectionColor = Theme.Colors.memory
 
     enum PerformanceTab: String, CaseIterable {
-        case memory = "Memory"
-        case processes = "Processes"
-        case maintenance = "Maintenance"
+        case memory
+        case processes
+        case maintenance
 
         var icon: String {
             switch self {
             case .memory: return "memorychip"
             case .processes: return "list.number"
             case .maintenance: return "wrench.and.screwdriver"
+            }
+        }
+
+        var localizedName: String {
+            switch self {
+            case .memory: return L("performance.tab.memory")
+            case .processes: return L("performance.tab.processes")
+            case .maintenance: return L("performance.tab.maintenance")
             }
         }
     }
@@ -103,10 +111,10 @@ struct PerformanceView: View {
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Performance")
+                Text(L("navigation.performance"))
                     .font(.system(size: 28, weight: .bold))
 
-                Text("Monitor and optimize your Mac's performance")
+                Text(L("performance.subtitle"))
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
@@ -117,7 +125,7 @@ struct PerformanceView: View {
             HStack(spacing: 16) {
                 VStack(alignment: .trailing, spacing: 4) {
                     HStack(spacing: 8) {
-                        Text("CPU")
+                        Text(L("performance.cpu"))
                             .font(.system(size: 11))
                             .foregroundStyle(.secondary)
 
@@ -155,7 +163,7 @@ struct PerformanceView: View {
                 tabs: PerformanceTab.allCases,
                 selection: $selectedTab,
                 icon: { $0.icon },
-                label: { $0.rawValue },
+                label: { $0.localizedName },
                 accentColor: sectionColor
             )
 
@@ -174,19 +182,19 @@ struct PerformanceView: View {
             // Memory stats
             VStack(alignment: .leading, spacing: Theme.Spacing.md) {
                 memoryStatRow(
-                    label: "Used Memory",
+                    label: L("performance.memory.used"),
                     value: viewModel.memoryUsage.formattedUsed,
                     color: .orange
                 )
 
                 memoryStatRow(
-                    label: "Free Memory",
+                    label: L("performance.memory.free"),
                     value: viewModel.memoryUsage.formattedFree,
                     color: .green
                 )
 
                 memoryStatRow(
-                    label: "Total Memory",
+                    label: L("performance.memory.total"),
                     value: viewModel.memoryUsage.formattedTotal,
                     color: .blue
                 )
@@ -199,7 +207,7 @@ struct PerformanceView: View {
 
                 // Purge cache button
                 GlassActionButton(
-                    "Purge Disk Cache",
+                    L("performance.memory.purgeDiskCache"),
                     icon: viewModel.runningTaskId == "purge_ram" ? nil : "bolt.fill",
                     color: sectionColor,
                     disabled: viewModel.runningTaskId != nil
@@ -260,7 +268,7 @@ struct PerformanceView: View {
                     .font(.system(size: 36, weight: .bold, design: .rounded).monospacedDigit())
                     .foregroundStyle(memoryColor)
 
-                Text("Memory Used")
+                Text(L("performance.memory.memoryUsed"))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.secondary)
             }
@@ -287,11 +295,11 @@ struct PerformanceView: View {
                 .font(.caption)
                 .foregroundStyle(.blue)
 
-            Text("~\(freeableFormatted) can be freed")
+            Text(LFormat("performance.memory.canBeFreed %@", freeableFormatted))
                 .font(Theme.Typography.caption)
                 .foregroundStyle(.secondary)
 
-            Text("(cached + purgeable)")
+            Text(L("performance.memory.cachedPurgeable"))
                 .font(Theme.Typography.caption)
                 .foregroundStyle(.tertiary)
 
@@ -306,7 +314,7 @@ struct PerformanceView: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             // Header
             HStack {
-                Text("Top Memory Consumers")
+                Text(L("performance.processes.topConsumers"))
                     .font(Theme.Typography.headline)
 
                 Spacer()
@@ -316,7 +324,7 @@ struct PerformanceView: View {
                     Circle()
                         .fill(.green)
                         .frame(width: 6, height: 6)
-                    Text("Live")
+                    Text(L("performance.processes.live"))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -333,7 +341,7 @@ struct PerformanceView: View {
                         .controlSize(.regular)
                         .frame(width: 20, height: 20)
 
-                    Text("Loading processes...")
+                    Text(L("performance.processes.loading"))
                         .font(Theme.Typography.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -347,7 +355,7 @@ struct PerformanceView: View {
                         .font(.system(size: 48))
                         .foregroundStyle(.tertiary)
 
-                    Text("No process data")
+                    Text(L("performance.processes.noData"))
                         .font(Theme.Typography.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -361,13 +369,13 @@ struct PerformanceView: View {
                     HStack(spacing: Theme.Spacing.md) {
                         Text("#")
                             .frame(width: 24, alignment: .leading)
-                        Text("Process")
+                        Text(L("performance.processes.process"))
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        Text("PID")
+                        Text(L("performance.processes.pid"))
                             .frame(width: 60, alignment: .trailing)
-                        Text("Memory")
+                        Text(L("performance.processes.memory"))
                             .frame(width: 80, alignment: .trailing)
-                        Text("CPU")
+                        Text(L("performance.processes.cpuColumn"))
                             .frame(width: 50, alignment: .trailing)
                         Text("")
                             .frame(width: 70)
@@ -401,7 +409,7 @@ struct PerformanceView: View {
                     .font(.caption)
                     .foregroundStyle(.orange)
 
-                Text("Killing system processes may cause instability. Only kill processes you recognize.")
+                Text(L("performance.processes.warning"))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.secondary)
             }
@@ -429,40 +437,40 @@ struct PerformanceView: View {
 
     private var memoryBreakdownSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            Text("Memory Breakdown")
+            Text(L("performance.memory.breakdown"))
                 .font(Theme.Typography.headline)
 
             HStack(spacing: Theme.Spacing.md) {
                 memoryBreakdownCard(
-                    title: "Active",
+                    title: L("performance.memory.active"),
                     value: viewModel.memoryUsage.formattedActive,
                     icon: "bolt.fill",
                     color: .blue,
-                    description: "Currently in use by apps"
+                    description: L("performance.memory.activeDesc")
                 )
 
                 memoryBreakdownCard(
-                    title: "Wired",
+                    title: L("performance.memory.wired"),
                     value: viewModel.memoryUsage.formattedWired,
                     icon: "lock.fill",
                     color: .orange,
-                    description: "System, cannot be freed"
+                    description: L("performance.memory.wiredDesc")
                 )
 
                 memoryBreakdownCard(
-                    title: "Compressed",
+                    title: L("performance.memory.compressed"),
                     value: viewModel.memoryUsage.formattedCompressed,
                     icon: "archivebox.fill",
                     color: .green,
-                    description: "Compressed in RAM"
+                    description: L("performance.memory.compressedDesc")
                 )
 
                 memoryBreakdownCard(
-                    title: "Cached",
+                    title: L("performance.memory.cached"),
                     value: viewModel.memoryUsage.formattedInactive,
                     icon: "tray.full.fill",
                     color: .purple,
-                    description: "Available if needed"
+                    description: L("performance.memory.cachedDesc")
                 )
             }
 
@@ -489,10 +497,10 @@ struct PerformanceView: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Swap Used")
+                Text(L("performance.memory.swapUsed"))
                     .font(Theme.Typography.subheadline.weight(.medium))
 
-                Text("\(viewModel.memoryUsage.formattedSwapUsed) of \(viewModel.memoryUsage.formattedSwapTotal)")
+                Text(LFormat("performance.memory.swapOf %@ %@", viewModel.memoryUsage.formattedSwapUsed, viewModel.memoryUsage.formattedSwapTotal))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.secondary)
             }
@@ -559,7 +567,7 @@ struct PerformanceView: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header with Run All button
             HStack {
-                Text("Maintenance Tasks")
+                Text(L("performance.maintenance.title"))
                     .font(Theme.Typography.headline)
 
                 Spacer()
@@ -567,14 +575,14 @@ struct PerformanceView: View {
                 if viewModel.isRunningAll {
                     // Progress indicator during run all
                     HStack(spacing: 8) {
-                        Text("Task \(viewModel.runAllCurrentIndex) of \(viewModel.runAllTotalCount)")
+                        Text(LFormat("performance.maintenance.taskOf %lld %lld", viewModel.runAllCurrentIndex, viewModel.runAllTotalCount))
                             .font(.system(size: 11))
                             .foregroundStyle(.secondary)
 
                         Button(action: viewModel.cancelRunAll) {
                             HStack(spacing: 4) {
                                 Image(systemName: "xmark")
-                                Text("Stop")
+                                Text(L("common.stop"))
                             }
                             .font(.system(size: 11, weight: .medium))
                             .foregroundStyle(.red)
@@ -587,7 +595,7 @@ struct PerformanceView: View {
                     }
                 } else {
                     GlassActionButton(
-                        "Run All",
+                        L("performance.maintenance.runAll"),
                         icon: "play.fill",
                         color: sectionColor,
                         disabled: viewModel.runningTaskId != nil
@@ -602,7 +610,7 @@ struct PerformanceView: View {
                 RunAllProgressView(
                     currentIndex: viewModel.runAllCurrentIndex,
                     totalCount: viewModel.runAllTotalCount,
-                    currentTaskName: viewModel.maintenanceTasks.first { $0.id == viewModel.runningTaskId }?.name ?? "",
+                    currentTaskName: viewModel.maintenanceTasks.first { $0.id == viewModel.runningTaskId }?.localizedName ?? "",
                     taskProgress: viewModel.taskProgress
                 )
             }
@@ -668,11 +676,11 @@ struct MaintenanceTaskCard: View {
                     }
                 }
 
-                Text(task.name)
+                Text(task.localizedName)
                     .font(Theme.Typography.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
 
-                Text(task.description)
+                Text(task.localizedDescription)
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
@@ -749,15 +757,15 @@ struct MaintenanceTaskCard: View {
             case .success:
                 Image(systemName: "checkmark")
                     .font(.system(size: 8, weight: .bold))
-                Text("Done")
+                Text(L("common.done"))
             case .failed:
                 Image(systemName: "xmark")
                     .font(.system(size: 8, weight: .bold))
-                Text("Failed")
+                Text(L("common.failed"))
             case .skipped:
                 Image(systemName: "forward.fill")
                     .font(.system(size: 8, weight: .bold))
-                Text("Skipped")
+                Text(L("common.skipped"))
             default:
                 EmptyView()
             }
@@ -832,7 +840,7 @@ struct ProcessRow: View {
             Button(action: { showKillConfirm = true }) {
                 HStack(spacing: 4) {
                     Image(systemName: "xmark.circle.fill")
-                    Text("Kill")
+                    Text(L("performance.processes.kill"))
                 }
                 .font(Theme.Typography.caption.weight(.medium))
                 .foregroundStyle(.red)
@@ -850,14 +858,14 @@ struct ProcessRow: View {
         .background(isHovered ? Color.white.opacity(0.03) : Color.clear)
         .onHover { isHovered = $0 }
         .confirmationDialog(
-            "Kill \(process.name)?",
+            LFormat("performance.processes.killConfirm %@", process.name),
             isPresented: $showKillConfirm,
             titleVisibility: .visible
         ) {
-            Button("Kill Process", role: .destructive, action: onKill)
-            Button("Cancel", role: .cancel) {}
+            Button(L("performance.processes.killProcess"), role: .destructive, action: onKill)
+            Button(L("common.cancel"), role: .cancel) {}
         } message: {
-            Text("PID: \(String(process.pid))\nThis may cause data loss if the app has unsaved changes.")
+            Text(LFormat("performance.processes.killMessage %@", String(process.pid)))
         }
     }
 
@@ -917,7 +925,7 @@ struct RunAllProgressView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Running Maintenance")
+                    Text(L("performance.maintenance.running"))
                         .font(Theme.Typography.subheadline.weight(.semibold))
 
                     if !currentTaskName.isEmpty {
@@ -941,7 +949,7 @@ struct RunAllProgressView: View {
                         .font(.system(size: 20, weight: .bold, design: .rounded).monospacedDigit())
                         .foregroundStyle(.purple)
 
-                    Text("Current task")
+                    Text(L("performance.maintenance.currentTask"))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.tertiary)
                 }
