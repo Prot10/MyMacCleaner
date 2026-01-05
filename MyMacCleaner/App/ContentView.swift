@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var appState: AppState
     @State private var selectedSection: NavigationSection = .home
+    @State private var isFullScreen = false
 
     var body: some View {
         NavigationSplitView {
@@ -21,11 +22,19 @@ struct ContentView: View {
                             selectedSection = section
                         }
                     }
-                }
+                },
+                isFullScreen: isFullScreen
             )
         }
         .navigationSplitViewStyle(.balanced)
         .frame(minWidth: 1000, minHeight: 650)
+        .toolbar(removing: .sidebarToggle)
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didEnterFullScreenNotification)) { _ in
+            isFullScreen = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didExitFullScreenNotification)) { _ in
+            isFullScreen = false
+        }
     }
 }
 
@@ -209,7 +218,7 @@ struct SidebarHeader: View {
             Text("MyMacCleaner")
                 .font(.headline)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .center)
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
     }
@@ -254,6 +263,7 @@ struct DetailContentView: View {
     let section: NavigationSection
     let appState: AppState
     let onNavigate: (String) -> Void
+    let isFullScreen: Bool
 
     var body: some View {
         ZStack {
@@ -261,11 +271,11 @@ struct DetailContentView: View {
             backgroundGradient
                 .ignoresSafeArea()
 
-            // Content
+            // Content with top padding in fullscreen
             contentView
+                .padding(.top, isFullScreen ? 28 : 0)
         }
         .ignoresSafeArea(edges: .top)
-        .toolbarBackground(.hidden, for: .windowToolbar)
     }
 
     private var backgroundGradient: some View {
