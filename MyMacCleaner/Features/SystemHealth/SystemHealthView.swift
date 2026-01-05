@@ -42,10 +42,10 @@ struct SystemHealthView: View {
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("System Health")
+                Text(L("navigation.systemHealth"))
                     .font(.system(size: 28, weight: .bold))
 
-                Text("Monitor your Mac's overall health and performance")
+                Text(L("systemHealth.subtitle"))
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
@@ -53,7 +53,7 @@ struct SystemHealthView: View {
             Spacer()
 
             GlassActionButton(
-                "Refresh",
+                L("common.refresh"),
                 icon: viewModel.isLoading ? nil : "arrow.clockwise",
                 color: sectionColor,
                 disabled: viewModel.isLoading
@@ -121,7 +121,7 @@ struct SystemHealthView: View {
                         .font(.title2)
                         .foregroundStyle(viewModel.healthStatus.color)
 
-                    Text(viewModel.healthStatus.rawValue)
+                    Text(viewModel.healthStatus.localizedName)
                         .font(Theme.Typography.title)
                 }
 
@@ -131,7 +131,7 @@ struct SystemHealthView: View {
                     .lineLimit(3)
 
                 if let lastUpdated = viewModel.lastUpdated {
-                    Text("Last checked: \(lastUpdated.formatted(date: .omitted, time: .shortened))")
+                    Text(LFormat("systemHealth.lastChecked %@", lastUpdated.formatted(date: .omitted, time: .shortened)))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.tertiary)
                 }
@@ -149,13 +149,13 @@ struct SystemHealthView: View {
         let failed = viewModel.healthChecks.filter { $0.status == .failed }.count
 
         if viewModel.isLoading {
-            return "Running health checks..."
+            return L("systemHealth.summary.running")
         } else if failed > 0 {
-            return "\(failed) issue(s) need attention. Consider running maintenance tasks."
+            return LFormat("systemHealth.summary.failed %lld", failed)
         } else if warnings > 0 {
-            return "\(passed) checks passed, \(warnings) warning(s). Your Mac is in good shape overall."
+            return LFormat("systemHealth.summary.warnings %lld %lld", passed, warnings)
         } else {
-            return "All \(passed) checks passed! Your Mac is running optimally."
+            return LFormat("systemHealth.summary.passed %lld", passed)
         }
     }
 
@@ -163,7 +163,7 @@ struct SystemHealthView: View {
 
     private var healthChecksSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            Text("Health Checks")
+            Text(L("systemHealth.checks.title"))
                 .font(Theme.Typography.headline)
 
             LazyVGrid(columns: [
@@ -181,7 +181,7 @@ struct SystemHealthView: View {
 
     private var systemInfoSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            Text("System Information")
+            Text(L("systemHealth.info.title"))
                 .font(Theme.Typography.headline)
 
             HStack(spacing: Theme.Spacing.md) {
@@ -286,13 +286,13 @@ struct DiskInfoCard: View {
             .frame(height: 8)
 
             HStack {
-                Text("\(disk.formattedUsed) used")
+                Text(LFormat("systemHealth.disk.used %@", disk.formattedUsed))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.secondary)
 
                 Spacer()
 
-                Text("\(disk.formattedAvailable) free")
+                Text(LFormat("systemHealth.disk.free %@", disk.formattedAvailable))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.green)
             }
@@ -328,7 +328,7 @@ struct BatteryInfoCard: View {
                     .font(.title3)
                     .foregroundStyle(batteryColor)
 
-                Text("Battery")
+                Text(L("systemHealth.battery.title"))
                     .font(Theme.Typography.subheadline.weight(.medium))
 
                 Spacer()
@@ -346,7 +346,7 @@ struct BatteryInfoCard: View {
                         .font(Theme.Typography.title2)
                         .foregroundStyle(batteryColor)
 
-                    Text("Charge")
+                    Text(L("systemHealth.battery.charge"))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.tertiary)
                 }
@@ -356,7 +356,7 @@ struct BatteryInfoCard: View {
                         Text("\(cycles)")
                             .font(Theme.Typography.title2)
 
-                        Text("Cycles")
+                        Text(L("systemHealth.battery.cycles"))
                             .font(Theme.Typography.caption)
                             .foregroundStyle(.tertiary)
                     }
@@ -367,7 +367,7 @@ struct BatteryInfoCard: View {
                         .font(Theme.Typography.subheadline)
                         .foregroundStyle(healthColor)
 
-                    Text("Health")
+                    Text(L("systemHealth.battery.health"))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.tertiary)
                 }
@@ -456,16 +456,16 @@ struct MacInfoCard: View {
                     .font(.title3)
                     .foregroundStyle(.purple)
 
-                Text("System")
+                Text(L("systemHealth.system.title"))
                     .font(Theme.Typography.subheadline.weight(.medium))
 
                 Spacer()
             }
 
             VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                InfoRow(label: "macOS", value: macOSVersion)
-                InfoRow(label: "Model", value: macModel)
-                InfoRow(label: "Memory", value: memorySize)
+                InfoRow(label: L("systemHealth.system.macos"), value: macOSVersion)
+                InfoRow(label: L("systemHealth.system.model"), value: macModel)
+                InfoRow(label: L("systemHealth.system.memory"), value: memorySize)
             }
         }
         .padding(Theme.Spacing.md)
