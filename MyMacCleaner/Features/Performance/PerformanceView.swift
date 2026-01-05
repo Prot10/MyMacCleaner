@@ -142,7 +142,7 @@ struct PerformanceView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
+            .glassCard(cornerRadius: 12)
         }
     }
 
@@ -223,7 +223,7 @@ struct PerformanceView: View {
             }
         }
         .padding(Theme.Spacing.lg)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 
     private var memoryGauge: some View {
@@ -347,7 +347,7 @@ struct PerformanceView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(Theme.Spacing.xl)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                .glassCard()
             } else if viewModel.topProcesses.isEmpty {
                 // Empty state
                 VStack(spacing: Theme.Spacing.md) {
@@ -361,7 +361,7 @@ struct PerformanceView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(Theme.Spacing.xl)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                .glassCard()
             } else {
                 // Process list
                 VStack(spacing: 0) {
@@ -400,7 +400,7 @@ struct PerformanceView: View {
                         }
                     }
                 }
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+                .glassCard()
             }
 
             // Info text
@@ -516,7 +516,7 @@ struct PerformanceView: View {
         }
         .padding(Theme.Spacing.md)
         .frame(width: 280)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 
     private var swapColor: Color {
@@ -558,7 +558,7 @@ struct PerformanceView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(Theme.Spacing.md)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 
     // MARK: - Maintenance Section
@@ -693,7 +693,7 @@ struct MaintenanceTaskCard: View {
             }
             .padding(Theme.Spacing.md)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+            .glassCard()
             .overlay(
                 RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .stroke(borderColor, lineWidth: borderColor == .clear ? 0 : 2)
@@ -989,7 +989,7 @@ struct RunAllProgressView: View {
             .frame(height: 8)
         }
         .padding(Theme.Spacing.md)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
         .animation(Theme.Animation.spring, value: currentIndex)
         .animation(Theme.Animation.spring, value: taskProgress)
     }

@@ -1,52 +1,116 @@
 import SwiftUI
+import Combine
 
-// MARK: - Liquid Glass Design System for macOS 26 Tahoe
-// Native .glassEffect() API for authentic Liquid Glass appearance
+// MARK: - Liquid Glass Design System
+// Native .glassEffect() on macOS 26+, .ultraThinMaterial fallback on older versions
 
 // MARK: - Glass Card Modifiers
 
 extension View {
     /// Standard glass card with rounded corners
+    @ViewBuilder
     func glassCard() -> some View {
-        self
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        if #available(macOS 26, *) {
+            self.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        } else {
+            self
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(.white.opacity(0.15), lineWidth: 1)
+                )
+        }
     }
 
     /// Glass card with custom corner radius
+    @ViewBuilder
     func glassCard(cornerRadius: CGFloat) -> some View {
-        self
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
+        if #available(macOS 26, *) {
+            self.glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
+        } else {
+            self
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .strokeBorder(.white.opacity(0.15), lineWidth: 1)
+                )
+        }
     }
 
     /// Prominent glass card for important elements
+    @ViewBuilder
     func glassCardProminent(cornerRadius: CGFloat = 16) -> some View {
-        self
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
-            .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
+        if #available(macOS 26, *) {
+            self
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
+                .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
+        } else {
+            self
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .strokeBorder(.white.opacity(0.2), lineWidth: 1)
+                )
+                .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
+        }
     }
 
     /// Subtle glass card - uses clear variant for high transparency
+    @ViewBuilder
     func glassCardSubtle(cornerRadius: CGFloat = 12) -> some View {
-        self
-            .glassEffect(.clear, in: RoundedRectangle(cornerRadius: cornerRadius))
+        if #available(macOS 26, *) {
+            self.glassEffect(.clear, in: RoundedRectangle(cornerRadius: cornerRadius))
+        } else {
+            self
+                .background(.ultraThinMaterial.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        }
     }
 
     /// Pill-shaped glass (for tags, buttons)
+    @ViewBuilder
     func glassPill() -> some View {
-        self
-            .glassEffect(.regular, in: .capsule)
+        if #available(macOS 26, *) {
+            self.glassEffect(.regular, in: .capsule)
+        } else {
+            self
+                .background(.ultraThinMaterial)
+                .clipShape(.capsule)
+                .overlay(Capsule().strokeBorder(.white.opacity(0.15), lineWidth: 1))
+        }
     }
 
     /// Circle glass effect
+    @ViewBuilder
     func glassCircle() -> some View {
-        self
-            .glassEffect(.regular, in: .circle)
+        if #available(macOS 26, *) {
+            self.glassEffect(.regular, in: .circle)
+        } else {
+            self
+                .background(.ultraThinMaterial)
+                .clipShape(.circle)
+                .overlay(Circle().strokeBorder(.white.opacity(0.15), lineWidth: 1))
+        }
     }
 
     /// Glass effect with tint color
+    @ViewBuilder
     func glassCard(tint: Color, cornerRadius: CGFloat = 16) -> some View {
-        self
-            .glassEffect(.regular.tint(tint), in: RoundedRectangle(cornerRadius: cornerRadius))
+        if #available(macOS 26, *) {
+            self.glassEffect(.regular.tint(tint), in: RoundedRectangle(cornerRadius: cornerRadius))
+        } else {
+            self
+                .background(tint.opacity(0.1))
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .strokeBorder(tint.opacity(0.3), lineWidth: 1)
+                )
+        }
     }
 }
 
@@ -81,7 +145,23 @@ extension View {
     }
 }
 
-// MARK: - Glass Button Style (macOS 26 native)
+// MARK: - Glass Capsule Modifier (Reusable)
+
+struct GlassCapsuleModifier: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *) {
+            content.glassEffect(.regular, in: .capsule)
+        } else {
+            content
+                .background(.ultraThinMaterial)
+                .clipShape(.capsule)
+                .overlay(Capsule().strokeBorder(.white.opacity(0.15), lineWidth: 1))
+        }
+    }
+}
+
+// MARK: - Glass Button Style (Backward Compatible)
 
 struct LiquidGlassButtonStyle: ButtonStyle {
     enum Variant {
@@ -117,22 +197,11 @@ struct LiquidGlassButtonStyle: ButtonStyle {
                     Color.clear
                 }
             }
-            .glassEffect(glassVariant, in: RoundedRectangle(cornerRadius: cornerRadius))
+            .modifier(GlassEffectModifier(variant: variant, cornerRadius: cornerRadius))
             .foregroundStyle(foregroundColor)
             .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
             .opacity(configuration.isPressed ? 0.9 : 1.0)
             .animation(.spring(response: 0.2, dampingFraction: 0.7), value: configuration.isPressed)
-    }
-
-    private var glassVariant: Glass {
-        switch variant {
-        case .regular:
-            return .regular
-        case .prominent:
-            return .regular
-        case .tinted(let color):
-            return .regular.tint(color)
-        }
     }
 
     private var foregroundColor: Color {
@@ -140,6 +209,37 @@ struct LiquidGlassButtonStyle: ButtonStyle {
         case .regular: return .primary
         case .prominent: return .white
         case .tinted(let color): return color
+        }
+    }
+}
+
+// Helper modifier for button glass effect
+struct GlassEffectModifier: ViewModifier {
+    let variant: LiquidGlassButtonStyle.Variant
+    let cornerRadius: CGFloat
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *) {
+            content.glassEffect(glassVariantMacOS26, in: RoundedRectangle(cornerRadius: cornerRadius))
+        } else {
+            content
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .strokeBorder(.white.opacity(0.2), lineWidth: 1)
+                )
+        }
+    }
+
+    @available(macOS 26, *)
+    private var glassVariantMacOS26: Glass {
+        switch variant {
+        case .regular, .prominent:
+            return .regular
+        case .tinted(let color):
+            return .regular.tint(color)
         }
     }
 }
@@ -152,7 +252,7 @@ extension ButtonStyle where Self == LiquidGlassButtonStyle {
     }
 }
 
-// MARK: - Floating Action Button
+// MARK: - Floating Action Button (Backward Compatible)
 
 struct FloatingActionButton: View {
     let icon: String
@@ -172,7 +272,7 @@ struct FloatingActionButton: View {
                     Circle()
                         .fill(color.gradient)
                 }
-                .glassEffect(.regular.tint(color), in: .circle)
+                .modifier(CircleGlassModifier(color: color))
                 .shadow(color: color.opacity(0.4), radius: isHovered ? 20 : 12, y: isHovered ? 8 : 4)
         }
         .buttonStyle(.plain)
@@ -188,7 +288,24 @@ struct FloatingActionButton: View {
     }
 }
 
-// MARK: - Glass Action Button
+struct CircleGlassModifier: ViewModifier {
+    let color: Color
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *) {
+            content.glassEffect(.regular.tint(color), in: .circle)
+        } else {
+            content
+                .overlay(
+                    Circle()
+                        .strokeBorder(.white.opacity(0.3), lineWidth: 1)
+                )
+        }
+    }
+}
+
+// MARK: - Glass Action Button (Backward Compatible)
 
 struct GlassActionButton: View {
     let title: String
@@ -247,7 +364,7 @@ struct GlassActionButton: View {
     }
 }
 
-// MARK: - Glass Toolbar
+// MARK: - Glass Toolbar (Backward Compatible)
 
 struct GlassToolbar<Content: View>: View {
     @ViewBuilder let content: () -> Content
@@ -258,22 +375,22 @@ struct GlassToolbar<Content: View>: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .glassEffect(.regular, in: .capsule)
+        .modifier(GlassCapsuleModifier())
         .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
     }
 }
 
-// MARK: - Glass Segmented Control
+// MARK: - Glass Segmented Control (Backward Compatible)
 
 struct GlassSegmentedControl<T: Hashable>: View {
     let options: [T]
     @Binding var selection: T
     let label: (T) -> String
 
-    @Namespace private var glassNamespace
+    @Namespace private var segmentNamespace
 
     var body: some View {
-        GlassEffectContainer {
+        glassContainerWrapper {
             HStack(spacing: 4) {
                 ForEach(options, id: \.self) { option in
                     Button {
@@ -286,25 +403,49 @@ struct GlassSegmentedControl<T: Hashable>: View {
                             .foregroundStyle(selection == option ? .primary : .secondary)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
-                            .glassEffect(
-                                selection == option ? .regular : .clear,
-                                in: .capsule
-                            )
-                            .glassEffectID(option, in: glassNamespace)
+                            .background {
+                                if selection == option {
+                                    segmentBackground
+                                        .matchedGeometryEffect(id: "segment", in: segmentNamespace)
+                                }
+                            }
                     }
                     .buttonStyle(.plain)
                 }
             }
             .padding(4)
-            .background {
-                Capsule()
-                    .fill(Color.white.opacity(0.05))
+            .background(Color.white.opacity(0.05))
+            .clipShape(.capsule)
+        }
+    }
+
+    @ViewBuilder
+    private func glassContainerWrapper<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        if #available(macOS 26, *) {
+            GlassEffectContainer {
+                content()
             }
+        } else {
+            content()
+                .background(.ultraThinMaterial)
+                .clipShape(.capsule)
+        }
+    }
+
+    @ViewBuilder
+    private var segmentBackground: some View {
+        if #available(macOS 26, *) {
+            Capsule()
+                .fill(.clear)
+                .glassEffect(.regular, in: .capsule)
+        } else {
+            Capsule()
+                .fill(.white.opacity(0.15))
         }
     }
 }
 
-// MARK: - Glass Tab Picker (Apple Inspector Style)
+// MARK: - Glass Tab Picker (Backward Compatible)
 
 struct GlassTabPicker<T: Hashable>: View {
     let tabs: [T]
@@ -346,7 +487,7 @@ struct GlassTabPicker<T: Hashable>: View {
             }
         }
         .padding(4)
-        .glassEffect(.regular, in: .capsule)
+        .modifier(GlassCapsuleModifier())
     }
 }
 
@@ -385,7 +526,7 @@ struct GlassTabButton: View {
     }
 }
 
-// MARK: - Glass Search Field
+// MARK: - Glass Search Field (Backward Compatible)
 
 struct GlassSearchField: View {
     @Binding var text: String
@@ -417,12 +558,45 @@ struct GlassSearchField: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .glassEffect(
-            isFocused ? .regular : .clear,
-            in: RoundedRectangle(cornerRadius: 12)
-        )
+        .modifier(SearchFieldGlassModifier(isFocused: isFocused))
         .scaleEffect(isFocused ? 1.01 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isFocused)
+    }
+}
+
+struct SearchFieldGlassModifier: ViewModifier {
+    let isFocused: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *) {
+            content.glassEffect(
+                isFocused ? .regular : .clear,
+                in: RoundedRectangle(cornerRadius: 12)
+            )
+        } else {
+            content
+                .background(isFocused ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.clear))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(.white.opacity(isFocused ? 0.2 : 0.1), lineWidth: 1)
+                )
+        }
+    }
+}
+
+// MARK: - Glass Effect Container Compatibility Wrapper
+
+/// Wrapper that provides GlassEffectContainer on macOS 26+, passthrough on older versions
+@ViewBuilder
+func glassEffectContainerCompat<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+    if #available(macOS 26, *) {
+        GlassEffectContainer {
+            content()
+        }
+    } else {
+        content()
     }
 }
 

@@ -226,7 +226,7 @@ struct PortManagementView: View {
                 }
             }
         }
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 }
 
@@ -263,7 +263,7 @@ struct PortStatCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 }
 

@@ -1,0 +1,201 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+
+env:
+  XCODE_VERSION: '16.0'
+  APP_NAME: MyMacCleaner
+  SCHEME: MyMacCleaner
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode version
+        run: |
+          sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app || \
+          sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Resolve Swift Package Dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project ${{ env.APP_NAME }}.xcodeproj \
+            -scheme ${{ env.SCHEME }}
+
+      - name: Build and Archive (Unsigned)
+        run: |
+          xcodebuild archive \
+            -project ${{ env.APP_NAME }}.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -archivePath build/${{ env.APP_NAME }}.xcarchive \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO
+
+      - name: Export App
+        run: |
+          mkdir -p build/export
+          cp -R "build/${{ env.APP_NAME }}.xcarchive/Products/Applications/${{ env.APP_NAME }}.app" build/export/
+
+      - name: Get Version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Create DMG
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Create DMG staging directory
+          mkdir -p build/dmg-contents
+          cp -R "build/export/${{ env.APP_NAME }}.app" build/dmg-contents/
+          ln -s /Applications build/dmg-contents/Applications
+
+          # Create DMG
+          hdiutil create -volname "${{ env.APP_NAME }}" \
+            -srcfolder build/dmg-contents \
+            -ov -format UDZO \
+            "build/${{ env.APP_NAME }}-v${VERSION}.dmg"
+
+          # Also create a ZIP for Sparkle
+          cd build/export
+          zip -r -y "../${{ env.APP_NAME }}-v${VERSION}.zip" "${{ env.APP_NAME }}.app"
+
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Get commits since last tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$PREVIOUS_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s" $PREVIOUS_TAG..HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"- %s" -n 20)
+          fi
+
+          echo "## What's New in v${VERSION}" > release_notes.md
+          echo "" >> release_notes.md
+          echo "$COMMITS" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "---" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### Installation" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "1. Download \`${{ env.APP_NAME }}-v${VERSION}.dmg\`" >> release_notes.md
+          echo "2. Open the DMG and drag MyMacCleaner to Applications" >> release_notes.md
+          echo "3. On first launch, right-click the app and select 'Open' to bypass Gatekeeper" >> release_notes.md
+          echo "4. Or go to System Settings > Privacy & Security and click 'Open Anyway'" >> release_notes.md
+
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "MyMacCleaner v${{ steps.version.outputs.version }}"
+          body_path: release_notes.md
+          files: |
+            build/${{ env.APP_NAME }}-v${{ steps.version.outputs.version }}.dmg
+            build/${{ env.APP_NAME }}-v${{ steps.version.outputs.version }}.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APP_NAME }}-v${{ steps.version.outputs.version }}
+          path: |
+            build/${{ env.APP_NAME }}-v${{ steps.version.outputs.version }}.dmg
+            build/${{ env.APP_NAME }}-v${{ steps.version.outputs.version }}.zip
+
+  # Optional: Signed build job (requires Apple Developer account)
+  build-signed:
+    runs-on: macos-15
+    if: ${{ false }}  # Disabled by default - enable when you have certificates
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Import Certificate
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          KEYCHAIN_PWD: ${{ secrets.CI_KEYCHAIN_PWD }}
+        run: |
+          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+          security create-keychain -p "$KEYCHAIN_PWD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PWD" build.keychain
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PWD" build.keychain
+
+      - name: Build and Sign
+        env:
+          CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
+        run: |
+          xcodebuild archive \
+            -project ${{ env.APP_NAME }}.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -archivePath build/${{ env.APP_NAME }}.xcarchive \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="$CERTIFICATE_NAME" \
+            OTHER_CODE_SIGN_FLAGS="--options runtime"
+
+      - name: Notarize
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PWD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          # Store credentials
+          xcrun notarytool store-credentials "notary-profile" \
+            --apple-id "$APPLE_ID" \
+            --team-id "$TEAM_ID" \
+            --password "$APPLE_PWD"
+
+          # Export app
+          mkdir -p build/export
+          xcodebuild -exportArchive \
+            -archivePath build/${{ env.APP_NAME }}.xcarchive \
+            -exportPath build/export \
+            -exportOptionsPlist ExportOptions.plist
+
+          # Create ZIP for notarization
+          cd build/export
+          ditto -c -k --keepParent "${{ env.APP_NAME }}.app" notarization.zip
+
+          # Submit and wait
+          xcrun notarytool submit notarization.zip \
+            --keychain-profile "notary-profile" \
+            --wait
+
+          # Staple
+          xcrun stapler staple "${{ env.APP_NAME }}.app"

@@ -140,7 +140,7 @@ struct SystemHealthView: View {
             Spacer()
         }
         .padding(Theme.Spacing.lg)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 
     private var healthSummary: String {
@@ -246,7 +246,7 @@ struct HealthCheckCard: View {
             Spacer()
         }
         .padding(Theme.Spacing.md)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
     }
@@ -299,7 +299,7 @@ struct DiskInfoCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
     }
@@ -375,7 +375,7 @@ struct BatteryInfoCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
     }
@@ -470,7 +470,7 @@ struct MacInfoCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
     }

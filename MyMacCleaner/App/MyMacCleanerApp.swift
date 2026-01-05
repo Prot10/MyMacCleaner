@@ -5,21 +5,35 @@ struct MyMacCleanerApp: App {
     /// Shared app state that persists across section switches
     @StateObject private var appState = AppState()
 
+    /// Update manager for Sparkle auto-updates
+    @State private var updateManager = UpdateManager()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
                 .environment(LocalizationManager.shared)
+                .environment(updateManager)
         }
         .windowStyle(.automatic)
         .windowToolbarStyle(.unified(showsTitle: false))
         .defaultSize(width: 1100, height: 700)
         .windowResizability(.contentMinSize)
+        .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates...") {
+                    updateManager.checkForUpdates()
+                }
+                .disabled(!updateManager.canCheckForUpdates)
+                .keyboardShortcut("U", modifiers: [.command])
+            }
+        }
 
         #if os(macOS)
         Settings {
             SettingsView()
                 .environment(LocalizationManager.shared)
+                .environment(updateManager)
         }
         #endif
     }
@@ -38,6 +52,11 @@ struct SettingsView: View {
                     Label(String(localized: "settings.language"), systemImage: "globe")
                 }
 
+            UpdateSettingsView()
+                .tabItem {
+                    Label(String(localized: "settings.updates"), systemImage: "arrow.triangle.2.circlepath")
+                }
+
             PermissionsSettingsView()
                 .tabItem {
                     Label(String(localized: "settings.permissions"), systemImage: "lock.shield")
@@ -48,7 +67,7 @@ struct SettingsView: View {
                     Label(String(localized: "settings.about"), systemImage: "info.circle")
                 }
         }
-        .frame(width: 450, height: 300)
+        .frame(width: 450, height: 320)
     }
 }
 
@@ -85,6 +104,44 @@ struct LanguageSettingsView: View {
             .labelsHidden()
 
             Text(String(localized: "settings.languageNote"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Spacer()
+        }
+        .padding()
+    }
+}
+
+struct UpdateSettingsView: View {
+    @Environment(UpdateManager.self) var updateManager
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(String(localized: "settings.updates"))
+                .font(.headline)
+
+            Toggle(String(localized: "settings.autoCheckUpdates"), isOn: Binding(
+                get: { updateManager.automaticChecksEnabled },
+                set: { updateManager.automaticChecksEnabled = $0 }
+            ))
+
+            HStack {
+                Button(String(localized: "settings.checkNow")) {
+                    updateManager.checkForUpdates()
+                }
+                .disabled(!updateManager.canCheckForUpdates)
+
+                Spacer()
+
+                if let lastCheck = updateManager.lastUpdateCheck {
+                    Text(String(localized: "settings.lastChecked \(lastCheck.formatted())"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Text(String(localized: "settings.updatesDescription"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 

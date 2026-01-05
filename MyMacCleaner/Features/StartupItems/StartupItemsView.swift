@@ -215,7 +215,7 @@ struct StartupItemsView: View {
         }
         .padding(32)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 
     // MARK: - Loading Section
@@ -232,7 +232,7 @@ struct StartupItemsView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(Theme.Spacing.xxl)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 
     // MARK: - Controls Section
@@ -278,7 +278,7 @@ struct StartupItemsView: View {
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
+                .glassCard(cornerRadius: 12)
             }
 
             // Sort order
@@ -305,7 +305,7 @@ struct StartupItemsView: View {
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
+                .glassCard(cornerRadius: 12)
             }
 
             Spacer()
@@ -322,7 +322,7 @@ struct StartupItemsView: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
+            .glassCard(cornerRadius: 12)
         }
     }
 
@@ -360,7 +360,7 @@ struct StartupItemsView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(Theme.Spacing.xxl)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 }
 
@@ -399,7 +399,7 @@ struct StartupStatCard: View {
         }
         .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
         .hoverEffect(isHovered: isHovered)
         .onHover { isHovered = $0 }
     }
@@ -573,7 +573,7 @@ struct StartupItemRow: View {
                 .background(Color.white.opacity(0.02))
             }
         }
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+        .glassCard()
     }
 }
 
