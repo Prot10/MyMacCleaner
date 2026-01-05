@@ -109,10 +109,10 @@ struct HomeView: View {
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Home")
+                Text(L("navigation.home"))
                     .font(.system(size: 28, weight: .bold))
 
-                Text("Keep your Mac running smoothly")
+                Text(L("home.subtitle"))
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
@@ -166,10 +166,10 @@ struct HomeView: View {
                 }
 
                 VStack(spacing: 8) {
-                    Text(viewModel.isScanning ? "Scanning..." : "Smart Scan")
+                    Text(viewModel.isScanning ? L("home.scanning") : L("home.smartScan"))
                         .font(.system(size: 20, weight: .semibold))
 
-                    Text(viewModel.isScanning ? "Analyzing your system" : "Scan all categories at once to find junk files")
+                    Text(viewModel.isScanning ? L("home.scan.analyzing") : L("home.scan.description"))
                         .font(.system(size: 14))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -184,14 +184,14 @@ struct HomeView: View {
                             .frame(maxWidth: 300)
 
                         if let category = viewModel.currentScanCategory {
-                            Text("Scanning \(category.rawValue)...")
+                            Text(LFormat("home.scan.scanningCategory %@", category.localizedName))
                                 .font(Theme.Typography.caption)
                                 .foregroundStyle(.tertiary)
                         }
                     }
                 } else {
                     GlassActionButton(
-                        "Start Scan",
+                        L("home.scan.startButton"),
                         icon: "magnifyingglass",
                         color: sectionColor
                     ) {
@@ -224,7 +224,7 @@ struct HomeView: View {
 
     private var quickStatsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            Text("Quick Stats")
+            Text(L("home.stats.title"))
                 .font(Theme.Typography.headline)
                 .foregroundStyle(.secondary)
 
@@ -235,33 +235,33 @@ struct HomeView: View {
                 GridItem(.flexible())
             ], spacing: Theme.Spacing.md) {
                 StatCard(
-                    title: "Storage",
+                    title: L("home.stats.storage"),
                     value: viewModel.storageUsed,
-                    subtitle: "of \(viewModel.storageTotal)",
+                    subtitle: LFormat("home.stats.of %@", viewModel.storageTotal),
                     icon: "internaldrive.fill",
                     color: Theme.Colors.storage
                 )
 
                 StatCard(
-                    title: "Memory",
+                    title: L("home.stats.memory"),
                     value: viewModel.memoryUsed,
-                    subtitle: "in use",
+                    subtitle: L("home.stats.inUse"),
                     icon: "memorychip.fill",
                     color: Theme.Colors.memory
                 )
 
                 StatCard(
-                    title: "Junk Files",
+                    title: L("home.stats.junkFiles"),
                     value: viewModel.junkSize,
-                    subtitle: "cleanable",
+                    subtitle: L("home.stats.cleanable"),
                     icon: "trash.fill",
                     color: Theme.Colors.storage
                 )
 
                 StatCard(
-                    title: "Apps",
+                    title: L("home.stats.apps"),
                     value: "\(viewModel.appCount)",
-                    subtitle: "installed",
+                    subtitle: L("home.stats.installed"),
                     icon: "square.grid.2x2.fill",
                     color: Theme.Colors.apps
                 )
@@ -273,27 +273,27 @@ struct HomeView: View {
 
     private var quickActionsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            Text("Quick Actions")
+            Text(L("home.actions.title"))
                 .font(Theme.Typography.headline)
                 .foregroundStyle(.secondary)
 
             HStack(spacing: Theme.Spacing.md) {
                 QuickActionButton(
-                    title: "Empty Trash",
+                    title: L("home.actions.emptyTrash"),
                     icon: "trash",
                     color: Theme.Colors.storage,
                     action: viewModel.emptyTrash
                 )
 
                 QuickActionButton(
-                    title: "Free Memory",
+                    title: L("home.actions.freeMemory"),
                     icon: "memorychip",
                     color: Theme.Colors.memory,
                     action: viewModel.freeMemory
                 )
 
                 QuickActionButton(
-                    title: "Large Files",
+                    title: L("home.actions.largeFiles"),
                     icon: "doc.fill",
                     color: Theme.Colors.home,
                     action: viewModel.viewLargeFiles
@@ -376,10 +376,10 @@ struct SmartScanButton: View {
             }
 
             VStack(spacing: 8) {
-                Text(isScanning ? "Scanning..." : "Smart Scan")
+                Text(isScanning ? L("home.scanning") : L("home.smartScan"))
                     .font(.system(size: 20, weight: .semibold))
 
-                Text(isScanning ? "Analyzing your system" : "Scan all categories at once to find junk files")
+                Text(isScanning ? L("home.scan.analyzing") : L("home.scan.description"))
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -388,7 +388,7 @@ struct SmartScanButton: View {
 
             if !isScanning {
                 GlassActionButton(
-                    "Start Scan",
+                    L("home.scan.startButton"),
                     icon: "magnifyingglass",
                     color: color
                 ) {

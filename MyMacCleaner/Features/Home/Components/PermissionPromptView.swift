@@ -73,10 +73,10 @@ struct PermissionPromptView: View {
 
     private var contentSection: some View {
         VStack(spacing: Theme.Spacing.sm) {
-            Text("Full Disk Access Required")
+            Text(L("permissions.fda.title"))
                 .font(Theme.Typography.title2)
 
-            Text("To scan all system files and provide accurate cleanup recommendations, MyMacCleaner needs Full Disk Access permission.")
+            Text(L("permissions.fda.description"))
                 .font(Theme.Typography.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -88,11 +88,11 @@ struct PermissionPromptView: View {
 
     private var featuresSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text("This enables:")
+            Text(L("permissions.fda.features"))
                 .font(Theme.Typography.subheadline)
                 .foregroundStyle(.tertiary)
 
-            ForEach(PermissionsService.fullDiskAccessInfo.features, id: \.self) { feature in
+            ForEach(PermissionsService.fullDiskAccessInfo.localizedFeatures, id: \.self) { feature in
                 HStack(spacing: Theme.Spacing.sm) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.caption)
@@ -118,7 +118,7 @@ struct PermissionPromptView: View {
         VStack(spacing: Theme.Spacing.sm) {
             // Grant permission button
             GlassActionButton(
-                "Open System Settings",
+                L("permissions.fda.openSettings"),
                 icon: "gear",
                 color: .blue
             ) {
@@ -127,7 +127,7 @@ struct PermissionPromptView: View {
 
             // Skip button
             Button(action: onContinueWithoutPermission) {
-                Text("Continue with Limited Scan")
+                Text(L("permissions.fda.limitedScan"))
                     .font(Theme.Typography.subheadline)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)
@@ -137,7 +137,7 @@ struct PermissionPromptView: View {
 
             // Dismiss button for later
             Button(action: onDismiss) {
-                Text("Maybe Later")
+                Text(L("permissions.fda.later"))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -168,10 +168,10 @@ struct PermissionBanner: View {
 
             // Text
             VStack(alignment: .leading, spacing: 2) {
-                Text("Limited Access")
+                Text(L("permissions.banner.limited"))
                     .font(Theme.Typography.subheadline)
 
-                Text("Grant Full Disk Access for complete scanning")
+                Text(L("permissions.banner.description"))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.secondary)
             }
@@ -180,7 +180,7 @@ struct PermissionBanner: View {
 
             // Grant button
             GlassActionButton(
-                "Grant",
+                L("permissions.banner.grant"),
                 icon: nil,
                 color: .orange
             ) {
@@ -211,7 +211,7 @@ struct PermissionStatusView: View {
                 .frame(width: 8, height: 8)
                 .shadow(color: (hasFullDiskAccess ? Color.green : Color.orange).opacity(0.5), radius: 4)
 
-            Text(hasFullDiskAccess ? "Full Access" : "Limited Access")
+            Text(hasFullDiskAccess ? L("permissions.status.granted") : L("permissions.status.limited"))
                 .font(Theme.Typography.caption)
                 .foregroundStyle(.secondary)
         }
