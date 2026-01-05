@@ -17,11 +17,15 @@ class SystemHealthViewModel: ObservableObject {
     @Published var lastUpdated: Date?
 
     enum HealthStatus: String {
-        case excellent = "Excellent"
-        case good = "Good"
-        case fair = "Fair"
-        case poor = "Poor"
-        case unknown = "Checking..."
+        case excellent
+        case good
+        case fair
+        case poor
+        case unknown
+
+        var localizedName: String {
+            L(key: "systemHealth.status.\(rawValue)")
+        }
 
         var color: Color {
             switch self {
@@ -76,10 +80,10 @@ class SystemHealthViewModel: ObservableObject {
     // MARK: - Health Check Methods
 
     private func checkDiskSpace() async {
-        var check = HealthCheck(
+        let check = HealthCheck(
             id: "disk_space",
-            title: "Disk Space",
-            description: "Checking available storage...",
+            title: L("systemHealth.check.diskSpace"),
+            description: L("systemHealth.check.diskSpace.checking"),
             icon: "internaldrive.fill",
             status: .checking
         )
@@ -95,13 +99,14 @@ class SystemHealthViewModel: ObservableObject {
             let usedPercent = total > 0 ? Double(total - available) / Double(total) * 100 : 0
 
             let availableGB = Double(available) / 1_000_000_000
+            let availableFormatted = String(format: "%.1f GB", availableGB)
 
             if availableGB > 50 {
-                updateCheck(id: "disk_space", status: .passed, description: String(format: "%.1f GB available", availableGB))
+                updateCheck(id: "disk_space", status: .passed, description: LFormat("systemHealth.check.diskSpace.passed %@", availableFormatted))
             } else if availableGB > 20 {
-                updateCheck(id: "disk_space", status: .warning, description: String(format: "%.1f GB available - consider cleaning up", availableGB))
+                updateCheck(id: "disk_space", status: .warning, description: LFormat("systemHealth.check.diskSpace.warning %@", availableFormatted))
             } else {
-                updateCheck(id: "disk_space", status: .failed, description: String(format: "Only %.1f GB available - disk nearly full!", availableGB))
+                updateCheck(id: "disk_space", status: .failed, description: LFormat("systemHealth.check.diskSpace.failed %@", availableFormatted))
             }
 
             // Store disk info
@@ -113,15 +118,15 @@ class SystemHealthViewModel: ObservableObject {
             )
             diskInfo = [info]
         } else {
-            updateCheck(id: "disk_space", status: .failed, description: "Unable to read disk space")
+            updateCheck(id: "disk_space", status: .failed, description: L("systemHealth.check.diskSpace.error"))
         }
     }
 
     private func checkMemoryPressure() async {
-        var check = HealthCheck(
+        let check = HealthCheck(
             id: "memory",
-            title: "Memory Pressure",
-            description: "Checking RAM usage...",
+            title: L("systemHealth.check.memory"),
+            description: L("systemHealth.check.memory.checking"),
             icon: "memorychip.fill",
             status: .checking
         )
@@ -140,31 +145,33 @@ class SystemHealthViewModel: ObservableObject {
         if result == KERN_SUCCESS {
             let pageSize = UInt64(vm_page_size)
             let active = UInt64(stats.active_count) * pageSize
-            let inactive = UInt64(stats.inactive_count) * pageSize
+            // inactive is not used in calculation (excluded from "used" memory)
+            _ = UInt64(stats.inactive_count) * pageSize
             let wired = UInt64(stats.wire_count) * pageSize
             let compressed = UInt64(stats.compressor_page_count) * pageSize
 
             let used = active + wired + compressed
             let total = ProcessInfo.processInfo.physicalMemory
             let usedPercent = Double(used) / Double(total) * 100
+            let percentFormatted = String(format: "%.0f%%", usedPercent)
 
             if usedPercent < 70 {
-                updateCheck(id: "memory", status: .passed, description: String(format: "%.0f%% in use - healthy", usedPercent))
+                updateCheck(id: "memory", status: .passed, description: LFormat("systemHealth.check.memory.passed %@", percentFormatted))
             } else if usedPercent < 85 {
-                updateCheck(id: "memory", status: .warning, description: String(format: "%.0f%% in use - moderate pressure", usedPercent))
+                updateCheck(id: "memory", status: .warning, description: LFormat("systemHealth.check.memory.warning %@", percentFormatted))
             } else {
-                updateCheck(id: "memory", status: .failed, description: String(format: "%.0f%% in use - high pressure!", usedPercent))
+                updateCheck(id: "memory", status: .failed, description: LFormat("systemHealth.check.memory.failed %@", percentFormatted))
             }
         } else {
-            updateCheck(id: "memory", status: .warning, description: "Unable to read memory stats")
+            updateCheck(id: "memory", status: .warning, description: L("systemHealth.check.memory.error"))
         }
     }
 
     private func checkBattery() async {
-        var check = HealthCheck(
+        let check = HealthCheck(
             id: "battery",
-            title: "Battery Health",
-            description: "Checking battery status...",
+            title: L("systemHealth.check.battery"),
+            description: L("systemHealth.check.battery.checking"),
             icon: "battery.100",
             status: .checking
         )
@@ -175,7 +182,7 @@ class SystemHealthViewModel: ObservableObject {
         let sources = IOPSCopyPowerSourcesList(snapshot).takeRetainedValue() as Array
 
         if sources.isEmpty {
-            updateCheck(id: "battery", status: .passed, description: "Desktop Mac - no battery")
+            updateCheck(id: "battery", status: .passed, description: L("systemHealth.check.battery.desktop"))
             return
         }
 
@@ -200,22 +207,22 @@ class SystemHealthViewModel: ObservableObject {
             )
 
             if health == "Good" || health == "Normal" {
-                updateCheck(id: "battery", status: .passed, description: "Battery health: \(health ?? "Good")")
+                updateCheck(id: "battery", status: .passed, description: LFormat("systemHealth.check.battery.passed %@", health ?? "Good"))
             } else if health == "Fair" {
-                updateCheck(id: "battery", status: .warning, description: "Battery health: Fair - consider service")
+                updateCheck(id: "battery", status: .warning, description: L("systemHealth.check.battery.warning"))
             } else {
-                updateCheck(id: "battery", status: .failed, description: "Battery needs service")
+                updateCheck(id: "battery", status: .failed, description: L("systemHealth.check.battery.failed"))
             }
         } else {
-            updateCheck(id: "battery", status: .warning, description: "Unable to read battery status")
+            updateCheck(id: "battery", status: .warning, description: L("systemHealth.check.battery.error"))
         }
     }
 
     private func checkDiskHealth() async {
-        var check = HealthCheck(
+        let check = HealthCheck(
             id: "disk_health",
-            title: "Disk Health",
-            description: "Checking disk SMART status...",
+            title: L("systemHealth.check.diskHealth"),
+            description: L("systemHealth.check.diskHealth.checking"),
             icon: "externaldrive.fill",
             status: .checking
         )
@@ -226,22 +233,22 @@ class SystemHealthViewModel: ObservableObject {
 
         if result.contains("SMART Status") {
             if result.contains("Verified") {
-                updateCheck(id: "disk_health", status: .passed, description: "SMART status: Verified")
+                updateCheck(id: "disk_health", status: .passed, description: L("systemHealth.check.diskHealth.verified"))
             } else if result.contains("Not Supported") {
-                updateCheck(id: "disk_health", status: .passed, description: "SSD - SMART not applicable")
+                updateCheck(id: "disk_health", status: .passed, description: L("systemHealth.check.diskHealth.ssd"))
             } else {
-                updateCheck(id: "disk_health", status: .warning, description: "SMART status unknown")
+                updateCheck(id: "disk_health", status: .warning, description: L("systemHealth.check.diskHealth.unknown"))
             }
         } else {
-            updateCheck(id: "disk_health", status: .passed, description: "Disk appears healthy")
+            updateCheck(id: "disk_health", status: .passed, description: L("systemHealth.check.diskHealth.healthy"))
         }
     }
 
     private func checkStartupItems() async {
-        var check = HealthCheck(
+        let check = HealthCheck(
             id: "startup",
-            title: "Startup Items",
-            description: "Checking login items...",
+            title: L("systemHealth.check.startup"),
+            description: L("systemHealth.check.startup.checking"),
             icon: "power",
             status: .checking
         )
@@ -257,19 +264,19 @@ class SystemHealthViewModel: ObservableObject {
         }
 
         if itemCount < 10 {
-            updateCheck(id: "startup", status: .passed, description: "\(itemCount) startup items - optimal")
+            updateCheck(id: "startup", status: .passed, description: LFormat("systemHealth.check.startup.passed %lld", itemCount))
         } else if itemCount < 20 {
-            updateCheck(id: "startup", status: .warning, description: "\(itemCount) startup items - may slow boot")
+            updateCheck(id: "startup", status: .warning, description: LFormat("systemHealth.check.startup.warning %lld", itemCount))
         } else {
-            updateCheck(id: "startup", status: .failed, description: "\(itemCount) startup items - too many!")
+            updateCheck(id: "startup", status: .failed, description: LFormat("systemHealth.check.startup.failed %lld", itemCount))
         }
     }
 
     private func checkSystemUpdates() async {
-        var check = HealthCheck(
+        let check = HealthCheck(
             id: "updates",
-            title: "System Updates",
-            description: "Checking for updates...",
+            title: L("systemHealth.check.updates"),
+            description: L("systemHealth.check.updates.checking"),
             icon: "arrow.down.circle.fill",
             status: .checking
         )
@@ -282,11 +289,11 @@ class SystemHealthViewModel: ObservableObject {
         // For simplicity, we'll just report the current version
         // A full implementation would check software update
         if version.majorVersion >= 14 {
-            updateCheck(id: "updates", status: .passed, description: "macOS \(versionString) - current")
+            updateCheck(id: "updates", status: .passed, description: LFormat("systemHealth.check.updates.passed %@", versionString))
         } else if version.majorVersion >= 13 {
-            updateCheck(id: "updates", status: .warning, description: "macOS \(versionString) - update available")
+            updateCheck(id: "updates", status: .warning, description: LFormat("systemHealth.check.updates.warning %@", versionString))
         } else {
-            updateCheck(id: "updates", status: .failed, description: "macOS \(versionString) - outdated")
+            updateCheck(id: "updates", status: .failed, description: LFormat("systemHealth.check.updates.failed %@", versionString))
         }
     }
 
