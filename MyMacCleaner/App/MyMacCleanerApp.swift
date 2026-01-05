@@ -183,6 +183,12 @@ struct PermissionsSettingsView: View {
 }
 
 struct AboutSettingsView: View {
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+        return "\(version) (\(build))"
+    }
+
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "sparkles")
@@ -192,7 +198,7 @@ struct AboutSettingsView: View {
             Text("MyMacCleaner")
                 .font(.title.bold())
 
-            Text("Version 1.0.0")
+            Text("Version \(appVersion)")
                 .foregroundStyle(.secondary)
 
             Text(String(localized: "settings.aboutDescription"))

@@ -87,7 +87,7 @@ struct DiskCleanerView: View {
                 VStack {
                     ToastView(
                         message: viewModel.toastMessage,
-                        type: homeToastType,
+                        type: viewModel.toastType,
                         onDismiss: viewModel.dismissToast
                     )
                     .padding(.top, Theme.Spacing.lg)
@@ -125,15 +125,6 @@ struct DiskCleanerView: View {
             withAnimation(Theme.Animation.springSmooth) {
                 isVisible = true
             }
-        }
-    }
-
-    // Convert toast type
-    private var homeToastType: HomeViewModel.ToastType {
-        switch viewModel.toastType {
-        case .success: return .success
-        case .error: return .error
-        case .info: return .info
         }
     }
 

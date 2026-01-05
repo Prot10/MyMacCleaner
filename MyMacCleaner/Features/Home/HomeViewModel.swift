@@ -37,10 +37,6 @@ class HomeViewModel: ObservableObject {
     @Published var toastMessage: String = ""
     @Published var toastType: ToastType = .success
 
-    enum ToastType {
-        case success, error, info
-    }
-
     // Navigation callback - set by parent view to handle navigation requests
     var onNavigateToSection: ((String) -> Void)?
 
@@ -97,20 +93,26 @@ class HomeViewModel: ObservableObject {
         }
 
         Task {
-            do {
-                let trashSize = await fileScanner.getTrashSize()
-                if trashSize == 0 {
-                    showToastMessage(L("home.toast.trashEmpty"), type: .info)
-                    return
-                }
+            let trashSize = await fileScanner.getTrashSize()
+            if trashSize == 0 {
+                showToastMessage(L("home.toast.trashEmpty"), type: .info)
+                return
+            }
 
-                try await fileScanner.emptyTrash()
-                // Refresh stats after emptying
-                await loadSystemStats()
-                await performQuickEstimate()
+            let result = await fileScanner.emptyTrash()
+
+            // Refresh stats after emptying
+            await loadSystemStats()
+            await performQuickEstimate()
+
+            if result.errors.isEmpty {
                 showToastMessage(L("home.toast.trashSuccess"), type: .success)
-            } catch {
-                showToastMessage(L("home.toast.trashFailed \(error.localizedDescription)"), type: .error)
+            } else if result.deletedCount > 0 {
+                let freedFormatted = ByteCountFormatter.string(fromByteCount: result.freedSpace, countStyle: .file)
+                showToastMessage(L("home.toast.cleanPartial \(freedFormatted) \(result.failedCount)"), type: .info)
+            } else {
+                let errorMsg = result.errors.first?.localizedDescription ?? "Unknown error"
+                showToastMessage(L("home.toast.trashFailed \(errorMsg)"), type: .error)
             }
         }
     }
@@ -149,13 +151,9 @@ class HomeViewModel: ObservableObject {
                 cleaningCategory = item.category.localizedName
                 cleaningProgress = Double(index) / Double(totalItems)
 
-                do {
-                    let freed = try await fileScanner.trashItems([item])
-                    totalFreed += freed
-                } catch {
-                    print("Failed to clean \(item.name): \(error)")
-                    failedCount += 1
-                }
+                let result = await fileScanner.trashItems([item])
+                totalFreed += result.freedSpace
+                failedCount += result.failedCount
 
                 // Small delay for visual feedback
                 try? await Task.sleep(nanoseconds: 50_000_000) // 0.05s
