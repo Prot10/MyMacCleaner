@@ -64,27 +64,11 @@ enum NavigationSection: String, CaseIterable, Identifiable {
     }
 
     var localizedName: String {
-        switch self {
-        case .home: return String(localized: "navigation.home")
-        case .diskCleaner: return String(localized: "navigation.diskCleaner")
-        case .performance: return String(localized: "navigation.performance")
-        case .applications: return String(localized: "navigation.applications")
-        case .startupItems: return String(localized: "navigation.startupItems")
-        case .portManagement: return String(localized: "navigation.portManagement")
-        case .systemHealth: return String(localized: "navigation.systemHealth")
-        }
+        L(key: "navigation.\(rawValue)")
     }
 
     var localizedDescription: String {
-        switch self {
-        case .home: return String(localized: "navigation.home.description")
-        case .diskCleaner: return String(localized: "navigation.diskCleaner.description")
-        case .performance: return String(localized: "navigation.performance.description")
-        case .applications: return String(localized: "navigation.applications.description")
-        case .startupItems: return String(localized: "navigation.startupItems.description")
-        case .portManagement: return String(localized: "navigation.portManagement.description")
-        case .systemHealth: return String(localized: "navigation.systemHealth.description")
-        }
+        L(key: "navigation.\(rawValue).description")
     }
 
     var color: Color {
@@ -105,8 +89,12 @@ enum NavigationSection: String, CaseIterable, Identifiable {
 struct SidebarView: View {
     @Binding var selection: NavigationSection
     @State private var hoveredSection: NavigationSection?
+    @Environment(LocalizationManager.self) var localization
 
     var body: some View {
+        // Force SwiftUI to observe localization changes
+        let _ = localization.languageCode
+
         VStack(spacing: 0) {
             // App header
             SidebarHeader()
@@ -128,6 +116,8 @@ struct SidebarView: View {
                             isSelected: selection == section,
                             isHovered: hoveredSection == section
                         )
+                        // Force re-render when language changes
+                        .id("\(section.rawValue)-\(localization.languageCode)")
                         .onTapGesture {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 selection = section
@@ -148,6 +138,7 @@ struct SidebarView: View {
 
             // Bottom status
             SystemStatusBadge()
+                .id("status-\(localization.languageCode)")
         }
         .navigationSplitViewColumnWidth(min: 240, ideal: 260, max: 300)
     }
@@ -159,8 +150,12 @@ struct SidebarRow: View {
     let section: NavigationSection
     let isSelected: Bool
     let isHovered: Bool
+    @Environment(LocalizationManager.self) var localization
 
     var body: some View {
+        // Force SwiftUI to observe localization changes
+        let _ = localization.languageCode
+
         HStack(spacing: 12) {
             // Icon with background
             ZStack {
@@ -240,8 +235,12 @@ struct SidebarHeader: View {
 
 struct SystemStatusBadge: View {
     @State private var isHovered = false
+    @Environment(LocalizationManager.self) var localization
 
     var body: some View {
+        // Force SwiftUI to observe localization changes
+        let _ = localization.languageCode
+
         VStack(spacing: 0) {
             Divider()
 
@@ -251,7 +250,7 @@ struct SystemStatusBadge: View {
                     .frame(width: 8, height: 8)
                     .shadow(color: .green.opacity(0.5), radius: 4)
 
-                Text(String(localized: "sidebar.systemHealthy"))
+                Text(L("sidebar.systemHealthy"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
@@ -277,6 +276,9 @@ struct DetailContentView: View {
     let onNavigate: (String) -> Void
     let isFullScreen: Bool
 
+    // CRITICAL: This makes SwiftUI observe language changes
+    @Environment(LocalizationManager.self) var localization
+
     var body: some View {
         ZStack {
             // Dynamic background gradient
@@ -288,6 +290,8 @@ struct DetailContentView: View {
                 .padding(.top, isFullScreen ? 28 : 16)
         }
         .ignoresSafeArea(edges: .top)
+        // CRITICAL: Force complete re-render of ALL child views when language changes
+        .id(localization.languageCode)
         .toolbar {
             ToolbarSpacer(.flexible)
             ToolbarItem {
@@ -416,11 +420,11 @@ struct ComingSoonView: View {
                 Text(section.localizedName)
                     .font(.largeTitle.bold())
 
-                Text(String(localized: "comingSoon.title"))
+                Text(L("comingSoon.title"))
                     .font(.title2)
                     .foregroundStyle(.secondary)
 
-                Text(String(localized: "comingSoon.description"))
+                Text(L("comingSoon.description"))
                     .font(.body)
                     .foregroundStyle(.tertiary)
                     .padding(.top, 4)
@@ -431,7 +435,7 @@ struct ComingSoonView: View {
                 Image(systemName: "hammer.fill")
                     .font(.caption)
 
-                Text(String(localized: "comingSoon.inDevelopment"))
+                Text(L("comingSoon.inDevelopment"))
                     .font(.caption.weight(.medium))
             }
             .padding(.horizontal, 16)

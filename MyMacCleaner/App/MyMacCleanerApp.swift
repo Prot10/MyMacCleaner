@@ -5,15 +5,11 @@ struct MyMacCleanerApp: App {
     /// Shared app state that persists across section switches
     @StateObject private var appState = AppState()
 
-    /// Localization manager for language switching
-    @State private var localizationManager = LocalizationManager.shared
-
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
-                .environment(localizationManager)
-                .environment(\.locale, localizationManager.locale)
+                .environment(LocalizationManager.shared)
         }
         .windowStyle(.automatic)
         .windowToolbarStyle(.unified(showsTitle: false))
@@ -23,8 +19,7 @@ struct MyMacCleanerApp: App {
         #if os(macOS)
         Settings {
             SettingsView()
-                .environment(localizationManager)
-                .environment(\.locale, localizationManager.locale)
+                .environment(LocalizationManager.shared)
         }
         #endif
     }
