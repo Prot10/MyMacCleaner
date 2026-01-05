@@ -788,6 +788,49 @@ MyMacCleaner/
 
 ---
 
+### 2026-01-05 - v1.0.0 Release & Documentation Update
+
+**Session Goal**: Complete v1.0.0 release setup and update documentation
+
+**Completed**:
+
+**Release Setup:**
+- Generated EdDSA signature for v1.0.0 release ZIP
+- Updated appcast.xml with correct signature and file length
+- Updated README.md with Gatekeeper bypass instructions
+- Successfully released v1.0.0 on GitHub
+
+**Documentation Updates:**
+- Updated `.github/workflows/build-release.yml`:
+  - Expanded installation instructions in release notes
+  - Added explanation of WHY Gatekeeper blocks the app (unsigned, open-source, no $99 fee)
+  - Added step-by-step bypass instructions with formatting
+  - Added link to source code for transparency
+- Updated `docs/disk-cleaner.md`:
+  - Replaced "Undo Support" with "Trash Option" (matches actual implementation)
+- Updated `docs/performance.md`:
+  - Removed "Scheduled Maintenance" section (not implemented)
+  - Added "Run All Feature" section documenting batch execution
+- Updated `docs/permissions.md`:
+  - Corrected Settings > Permissions description
+- Fixed GitHub URL in AboutSettingsView (yourusername → Prot10)
+
+**Files Modified**:
+- `.github/workflows/build-release.yml`
+- `appcast.xml`
+- `README.md`
+- `docs/disk-cleaner.md`
+- `docs/performance.md`
+- `docs/permissions.md`
+- `MyMacCleaner/App/MyMacCleanerApp.swift`
+- `CLAUDE.md`
+
+**Build Status**: SUCCESS
+
+**Release Status**: v1.0.0 PUBLISHED
+
+---
+
 ## Constraints & Guidelines
 
 ### Code Quality

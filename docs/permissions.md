@@ -73,10 +73,9 @@ System Settings > Privacy & Security > Full Disk Access
 
 ### In MyMacCleaner
 
-Go to **Settings > Permissions** to see:
-- Current permission status
-- Which features are affected
-- Quick links to grant permissions
+Go to **MyMacCleaner > Settings > Permissions** to:
+- View Full Disk Access status
+- Open System Settings directly to grant FDA
 
 ### In System Settings
 
