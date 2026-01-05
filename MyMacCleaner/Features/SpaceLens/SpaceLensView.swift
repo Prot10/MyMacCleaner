@@ -10,19 +10,19 @@ struct SpaceLensView: View {
         ZStack {
             if viewModel.rootNode == nil && !viewModel.isScanning {
                 startScanSection
+                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
             } else if let currentNode = viewModel.currentNode {
                 mainContent(currentNode)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
             }
 
             // Scanning overlay
             if viewModel.isScanning {
-                Color.black.opacity(0.4)
-                    .ignoresSafeArea()
-                    .transition(.opacity)
-
                 ScanningOverlay(
                     progress: viewModel.scanProgress,
-                    category: viewModel.currentPath
+                    category: viewModel.currentPath,
+                    accentColor: .blue
                 )
                 .transition(.scale.combined(with: .opacity))
             }
@@ -87,13 +87,19 @@ struct SpaceLensView: View {
         VStack(spacing: 0) {
             // Current folder info
             HStack(spacing: Theme.Spacing.md) {
-                Image(systemName: "internaldrive.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(.blue)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.blue.opacity(0.15))
+                        .frame(width: 48, height: 48)
 
-                VStack(alignment: .leading, spacing: 2) {
+                    Image(systemName: "internaldrive.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(.blue)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
                     Text(currentNode.name)
-                        .font(Theme.Typography.headline)
+                        .font(.system(size: 15, weight: .semibold))
                         .lineLimit(1)
 
                     Text("\(currentNode.formattedSize) · \(currentNode.children.count) items")
@@ -106,11 +112,9 @@ struct SpaceLensView: View {
             .padding(Theme.Spacing.md)
             .background(Color.white.opacity(0.03))
 
-            Divider()
-
             // File list
             ScrollView {
-                LazyVStack(spacing: 0) {
+                LazyVStack(spacing: 2) {
                     ForEach(currentNode.children.sorted(by: { $0.size > $1.size })) { child in
                         SidebarFileRow(
                             node: child,
@@ -129,28 +133,26 @@ struct SpaceLensView: View {
                         )
                     }
                 }
+                .padding(.vertical, Theme.Spacing.sm)
             }
         }
-        .background(.ultraThinMaterial)
     }
 
     // MARK: - Header Bar
 
     private func headerBar(_ currentNode: FileNode) -> some View {
         HStack {
-            // Navigation buttons
-            HStack(spacing: Theme.Spacing.xs) {
-                Button(action: viewModel.navigateUp) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(viewModel.navigationStack.count > 1 ? .primary : .tertiary)
-                        .frame(width: 28, height: 28)
-                        .background(Color.white.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                }
-                .buttonStyle(.plain)
-                .disabled(viewModel.navigationStack.count <= 1)
+            // Navigation button
+            Button(action: viewModel.navigateUp) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(viewModel.navigationStack.count > 1 ? .primary : .tertiary)
+                    .frame(width: 32, height: 32)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
             }
+            .buttonStyle(.plain)
+            .disabled(viewModel.navigationStack.count <= 1)
 
             Spacer()
 
@@ -185,12 +187,15 @@ struct SpaceLensView: View {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
+                    .frame(width: 32, height: 32)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
         }
         .padding(.horizontal, Theme.Spacing.lg)
         .padding(.vertical, Theme.Spacing.sm)
-        .background(.ultraThinMaterial)
+        .background(Color.white.opacity(0.03))
     }
 
     // MARK: - Bottom Bar
@@ -198,24 +203,26 @@ struct SpaceLensView: View {
     private var bottomBar: some View {
         HStack {
             if let hovered = viewModel.hoveredNode {
-                Image(systemName: hovered.icon)
-                    .foregroundStyle(hovered.color)
+                HStack(spacing: Theme.Spacing.sm) {
+                    Image(systemName: hovered.icon)
+                        .foregroundStyle(hovered.color)
 
-                Text(hovered.name)
-                    .font(Theme.Typography.subheadline)
-                    .lineLimit(1)
+                    Text(hovered.name)
+                        .font(Theme.Typography.subheadline)
+                        .lineLimit(1)
 
-                Text("·")
-                    .foregroundStyle(.tertiary)
-
-                Text(hovered.formattedSize)
-                    .font(Theme.Typography.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
-
-                if let parent = viewModel.currentNode, parent.size > 0 {
-                    Text("(\(Int(Double(hovered.size) / Double(parent.size) * 100))%)")
-                        .font(Theme.Typography.caption)
+                    Text("·")
                         .foregroundStyle(.tertiary)
+
+                    Text(hovered.formattedSize)
+                        .font(Theme.Typography.subheadline.monospacedDigit())
+                        .foregroundStyle(.secondary)
+
+                    if let parent = viewModel.currentNode, parent.size > 0 {
+                        Text("(\(Int(Double(hovered.size) / Double(parent.size) * 100))%)")
+                            .font(Theme.Typography.caption)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
             } else {
                 Text("Hover over items to see details")
@@ -236,7 +243,7 @@ struct SpaceLensView: View {
             }
         }
         .padding(Theme.Spacing.md)
-        .background(.ultraThinMaterial)
+        .background(Color.white.opacity(0.03))
     }
 
     private func legendItem(color: Color, label: String) -> some View {
@@ -285,26 +292,13 @@ struct SpaceLensView: View {
                     .frame(maxWidth: 400)
             }
 
-            Button(action: viewModel.scanHomeDirectory) {
-                HStack(spacing: 8) {
-                    Image(systemName: "house.fill")
-                    Text("Scan Home Folder")
-                }
-                .font(Theme.Typography.body.weight(.semibold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, Theme.Spacing.xl)
-                .padding(.vertical, Theme.Spacing.md)
-                .background(
-                    LinearGradient(
-                        colors: [.blue, .blue.opacity(0.8)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium))
+            GlassActionButton(
+                "Scan Home Folder",
+                icon: "house.fill",
+                color: .blue
+            ) {
+                viewModel.scanHomeDirectory()
             }
-            .buttonStyle(.plain)
-            .shadow(color: .blue.opacity(0.3), radius: 8, y: 4)
 
             Spacer()
         }
@@ -327,39 +321,45 @@ struct SidebarFileRow: View {
             Button(action: onInfo) {
                 Image(systemName: "info.circle")
                     .font(.system(size: 12))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(isHovered ? .secondary : .tertiary)
             }
             .buttonStyle(.plain)
 
             // Icon
             ZStack {
-                RoundedRectangle(cornerRadius: 6)
+                RoundedRectangle(cornerRadius: 8)
                     .fill(node.color.opacity(0.15))
-                    .frame(width: 28, height: 28)
+                    .frame(width: 30, height: 30)
 
                 Image(systemName: node.icon)
-                    .font(.system(size: 12))
+                    .font(.system(size: 13))
                     .foregroundStyle(node.color)
             }
 
             // Name
             Text(node.name)
-                .font(Theme.Typography.subheadline)
+                .font(.system(size: 13))
                 .lineLimit(1)
 
             Spacer()
 
             // Size
             Text(node.formattedSize)
-                .font(Theme.Typography.caption.monospacedDigit())
+                .font(.system(size: 12).monospacedDigit())
                 .foregroundStyle(.secondary)
         }
-        .padding(.horizontal, Theme.Spacing.md)
-        .padding(.vertical, Theme.Spacing.sm)
-        .background(isHovered ? Color.white.opacity(0.05) : Color.clear)
+        .padding(.horizontal, Theme.Spacing.sm)
+        .padding(.vertical, Theme.Spacing.xs)
+        .background {
+            if isHovered {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.white.opacity(0.08))
+            }
+        }
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
         .onHover(perform: onHover)
+        .animation(.easeOut(duration: 0.15), value: isHovered)
     }
 }
 
