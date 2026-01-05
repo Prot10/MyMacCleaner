@@ -28,12 +28,12 @@ struct SpaceLensView: View {
             }
         }
         .animation(Theme.Animation.springSmooth, value: viewModel.isScanning)
-        .alert("Delete Item?", isPresented: $viewModel.showDeleteConfirmation) {
-            Button("Cancel", role: .cancel) { viewModel.cancelDelete() }
-            Button("Move to Trash", role: .destructive) { viewModel.confirmDelete() }
+        .alert(L("spaceLens.delete.title"), isPresented: $viewModel.showDeleteConfirmation) {
+            Button(L("common.cancel"), role: .cancel) { viewModel.cancelDelete() }
+            Button(L("spaceLens.delete.moveToTrash"), role: .destructive) { viewModel.confirmDelete() }
         } message: {
             if let node = viewModel.nodeToDelete {
-                Text("Move \"\(node.name)\" (\(node.formattedSize)) to Trash?")
+                Text(L("spaceLens.delete.confirm \(node.name) \(node.formattedSize)"))
             }
         }
         .onAppear {
@@ -102,7 +102,7 @@ struct SpaceLensView: View {
                         .font(.system(size: 15, weight: .semibold))
                         .lineLimit(1)
 
-                    Text("\(currentNode.formattedSize) · \(currentNode.children.count) items")
+                    Text(LFormat("spaceLens.sizeItems %@ %lld", currentNode.formattedSize, currentNode.children.count))
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -225,7 +225,7 @@ struct SpaceLensView: View {
                     }
                 }
             } else {
-                Text("Hover over items to see details")
+                Text(L("spaceLens.hoverHint"))
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -234,12 +234,12 @@ struct SpaceLensView: View {
 
             // Legend
             HStack(spacing: Theme.Spacing.md) {
-                legendItem(color: .blue, label: "Folders")
-                legendItem(color: .purple, label: "Apps")
-                legendItem(color: .pink, label: "Videos")
-                legendItem(color: .green, label: "Audio")
-                legendItem(color: .cyan, label: "Images")
-                legendItem(color: .gray, label: "Other")
+                legendItem(color: .blue, label: L("spaceLens.legend.folders"))
+                legendItem(color: .purple, label: L("spaceLens.legend.apps"))
+                legendItem(color: .pink, label: L("spaceLens.legend.videos"))
+                legendItem(color: .green, label: L("spaceLens.legend.audio"))
+                legendItem(color: .cyan, label: L("spaceLens.legend.images"))
+                legendItem(color: .gray, label: L("spaceLens.legend.other"))
             }
         }
         .padding(Theme.Spacing.md)
@@ -282,10 +282,10 @@ struct SpaceLensView: View {
             }
 
             VStack(spacing: Theme.Spacing.sm) {
-                Text("Space Lens")
+                Text(L("spaceLens.title"))
                     .font(Theme.Typography.title2)
 
-                Text("Visualize what's using your disk space")
+                Text(L("spaceLens.description"))
                     .font(Theme.Typography.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -293,7 +293,7 @@ struct SpaceLensView: View {
             }
 
             GlassActionButton(
-                "Scan Home Folder",
+                L("spaceLens.scanHome"),
                 icon: "house.fill",
                 color: .blue
             ) {

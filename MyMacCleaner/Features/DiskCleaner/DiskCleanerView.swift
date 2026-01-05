@@ -10,13 +10,20 @@ struct DiskCleanerView: View {
     private let sectionColor = Theme.Colors.storage
 
     enum DiskCleanerTab: String, CaseIterable {
-        case cleaner = "Cleaner"
-        case spaceLens = "Space Lens"
+        case cleaner
+        case spaceLens
 
         var icon: String {
             switch self {
             case .cleaner: return "trash"
             case .spaceLens: return "circle.hexagongrid.fill"
+            }
+        }
+
+        var localizedName: String {
+            switch self {
+            case .cleaner: return L("diskCleaner.tab.cleaner")
+            case .spaceLens: return L("diskCleaner.tab.spaceLens")
             }
         }
     }
@@ -55,7 +62,7 @@ struct DiskCleanerView: View {
 
                 ScanningOverlay(
                     progress: viewModel.scanProgress,
-                    category: viewModel.currentScanCategory?.rawValue ?? "Preparing...",
+                    category: viewModel.currentScanCategory?.localizedName ?? L("diskCleaner.scan.preparing"),
                     accentColor: sectionColor
                 )
                 .transition(.scale.combined(with: .opacity))
@@ -104,15 +111,15 @@ struct DiskCleanerView: View {
                 )
             }
         }
-        .alert("Clean Selected Items?", isPresented: $viewModel.showCleanConfirmation) {
-            Button("Cancel", role: .cancel) {
+        .alert(L("diskCleaner.clean.confirmTitle"), isPresented: $viewModel.showCleanConfirmation) {
+            Button(L("common.cancel"), role: .cancel) {
                 viewModel.cancelClean()
             }
-            Button("Move to Trash", role: .destructive) {
+            Button(L("diskCleaner.clean.moveToTrash"), role: .destructive) {
                 viewModel.confirmClean()
             }
         } message: {
-            Text("This will move \(viewModel.selectedItemCount) items (\(viewModel.formattedSelectedSize)) to the Trash. You can restore them from the Trash if needed.")
+            Text(L("diskCleaner.clean.confirmMessage \(viewModel.selectedItemCount) \(viewModel.formattedSelectedSize)"))
         }
         .onAppear {
             withAnimation(Theme.Animation.springSmooth) {
@@ -135,10 +142,10 @@ struct DiskCleanerView: View {
     private var headerSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Disk Cleaner")
+                Text(L("navigation.diskCleaner"))
                     .font(.system(size: 28, weight: .bold))
 
-                Text("Free up space by removing junk files")
+                Text(L("diskCleaner.subtitle"))
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
@@ -152,7 +159,7 @@ struct DiskCleanerView: View {
                             .font(.system(size: 22, weight: .semibold))
                             .foregroundStyle(sectionColor)
 
-                        Text("\(viewModel.totalItemCount) items found")
+                        Text(LFormat("diskCleaner.itemsFound %lld", viewModel.totalItemCount))
                             .font(.system(size: 11))
                             .foregroundStyle(.secondary)
                     }
@@ -172,7 +179,7 @@ struct DiskCleanerView: View {
                 tabs: DiskCleanerTab.allCases,
                 selection: $selectedTab,
                 icon: { $0.icon },
-                label: { $0.rawValue },
+                label: { $0.localizedName },
                 accentColor: sectionColor
             )
 
@@ -226,17 +233,17 @@ struct DiskCleanerView: View {
             }
 
             VStack(spacing: 8) {
-                Text("Scan Your Disk")
+                Text(L("diskCleaner.scan.title"))
                     .font(.system(size: 20, weight: .semibold))
 
-                Text("Find cache files, logs, and other junk that's taking up space")
+                Text(L("diskCleaner.scan.description"))
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
 
             GlassActionButton(
-                "Start Scan",
+                L("diskCleaner.scan.startButton"),
                 icon: "magnifyingglass",
                 color: sectionColor
             ) {
@@ -257,17 +264,17 @@ struct DiskCleanerView: View {
                 .foregroundStyle(.green)
 
             VStack(spacing: 8) {
-                Text("Your Disk is Clean!")
+                Text(L("diskCleaner.empty.title"))
                     .font(.system(size: 20, weight: .semibold))
 
-                Text("No junk files were found. Your Mac is running efficiently.")
+                Text(L("diskCleaner.empty.description"))
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
 
             Button(action: viewModel.startScan) {
-                Text("Scan Again")
+                Text(L("diskCleaner.scanAgain"))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(sectionColor)
             }
@@ -284,12 +291,12 @@ struct DiskCleanerView: View {
         VStack(spacing: 12) {
             // Selection controls
             HStack {
-                Text("Categories")
+                Text(L("diskCleaner.categories"))
                     .font(Theme.Typography.headline)
 
                 Spacer()
 
-                Button("Select All") {
+                Button(L("diskCleaner.selectAll")) {
                     viewModel.selectAll()
                 }
                 .buttonStyle(.plain)
@@ -299,7 +306,7 @@ struct DiskCleanerView: View {
                 Text("·")
                     .foregroundStyle(.tertiary)
 
-                Button("Deselect All") {
+                Button(L("diskCleaner.deselectAll")) {
                     viewModel.deselectAll()
                 }
                 .buttonStyle(.plain)
@@ -309,7 +316,7 @@ struct DiskCleanerView: View {
                 Button(action: viewModel.startScan) {
                     HStack(spacing: 4) {
                         Image(systemName: "arrow.clockwise")
-                        Text("Rescan")
+                        Text(L("diskCleaner.rescan"))
                     }
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.secondary)
@@ -348,10 +355,10 @@ struct DiskCleanerView: View {
     private var cleanButtonSection: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Selected: \(viewModel.formattedSelectedSize)")
+                Text(LFormat("diskCleaner.selected %@", viewModel.formattedSelectedSize))
                     .font(.system(size: 15, weight: .semibold))
 
-                Text("\(viewModel.selectedItemCount) items")
+                Text(LFormat("diskCleaner.itemCount %lld", viewModel.selectedItemCount))
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
@@ -359,7 +366,7 @@ struct DiskCleanerView: View {
             Spacer()
 
             GlassActionButton(
-                "Clean",
+                L("diskCleaner.clean"),
                 icon: "trash.fill",
                 color: sectionColor,
                 disabled: viewModel.selectedItemCount == 0
@@ -411,7 +418,7 @@ struct ScanningOverlay: View {
             }
 
             VStack(spacing: 4) {
-                Text("Scanning...")
+                Text(L("common.scanning"))
                     .font(.system(size: 20, weight: .semibold))
 
                 Text(category)

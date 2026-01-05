@@ -91,7 +91,7 @@ class DiskCleanerViewModel: ObservableObject {
                 hasScanned = true
 
             } catch {
-                errorMessage = "Scan failed: \(error.localizedDescription)"
+                errorMessage = L("diskCleaner.toast.scanFailed \(error.localizedDescription)")
             }
 
             isScanning = false
@@ -181,7 +181,7 @@ class DiskCleanerViewModel: ObservableObject {
             let totalItems = itemsToClean.count
 
             for (index, item) in itemsToClean.enumerated() {
-                cleaningCategory = item.category.rawValue
+                cleaningCategory = item.category.localizedName
                 cleaningProgress = Double(index) / Double(totalItems)
 
                 do {
@@ -215,11 +215,11 @@ class DiskCleanerViewModel: ObservableObject {
             // Show result
             let freedFormatted = ByteCountFormatter.string(fromByteCount: totalFreed, countStyle: .file)
             if failedCount == 0 {
-                showToastMessage("Cleaned \(freedFormatted) successfully!", type: .success)
+                showToastMessage(L("diskCleaner.toast.cleanSuccess \(freedFormatted)"), type: .success)
             } else if failedCount < totalItems {
-                showToastMessage("Cleaned \(freedFormatted) (\(failedCount) items failed)", type: .info)
+                showToastMessage(L("diskCleaner.toast.cleanPartial \(freedFormatted) \(failedCount)"), type: .info)
             } else {
-                showToastMessage("Failed to clean items", type: .error)
+                showToastMessage(L("diskCleaner.toast.cleanFailed"), type: .error)
             }
         }
     }
