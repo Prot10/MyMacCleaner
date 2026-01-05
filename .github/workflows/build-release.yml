@@ -11,13 +11,13 @@ on:
         required: true
 
 env:
-  XCODE_VERSION: '16.0'
+  XCODE_VERSION: '26.0'
   APP_NAME: MyMacCleaner
   SCHEME: MyMacCleaner
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
 
     steps:
       - name: Checkout code
@@ -137,7 +137,7 @@ jobs:
 
   # Optional: Signed build job (requires Apple Developer account)
   build-signed:
-    runs-on: macos-15
+    runs-on: macos-26
     if: ${{ false }}  # Disabled by default - enable when you have certificates
 
     steps:
