@@ -8,8 +8,6 @@ struct PermissionPromptView: View {
     let onContinueWithoutPermission: () -> Void
 
     @State private var isVisible = false
-    @State private var isHoveredGrant = false
-    @State private var isHoveredSkip = false
 
     var body: some View {
         VStack(spacing: Theme.Spacing.xl) {
@@ -119,31 +117,13 @@ struct PermissionPromptView: View {
     private var buttonsSection: some View {
         VStack(spacing: Theme.Spacing.sm) {
             // Grant permission button
-            Button(action: {
+            GlassActionButton(
+                "Open System Settings",
+                icon: "gear",
+                color: .blue
+            ) {
                 permissionsService.openFullDiskAccessSettings()
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "gear")
-                    Text("Open System Settings")
-                }
-                .font(Theme.Typography.body.weight(.semibold))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, Theme.Spacing.md)
-                .background(
-                    LinearGradient(
-                        colors: [.blue, .blue.opacity(0.8)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium))
             }
-            .buttonStyle(.plain)
-            .scaleEffect(isHoveredGrant ? 1.02 : 1.0)
-            .shadow(color: .blue.opacity(0.3), radius: isHoveredGrant ? 12 : 8, y: 4)
-            .animation(Theme.Animation.fast, value: isHoveredGrant)
-            .onHover { isHoveredGrant = $0 }
 
             // Skip button
             Button(action: onContinueWithoutPermission) {
@@ -154,9 +134,6 @@ struct PermissionPromptView: View {
                     .padding(.vertical, Theme.Spacing.sm)
             }
             .buttonStyle(.plain)
-            .opacity(isHoveredSkip ? 0.7 : 1.0)
-            .animation(Theme.Animation.fast, value: isHoveredSkip)
-            .onHover { isHoveredSkip = $0 }
 
             // Dismiss button for later
             Button(action: onDismiss) {
@@ -202,18 +179,13 @@ struct PermissionBanner: View {
             Spacer()
 
             // Grant button
-            Button(action: {
+            GlassActionButton(
+                "Grant",
+                icon: nil,
+                color: .orange
+            ) {
                 permissionsService.openFullDiskAccessSettings()
-            }) {
-                Text("Grant")
-                    .font(Theme.Typography.caption.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, Theme.Spacing.md)
-                    .padding(.vertical, Theme.Spacing.xs)
-                    .background(Color.orange)
-                    .clipShape(Capsule())
             }
-            .buttonStyle(.plain)
         }
         .padding(Theme.Spacing.md)
         .glassCard()
