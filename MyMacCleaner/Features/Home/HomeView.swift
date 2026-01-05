@@ -108,12 +108,12 @@ struct HomeView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text("Home")
                     .font(.system(size: 28, weight: .bold))
 
                 Text("Keep your Mac running smoothly")
-                    .font(.system(size: 15))
+                    .font(.system(size: 13))
                     .foregroundStyle(.secondary)
             }
 
@@ -184,7 +184,7 @@ struct HomeView: View {
     private var quickStatsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             Text("Quick Stats")
-                .font(.system(size: 15, weight: .semibold))
+                .font(Theme.Typography.headline)
                 .foregroundStyle(.secondary)
 
             LazyVGrid(columns: [
@@ -233,7 +233,7 @@ struct HomeView: View {
     private var quickActionsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             Text("Quick Actions")
-                .font(.system(size: 15, weight: .semibold))
+                .font(Theme.Typography.headline)
                 .foregroundStyle(.secondary)
 
             HStack(spacing: Theme.Spacing.md) {
@@ -381,15 +381,14 @@ struct StatCard: View {
         VStack(alignment: .leading, spacing: 0) {
             // Icon
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(color.opacity(0.2))
-                    .frame(width: 40, height: 40)
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(color.opacity(0.15))
+                    .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(color)
             }
-            .shadow(color: color.opacity(isHovered ? 0.4 : 0.2), radius: 8)
 
             Spacer()
 
