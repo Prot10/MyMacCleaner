@@ -156,7 +156,7 @@ class PortManagementViewModel: ObservableObject {
         }
     }
 
-    private func parseLsofOutput(_ output: String) -> [NetworkConnection] {
+    private nonisolated func parseLsofOutput(_ output: String) -> [NetworkConnection] {
         var connections: [NetworkConnection] = []
         let lines = output.components(separatedBy: "\n")
 
@@ -226,7 +226,7 @@ class PortManagementViewModel: ObservableObject {
         return connections
     }
 
-    private func parseAddressPort(_ string: String) -> (address: String, port: Int) {
+    private nonisolated func parseAddressPort(_ string: String) -> (address: String, port: Int) {
         // Format: address:port or [ipv6]:port
         if let lastColon = string.lastIndex(of: ":") {
             let address = String(string[..<lastColon])
