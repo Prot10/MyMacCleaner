@@ -30,7 +30,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		650DE29E2EE843C000C84520 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		650DE29E2EE843C000C84520 /* Exceptions for "MyMacCleaner" folder in "MyMacCleaner" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -43,7 +43,7 @@
 		650DE29D2EE843C000C84519 /* MyMacCleaner */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				650DE29E2EE843C000C84520 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				650DE29E2EE843C000C84520 /* Exceptions for "MyMacCleaner" folder in "MyMacCleaner" target */,
 			);
 			path = MyMacCleaner;
 			sourceTree = "<group>";
