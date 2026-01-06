@@ -175,7 +175,7 @@ class SpaceLensViewModel: ObservableObject {
         var directoryContents: [URL: [FileNode]] = [:]
         let maxFilesForProgress = 50000 // Assume max ~50k files for smooth progress
 
-        for case let fileURL as URL in enumerator {
+        while let fileURL = enumerator.nextObject() as? URL {
             fileCount += 1
 
             if fileCount % 200 == 0 {
