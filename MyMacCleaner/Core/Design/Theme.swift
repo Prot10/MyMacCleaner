@@ -35,7 +35,7 @@ enum Theme {
         static let error = Color.red
         static let info = Color.blue
 
-        // Section colors (7 distinct colors)
+        // Section colors (8 distinct colors)
         static let home = Color.blue                    // Blue
         static let storage = Color.orange               // Orange
         static let memory = Color.purple                // Purple
@@ -43,6 +43,7 @@ enum Theme {
         static let startup = Color.yellow               // Yellow
         static let ports = Color.cyan                   // Cyan / Light Blue
         static let health = Color.red                   // Red
+        static let permissions = Color.indigo           // Indigo
     }
 
     // MARK: - Typography
