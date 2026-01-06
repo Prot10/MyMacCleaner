@@ -24,6 +24,7 @@ MyMacCleaner is a free, open-source alternative to commercial Mac cleaning apps 
 | **Applications** | Uninstall apps completely with leftover detection |
 | **Port Management** | View and kill processes using network ports |
 | **System Health** | Manage startup items and monitor system stats |
+| **Permissions** | Review and manage folder access permissions |
 
 ## Screenshots
 
