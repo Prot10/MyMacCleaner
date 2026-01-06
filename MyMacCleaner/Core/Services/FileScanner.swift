@@ -208,7 +208,7 @@ actor FileScanner {
             return items
         }
 
-        for case let fileURL as URL in enumerator {
+        while let fileURL = enumerator.nextObject() as? URL {
             // Check depth
             let depth = fileURL.pathComponents.count - url.pathComponents.count
             if depth > maxDepth {
@@ -295,7 +295,7 @@ actor FileScanner {
             return 0
         }
 
-        for case let fileURL as URL in enumerator {
+        while let fileURL = enumerator.nextObject() as? URL {
             guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys),
                   resourceValues.isDirectory == false else {
                 continue

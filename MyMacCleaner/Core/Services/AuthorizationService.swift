@@ -67,10 +67,13 @@ final class AuthorizationService {
     // MARK: - Private Methods
 
     private func runWithAdminPrivileges(_ command: String) async -> Bool {
+        // Escape command before entering async block to avoid capturing self
+        let escapedCommand = escapeForAppleScript(command)
+
         return await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 let script = """
-                do shell script "\(self.escapeForAppleScript(command))" with administrator privileges
+                do shell script "\(escapedCommand)" with administrator privileges
                 """
 
                 var error: NSDictionary?
@@ -85,10 +88,13 @@ final class AuthorizationService {
     }
 
     private func runWithAdminPrivilegesAndCapture(_ command: String) async -> String? {
+        // Escape command before entering async block to avoid capturing self
+        let escapedCommand = escapeForAppleScript(command)
+
         return await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 let script = """
-                do shell script "\(self.escapeForAppleScript(command))" with administrator privileges
+                do shell script "\(escapedCommand)" with administrator privileges
                 """
 
                 var error: NSDictionary?
