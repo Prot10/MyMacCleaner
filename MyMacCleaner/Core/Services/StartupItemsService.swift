@@ -188,7 +188,7 @@ actor StartupItemsService {
         }
     }
 
-    nonisolated private static func parseBTMOutput(_ output: String) -> [StartupItem] {
+    private static nonisolated func parseBTMOutput(_ output: String) -> [StartupItem] {
         var items: [StartupItem] = []
         let lines = output.components(separatedBy: "\n")
 
@@ -505,7 +505,7 @@ actor StartupItemsService {
 
                             let name = parts[0]
                             let path = parts[1]
-                            // isHidden is parsed but not used currently (parts[2])
+                            // parts[2] contains isHidden but not used currently
 
                             let item = StartupItem(
                                 id: "loginitem:\(path)",
@@ -706,7 +706,7 @@ actor StartupItemsService {
 
     // MARK: - Code Signing
 
-    nonisolated private static func getCodeSigningTeam(for path: String) -> String? {
+    private static nonisolated func getCodeSigningTeam(for path: String) -> String? {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
         process.arguments = ["-dv", "--verbose=2", path]
