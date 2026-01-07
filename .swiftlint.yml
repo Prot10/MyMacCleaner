@@ -1,0 +1,72 @@
+# SwiftLint Configuration for MyMacCleaner
+
+# Paths to include
+included:
+  - MyMacCleaner
+
+# Paths to exclude
+excluded:
+  - MyMacCleaner/Resources
+  - MyMacCleanerTests
+  - MyMacCleanerUITests
+  - .build
+  - DerivedData
+
+# Disabled rules (too strict for this project)
+disabled_rules:
+  - trailing_whitespace
+  - line_length
+  - type_body_length
+  - file_length
+  - function_body_length
+  - cyclomatic_complexity
+  - nesting
+  - identifier_name
+  - large_tuple
+  - todo
+  - opening_brace
+  - statement_position
+
+# Enabled opt-in rules
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - discouraged_optional_boolean
+  - closure_spacing
+  - contains_over_first_not_nil
+  - fallthrough
+  - first_where
+  - last_where
+  - modifier_order
+  - overridden_super_call
+  - private_action
+  - private_outlet
+  - redundant_nil_coalescing
+  - sorted_first_last
+  - toggle_bool
+  - unavailable_function
+  - unneeded_parentheses_in_closure_argument
+  - vertical_parameter_alignment_on_call
+
+# Rule configurations
+force_cast:
+  severity: warning
+
+force_try:
+  severity: warning
+
+force_unwrapping:
+  severity: warning
+
+function_parameter_count:
+  warning: 6
+  error: 8
+
+type_name:
+  min_length: 2
+  max_length: 50
+
+# Reporter type (for CI)
+reporter: "xcode"

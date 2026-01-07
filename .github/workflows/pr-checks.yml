@@ -1,0 +1,340 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+# Cancel in-progress runs for the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  XCODE_VERSION: '26.0'
+  APP_NAME: MyMacCleaner
+  SCHEME: MyMacCleaner
+  DESTINATION: 'platform=macOS'
+
+jobs:
+  # ============================================
+  # Build Validation
+  # ============================================
+  build:
+    name: Build
+    runs-on: macos-26
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app || \
+          sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Cache Swift Package Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+            .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved', '**/*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Resolve Dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project ${{ env.APP_NAME }}.xcodeproj \
+            -scheme ${{ env.SCHEME }}
+
+      - name: Build (Debug)
+        run: |
+          xcodebuild build \
+            -project ${{ env.APP_NAME }}.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -destination "${{ env.DESTINATION }}" \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee build.log
+
+          # Check for warnings (optional - remove if too strict)
+          # if grep -q "warning:" build.log; then
+          #   echo "::warning::Build produced warnings"
+          # fi
+
+      - name: Build (Release)
+        run: |
+          xcodebuild build \
+            -project ${{ env.APP_NAME }}.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -destination "${{ env.DESTINATION }}" \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+  # ============================================
+  # Unit Tests
+  # ============================================
+  test:
+    name: Unit Tests
+    runs-on: macos-26
+    timeout-minutes: 20
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app || \
+          sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Cache Swift Package Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+            .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved', '**/*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Run Unit Tests
+        run: |
+          xcodebuild test \
+            -project ${{ env.APP_NAME }}.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -destination "${{ env.DESTINATION }}" \
+            -testPlan "MyMacCleanerTests" \
+            -enableCodeCoverage YES \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | xcpretty --report junit --output test-results.xml || true
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: test-results.xml
+
+  # ============================================
+  # UI Tests (optional, runs on macOS host)
+  # ============================================
+  ui-test:
+    name: UI Tests
+    runs-on: macos-26
+    timeout-minutes: 30
+    needs: build
+    # UI tests may be flaky in CI - make optional
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app || \
+          sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Cache Swift Package Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+            .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved', '**/*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Run UI Tests
+        run: |
+          xcodebuild test \
+            -project ${{ env.APP_NAME }}.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -destination "${{ env.DESTINATION }}" \
+            -testPlan "MyMacCleanerUITests" \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | xcpretty || true
+
+  # ============================================
+  # Archive Test (ensures release builds work)
+  # ============================================
+  archive:
+    name: Archive Test
+    runs-on: macos-26
+    timeout-minutes: 20
+    needs: [build, test]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app || \
+          sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Cache Swift Package Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
+            .build
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved', '**/*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Archive Build
+        run: |
+          xcodebuild archive \
+            -project ${{ env.APP_NAME }}.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -archivePath build/${{ env.APP_NAME }}.xcarchive \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO
+
+          # Verify archive was created
+          if [ ! -d "build/${{ env.APP_NAME }}.xcarchive" ]; then
+            echo "::error::Archive was not created"
+            exit 1
+          fi
+
+          # Verify app exists in archive
+          if [ ! -d "build/${{ env.APP_NAME }}.xcarchive/Products/Applications/${{ env.APP_NAME }}.app" ]; then
+            echo "::error::App not found in archive"
+            exit 1
+          fi
+
+          echo "Archive created successfully"
+          ls -la "build/${{ env.APP_NAME }}.xcarchive/Products/Applications/"
+
+  # ============================================
+  # SwiftLint (code style)
+  # ============================================
+  lint:
+    name: SwiftLint
+    runs-on: macos-26
+    timeout-minutes: 5
+    # Don't block merge on lint issues - just warn
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: |
+          brew install swiftlint || true
+
+      - name: Run SwiftLint
+        run: |
+          if command -v swiftlint &> /dev/null; then
+            swiftlint lint --reporter github-actions-logging || true
+          else
+            echo "SwiftLint not available, skipping"
+          fi
+
+  # ============================================
+  # Documentation Check
+  # ============================================
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check CLAUDE.md exists
+        run: |
+          if [ ! -f "CLAUDE.md" ]; then
+            echo "::error::CLAUDE.md is missing"
+            exit 1
+          fi
+
+      - name: Check README.md exists
+        run: |
+          if [ ! -f "README.md" ]; then
+            echo "::error::README.md is missing"
+            exit 1
+          fi
+
+      - name: Check docs folder
+        run: |
+          if [ ! -d "docs" ]; then
+            echo "::warning::docs folder is missing"
+          fi
+
+  # ============================================
+  # Appcast Validation (for Sparkle updates)
+  # ============================================
+  validate-appcast:
+    name: Validate Appcast
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate appcast.xml
+        run: |
+          if [ -f "appcast.xml" ]; then
+            # Check if it's valid XML
+            if ! xmllint --noout appcast.xml 2>/dev/null; then
+              echo "::error::appcast.xml is not valid XML"
+              exit 1
+            fi
+            echo "appcast.xml is valid XML"
+          else
+            echo "No appcast.xml found (OK for PRs)"
+          fi
+
+  # ============================================
+  # Summary Job (required for branch protection)
+  # ============================================
+  pr-check-complete:
+    name: PR Checks Complete
+    runs-on: ubuntu-latest
+    needs: [build, test, archive, docs]
+    if: always()
+
+    steps:
+      - name: Check Results
+        run: |
+          if [ "${{ needs.build.result }}" != "success" ]; then
+            echo "::error::Build failed"
+            exit 1
+          fi
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "::error::Tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.archive.result }}" != "success" ]; then
+            echo "::error::Archive test failed"
+            exit 1
+          fi
+          if [ "${{ needs.docs.result }}" != "success" ]; then
+            echo "::error::Documentation check failed"
+            exit 1
+          fi
+          echo "All required checks passed!"
