@@ -10,11 +10,14 @@
     "check": "astro check"
   },
   "dependencies": {
-    "astro": "^5.1.1",
-    "@astrojs/tailwind": "^6.0.2",
     "@astrojs/sitemap": "^3.2.1",
-    "tailwindcss": "^3.4.17",
-    "sharp": "^0.33.5"
+    "@astrojs/tailwind": "^6.0.2",
+    "@iconify-json/lucide": "^1.2.82",
+    "@iconify-json/simple-icons": "^1.2.65",
+    "astro": "^5.1.1",
+    "astro-icon": "^1.1.5",
+    "sharp": "^0.33.5",
+    "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
