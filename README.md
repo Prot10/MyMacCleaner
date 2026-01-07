@@ -6,6 +6,7 @@ A modern, open-source macOS system utility app with Apple's Liquid Glass UI desi
 ![Swift](https://img.shields.io/badge/Swift-5.9+-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/prot10)
+[![PayPal](https://img.shields.io/badge/PayPal-0070BA?style=flat&logo=paypal&logoColor=white)](https://paypal.me/andreaprotani99)
 
 **[Website](https://prot10.github.io/MyMacCleaner/)** | **[Documentation](https://prot10.github.io/MyMacCleaner/docs/)** | **[Download](https://github.com/Prot10/MyMacCleaner/releases/latest)**
 
@@ -135,6 +136,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you find MyMacCleaner useful, consider supporting the project:
 
+[![PayPal](https://img.shields.io/badge/PayPal-0070BA?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/andreaprotani99)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/prot10)
 
 - [Open an Issue](https://github.com/Prot10/MyMacCleaner/issues)
