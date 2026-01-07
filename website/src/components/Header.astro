@@ -11,18 +11,18 @@ const navItems = [
 <header class="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/10">
   <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16">
-      <!-- Logo -->
+      <!-- Logo (always visible) -->
       <a href="/MyMacCleaner/" class="flex items-center gap-3 group">
         <img
           src="/MyMacCleaner/icon-192.png"
           alt="MyMacCleaner"
           class="w-9 h-9 rounded-xl shadow-lg group-hover:shadow-xl transition-shadow"
         />
-        <span class="font-semibold text-white text-lg hidden sm:block">MyMacCleaner</span>
+        <span class="font-semibold text-white text-lg">MyMacCleaner</span>
       </a>
 
-      <!-- Navigation -->
-      <div class="flex items-center gap-1">
+      <!-- Desktop Navigation (hidden on mobile) -->
+      <div class="hidden md:flex items-center gap-1">
         {navItems.map((item) => (
           <a
             href={item.href}
@@ -44,7 +44,7 @@ const navItems = [
             title="Support the project"
           >
             <Icon name="lucide:heart" class="w-4 h-4" />
-            <span class="hidden sm:inline">Donate</span>
+            <span>Donate</span>
             <Icon name="lucide:chevron-down" class="w-3 h-3 ml-0.5" />
           </button>
           <div class="donate-menu absolute right-0 mt-2 w-48 rounded-xl bg-black/90 backdrop-blur-xl border border-white/10 shadow-xl opacity-0 invisible transition-all duration-200 z-50">
@@ -82,10 +82,101 @@ const navItems = [
         </a>
       </div>
 
-      <!-- Mobile Menu Button (hidden for now, can expand later) -->
-      <button class="md:hidden p-2 text-gray-300 hover:text-white" aria-label="Menu">
-        <Icon name="lucide:menu" class="w-6 h-6" />
+      <!-- Mobile Menu Button (visible on mobile only) -->
+      <button
+        id="mobile-menu-button"
+        class="md:hidden p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+        aria-label="Toggle menu"
+        aria-expanded="false"
+      >
+        <Icon name="lucide:menu" class="w-6 h-6 menu-icon" />
+        <Icon name="lucide:x" class="w-6 h-6 close-icon hidden" />
       </button>
     </div>
   </nav>
+
+  <!-- Mobile Menu (hidden by default) -->
+  <div id="mobile-menu" class="md:hidden hidden border-t border-white/10 bg-black/80 backdrop-blur-xl">
+    <div class="px-4 py-4 space-y-2">
+      {navItems.map((item) => (
+        <a
+          href={item.href}
+          target={item.external ? '_blank' : undefined}
+          rel={item.external ? 'noopener noreferrer' : undefined}
+          class="flex items-center gap-2 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+        >
+          {item.label}
+          {item.external && (
+            <Icon name="lucide:external-link" class="w-4 h-4 opacity-50" />
+          )}
+        </a>
+      ))}
+
+      <!-- Mobile Donate Options -->
+      <div class="border-t border-white/10 pt-2 mt-2">
+        <p class="px-4 py-2 text-xs text-gray-500 uppercase tracking-wider">Support</p>
+        <a
+          href="https://paypal.me/andreaprotani99"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+        >
+          <Icon name="simple-icons:paypal" class="w-5 h-5 text-[#003087]" />
+          PayPal
+        </a>
+        <a
+          href="https://buymeacoffee.com/prot10"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+        >
+          <Icon name="simple-icons:buymeacoffee" class="w-5 h-5 text-[#FFDD00]" />
+          Buy Me a Coffee
+        </a>
+      </div>
+
+      <!-- Mobile Download Button -->
+      <div class="pt-2">
+        <a
+          href="https://github.com/Prot10/MyMacCleaner/releases/latest"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="block w-full px-4 py-3 text-center font-medium text-white bg-primary hover:bg-primary-600 rounded-lg transition-colors shadow-lg shadow-primary/25"
+        >
+          Download
+        </a>
+      </div>
+    </div>
+  </div>
 </header>
+
+<script>
+  const mobileMenuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const menuIcon = mobileMenuButton?.querySelector('.menu-icon');
+  const closeIcon = mobileMenuButton?.querySelector('.close-icon');
+
+  mobileMenuButton?.addEventListener('click', () => {
+    const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+
+    // Toggle menu visibility
+    mobileMenu?.classList.toggle('hidden');
+
+    // Toggle icons
+    menuIcon?.classList.toggle('hidden');
+    closeIcon?.classList.toggle('hidden');
+
+    // Update aria-expanded
+    mobileMenuButton.setAttribute('aria-expanded', (!isExpanded).toString());
+  });
+
+  // Close menu when clicking a link
+  mobileMenu?.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileMenu.classList.add('hidden');
+      menuIcon?.classList.remove('hidden');
+      closeIcon?.classList.add('hidden');
+      mobileMenuButton?.setAttribute('aria-expanded', 'false');
+    });
+  });
+</script>
