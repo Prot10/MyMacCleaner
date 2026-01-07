@@ -157,3 +157,9 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-white/30;
 }
+
+/* Donate dropdown */
+.donate-dropdown:hover .donate-menu,
+.donate-dropdown:focus-within .donate-menu {
+  @apply opacity-100 visible;
+}

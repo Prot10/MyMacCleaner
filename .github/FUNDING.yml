@@ -11,4 +11,4 @@ issuehunt: # Replace with your IssueHunt username if you have one
 lfx_crowdfunding: # Replace with your LFX Crowdfunding project slug if you have one
 polar: # Replace with your Polar username if you have one
 buy_me_a_coffee: prot10
-custom: # Replace with up to 4 custom sponsorship URLs
+custom: ['https://paypal.me/andreaprotani99']
