@@ -30,6 +30,9 @@ class AppState: ObservableObject {
     /// Startup Items section state
     let startupItemsViewModel = StartupItemsViewModel()
 
+    /// Permissions section state
+    let permissionsViewModel = PermissionsViewModel()
+
     // MARK: - Initialization
 
     init() {

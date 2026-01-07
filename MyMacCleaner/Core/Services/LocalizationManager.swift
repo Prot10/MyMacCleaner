@@ -26,53 +26,105 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - Localized String Helper
+// MARK: - Thread-Safe Localization Cache
 
-/// Cache for loaded string dictionaries to avoid repeated file I/O
-private var stringsCache: [String: [String: String]] = [:]
-private let stringsCacheLock = NSLock()
+/// Thread-safe cache for loaded string dictionaries using a reader-writer pattern
+/// Uses a concurrent queue with barrier writes for optimal performance
+private final class LocalizationCache: @unchecked Sendable {
+    private var cache: [String: [String: String]] = [:]
+    private let queue = DispatchQueue(label: "com.mymaccleaner.localization", attributes: .concurrent)
 
-/// Load strings dictionary for a given language
-private func loadStrings(for languageCode: String) -> [String: String]? {
-    stringsCacheLock.lock()
-    defer { stringsCacheLock.unlock() }
+    /// Perform a full lookup with fallback to English in a single atomic operation
+    /// This prevents race conditions where the cache might change between lookups
+    func lookup(key: String, languageCode: String) -> String {
+        // Perform the entire lookup atomically using a sync read
+        return queue.sync {
+            // Try current language
+            let currentDict = getOrLoadStrings(for: languageCode)
+            if let value = currentDict?[key] {
+                return value
+            }
 
-    // Check cache first
-    if let cached = stringsCache[languageCode] {
-        return cached
+            // Fallback to English (if not already English)
+            if languageCode != "en" {
+                let englishDict = getOrLoadStrings(for: "en")
+                if let value = englishDict?[key] {
+                    return value
+                }
+            }
+
+            // Final fallback - return the key itself
+            return key
+        }
     }
 
-    // Try to load from the lproj folder
-    guard let lprojPath = Bundle.main.path(forResource: languageCode, ofType: "lproj") else {
-        print("[Localization] No lproj found for: \(languageCode)")
-        return nil
+    /// Clear all cached strings
+    func clear() {
+        queue.async(flags: .barrier) { [weak self] in
+            self?.cache.removeAll()
+            print("[Localization] Cache cleared")
+        }
     }
 
-    let stringsPath = (lprojPath as NSString).appendingPathComponent("Localizable.strings")
-    let stringsURL = URL(fileURLWithPath: stringsPath)
+    /// Get cached strings or load from disk (must be called within queue.sync)
+    private func getOrLoadStrings(for languageCode: String) -> [String: String]? {
+        // Check cache first
+        if let cached = cache[languageCode] {
+            return cached
+        }
 
-    // Load the plist using PropertyListSerialization for better UTF-16 handling
-    guard let data = try? Data(contentsOf: stringsURL),
-          let plist = try? PropertyListSerialization.propertyList(from: data, format: nil),
-          let dict = plist as? [String: String] else {
-        print("[Localization] Failed to load strings from: \(stringsPath)")
-        return nil
+        // Load from disk
+        guard let dict = loadFromDisk(languageCode: languageCode) else {
+            return nil
+        }
+
+        // Cache it (safe because we're in a sync block on the concurrent queue)
+        // For writes, we need to use barrier, but since this is within a sync read,
+        // we'll do a nested async barrier write
+        let dictCopy = dict
+        queue.async(flags: .barrier) { [weak self] in
+            // Double-check in case another thread loaded it
+            if self?.cache[languageCode] == nil {
+                self?.cache[languageCode] = dictCopy
+            }
+        }
+
+        return dict
     }
 
-    print("[Localization] Loaded \(dict.count) strings for: \(languageCode)")
+    /// Load strings dictionary from disk for a given language
+    private func loadFromDisk(languageCode: String) -> [String: String]? {
+        // Try to load from the lproj folder
+        guard let lprojPath = Bundle.main.path(forResource: languageCode, ofType: "lproj") else {
+            print("[Localization] No lproj found for: \(languageCode)")
+            return nil
+        }
 
-    // Cache it
-    stringsCache[languageCode] = dict
-    return dict
+        let stringsPath = (lprojPath as NSString).appendingPathComponent("Localizable.strings")
+        let stringsURL = URL(fileURLWithPath: stringsPath)
+
+        // Load the plist using PropertyListSerialization for better UTF-16 handling
+        guard let data = try? Data(contentsOf: stringsURL),
+              let plist = try? PropertyListSerialization.propertyList(from: data, format: nil),
+              let dict = plist as? [String: String] else {
+            print("[Localization] Failed to load strings from: \(stringsPath)")
+            return nil
+        }
+
+        print("[Localization] Loaded \(dict.count) strings for: \(languageCode)")
+        return dict
+    }
 }
+
+/// Shared localization cache instance
+private let localizationCache = LocalizationCache()
 
 /// Clear the strings cache (call when language changes)
 func clearLocalizationCache() {
-    stringsCacheLock.lock()
-    stringsCache.removeAll()
-    stringsCacheLock.unlock()
-    print("[Localization] Cache cleared")
+    localizationCache.clear()
 }
+
+// MARK: - Localized String Helpers
 
 /// Helper function to get localized string using the app's selected language
 /// Use for ALL localization: L("home.title"), L("common.cancel"), L("navigation.\(rawValue)")
@@ -80,21 +132,11 @@ func clearLocalizationCache() {
 /// IMPORTANT: This takes a plain String, NOT String.LocalizationValue!
 /// The old version using String.LocalizationValue was broken because "\(key)" on
 /// a LocalizationValue performs Apple's localization, not key extraction.
+///
+/// Thread-safe: Uses a reader-writer cache with atomic lookup operations.
 func L(_ key: String) -> String {
     let languageCode = LocalizationManager.shared.languageCode
-
-    // Load strings dictionary for current language
-    if let dict = loadStrings(for: languageCode), let value = dict[key] {
-        return value
-    }
-
-    // Fallback to English
-    if languageCode != "en", let dict = loadStrings(for: "en"), let value = dict[key] {
-        return value
-    }
-
-    // Final fallback - return the key itself
-    return key
+    return localizationCache.lookup(key: key, languageCode: languageCode)
 }
 
 /// Alias for backwards compatibility with code using L(key:)
@@ -106,20 +148,8 @@ func L(key: String) -> String {
 /// Example: LFormat("diskCleaner.itemsFound %lld", count)
 /// The key in String Catalog should include the format specifier
 func LFormat(_ keyPattern: String, _ args: CVarArg...) -> String {
-    let languageCode = LocalizationManager.shared.languageCode
-
-    // Try current language
-    if let dict = loadStrings(for: languageCode), let format = dict[keyPattern] {
-        return String(format: format, arguments: args)
-    }
-
-    // Fallback to English
-    if languageCode != "en", let dict = loadStrings(for: "en"), let format = dict[keyPattern] {
-        return String(format: format, arguments: args)
-    }
-
-    // Final fallback - return keyPattern with args substituted
-    return String(format: keyPattern, arguments: args)
+    let format = L(keyPattern)
+    return String(format: format, arguments: args)
 }
 
 // MARK: - Localization Manager

@@ -29,9 +29,22 @@
 		650DE2B32EE843C200C84519 /* MyMacCleanerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MyMacCleanerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		650DE29E2EE843C000C84520 /* Exceptions for "MyMacCleaner" folder in "MyMacCleaner" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 650DE29A2EE843C000C84519 /* MyMacCleaner */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		650DE29D2EE843C000C84519 /* MyMacCleaner */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				650DE29E2EE843C000C84520 /* Exceptions for "MyMacCleaner" folder in "MyMacCleaner" target */,
+			);
 			path = MyMacCleaner;
 			sourceTree = "<group>";
 		};

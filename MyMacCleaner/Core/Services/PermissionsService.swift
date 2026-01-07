@@ -18,31 +18,45 @@ class PermissionsService: ObservableObject {
     // MARK: - Full Disk Access
 
     /// Check if the app has Full Disk Access permission
+    /// Tests multiple FDA-protected paths to reliably detect permission status
     func checkFullDiskAccess() {
         isCheckingPermissions = true
 
-        // Test by trying to read a protected file
-        // Safari's bookmarks is a common test file
-        let testPaths = [
-            NSHomeDirectory() + "/Library/Safari/Bookmarks.plist",
-            NSHomeDirectory() + "/Library/Safari/CloudTabs.db",
-            "/Library/Application Support/com.apple.TCC/TCC.db"
-        ]
-
         var hasAccess = false
 
-        for path in testPaths {
-            if FileManager.default.isReadableFile(atPath: path) {
+        // Method 1: Try to read the user's TCC database (most reliable)
+        let tccPath = NSHomeDirectory() + "/Library/Application Support/com.apple.TCC/TCC.db"
+        if FileManager.default.isReadableFile(atPath: tccPath) {
+            hasAccess = true
+        }
+
+        // Method 2: Try Safari bookmarks
+        if !hasAccess {
+            let safariPath = NSHomeDirectory() + "/Library/Safari/Bookmarks.plist"
+            if FileManager.default.fileExists(atPath: safariPath) &&
+               FileManager.default.isReadableFile(atPath: safariPath) {
                 hasAccess = true
-                break
             }
         }
 
-        // Alternative: try to list contents of a protected directory
+        // Method 3: Try to list ~/Library/Mail contents
         if !hasAccess {
-            let protectedURL = URL(fileURLWithPath: NSHomeDirectory() + "/Library/Mail")
+            let mailPath = NSHomeDirectory() + "/Library/Mail"
+            if FileManager.default.fileExists(atPath: mailPath) {
+                do {
+                    _ = try FileManager.default.contentsOfDirectory(atPath: mailPath)
+                    hasAccess = true
+                } catch {
+                    // Access denied
+                }
+            }
+        }
+
+        // Method 4: Try to actually READ a protected file (not just check isReadableFile)
+        if !hasAccess {
+            let safariPath = NSHomeDirectory() + "/Library/Safari/Bookmarks.plist"
             do {
-                _ = try FileManager.default.contentsOfDirectory(at: protectedURL, includingPropertiesForKeys: nil)
+                _ = try Data(contentsOf: URL(fileURLWithPath: safariPath))
                 hasAccess = true
             } catch {
                 // Access denied

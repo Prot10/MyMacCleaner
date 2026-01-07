@@ -188,7 +188,7 @@ actor StartupItemsService {
         }
     }
 
-    private static func parseBTMOutput(_ output: String) -> [StartupItem] {
+    private static nonisolated func parseBTMOutput(_ output: String) -> [StartupItem] {
         var items: [StartupItem] = []
         let lines = output.components(separatedBy: "\n")
 
@@ -505,7 +505,7 @@ actor StartupItemsService {
 
                             let name = parts[0]
                             let path = parts[1]
-                            // isHidden is parsed but not used currently (parts[2])
+                            // parts[2] contains isHidden but not used currently
 
                             let item = StartupItem(
                                 id: "loginitem:\(path)",
@@ -574,16 +574,38 @@ actor StartupItemsService {
     private func setLaunchItemEnabled(_ item: StartupItem, enabled: Bool) async -> Bool {
         return await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
-                // For launch agents/daemons, we use launchctl to load/unload
+                // Get service name from plist filename (e.g., com.example.agent from com.example.agent.plist)
+                let serviceName = (item.path as NSString).lastPathComponent
+                    .replacingOccurrences(of: ".plist", with: "")
+
+                // Determine target (gui/uid for user agents, system for system daemons)
+                let uid = getuid()
+                let isUserAgent = item.path.contains("/Library/LaunchAgents") ||
+                                  item.path.contains("\(NSHomeDirectory())/Library/LaunchAgents")
+                let target = isUserAgent ? "gui/\(uid)" : "system"
+
                 let process = Process()
                 process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
 
                 if enabled {
-                    // Load the item
-                    process.arguments = ["load", "-w", item.path]
+                    // Modern approach: bootout then bootstrap (equivalent to unload then load)
+                    // This is safer than enable/disable which requires the service to be loaded
+                    if isUserAgent {
+                        // For user agents: bootstrap into user domain
+                        process.arguments = ["bootstrap", target, item.path]
+                    } else {
+                        // For system daemons: use load (requires admin)
+                        // Note: bootstrap for system services requires root
+                        process.arguments = ["load", "-w", item.path]
+                    }
                 } else {
-                    // Unload the item
-                    process.arguments = ["unload", "-w", item.path]
+                    if isUserAgent {
+                        // For user agents: bootout from user domain
+                        process.arguments = ["bootout", "\(target)/\(serviceName)"]
+                    } else {
+                        // For system daemons: use unload (requires admin)
+                        process.arguments = ["unload", "-w", item.path]
+                    }
                 }
 
                 process.standardOutput = FileHandle.nullDevice
@@ -592,7 +614,11 @@ actor StartupItemsService {
                 do {
                     try process.run()
                     process.waitUntilExit()
-                    continuation.resume(returning: process.terminationStatus == 0)
+
+                    // bootout may return non-zero if service wasn't running, which is OK
+                    let success = process.terminationStatus == 0 ||
+                                  (!enabled && process.terminationStatus == 3) // "No such process" is OK for unload
+                    continuation.resume(returning: success)
                 } catch {
                     print("Error setting item enabled: \(error)")
                     continuation.resume(returning: false)
@@ -680,7 +706,7 @@ actor StartupItemsService {
 
     // MARK: - Code Signing
 
-    private static func getCodeSigningTeam(for path: String) -> String? {
+    private static nonisolated func getCodeSigningTeam(for path: String) -> String? {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
         process.arguments = ["-dv", "--verbose=2", path]

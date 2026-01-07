@@ -80,23 +80,28 @@ actor AppUpdateChecker {
     func checkUpdates(for appURLs: [URL], progress: @escaping (Double) -> Void) async -> [AppUpdate] {
         var updates: [AppUpdate] = []
         let total = appURLs.count
-        var completed = 0
 
-        await withTaskGroup(of: AppUpdate?.self) { group in
+        let results = await withTaskGroup(of: AppUpdate?.self, returning: [AppUpdate?].self) { group in
             for appURL in appURLs {
                 group.addTask {
                     await self.checkSparkleUpdate(for: appURL)
                 }
             }
 
+            var collected: [AppUpdate?] = []
             for await update in group {
-                completed += 1
+                collected.append(update)
+                let currentProgress = Double(collected.count) / Double(total)
                 await MainActor.run {
-                    progress(Double(completed) / Double(total))
+                    progress(currentProgress)
                 }
-                if let update = update, update.hasUpdate {
-                    updates.append(update)
-                }
+            }
+            return collected
+        }
+
+        for result in results {
+            if let update = result, update.hasUpdate {
+                updates.append(update)
             }
         }
 

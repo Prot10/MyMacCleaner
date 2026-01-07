@@ -13,6 +13,48 @@ MyMacCleaner needs certain permissions to access system files and perform cleanu
 3. **Graceful degradation** - The app works with limited features if you decline
 4. **Minimal access** - We request only what's necessary for each feature
 
+## Permissions Management Page
+
+MyMacCleaner includes a dedicated **Permissions** page in the sidebar (indigo icon) where you can review and manage all folder access permissions.
+
+### Features
+
+- **Visual Status Overview**: See at a glance which folders the app can and cannot access
+- **Category Organization**: Permissions are grouped into logical categories:
+  - **Full Disk Access**: TCC Database, Safari data, Mail Library
+  - **User Folders**: Downloads, Documents, Desktop
+  - **System Folders**: System Caches, Logs, Launch Agents/Daemons
+  - **Application Data**: User Caches, Browser Caches, Xcode data, Trash
+  - **Startup Paths**: User and System Launch Agents/Daemons
+- **Expandable Cards**: Click any category to see individual folder permissions
+- **Grant Permissions**: Request access directly from the app:
+  - **TCC Folders** (Downloads, Documents, Desktop): Click "Grant" to trigger the macOS permission dialog
+  - **FDA Folders**: Click the gear button to open System Settings
+- **Revoke Permissions**: Open the appropriate System Settings pane to revoke access
+- **Auto-Refresh**: Permissions status updates automatically when you return from System Settings
+
+### Status Icons
+
+| Icon | Status | Meaning |
+|------|--------|---------|
+| ✓ (Green) | Accessible | App can read this folder |
+| ✕ (Red) | Denied | No access - permission needed |
+| ? (Orange) | Unknown | Folder doesn't exist or status unclear |
+
+### Using the Permissions Page
+
+1. **Navigate** to the Permissions section in the sidebar
+2. **Review** the summary card showing accessible/total folders
+3. **Expand** any category to see individual folder status
+4. **Grant** access by clicking the green "Grant" button (for TCC folders) or blue gear button (for FDA folders)
+5. **Revoke** access by clicking the red "Revoke" button to open System Settings
+
+### macOS Limitations
+
+- **Full Disk Access**: Cannot be granted programmatically - you must enable it manually in System Settings
+- **Permission Revocation**: macOS does not allow apps to revoke their own permissions - must be done in System Settings
+- **TCC Dialog**: Only shown once per folder - if dismissed, use "Reset" in System Settings to trigger again
+
 ## Required Permissions
 
 ### Full Disk Access (FDA)
@@ -72,6 +114,16 @@ System Settings > Privacy & Security > Full Disk Access
 ## Checking Permission Status
 
 ### In MyMacCleaner
+
+**Option 1: Permissions Page (Recommended)**
+
+Click the **Permissions** section in the sidebar to:
+- View all folder permissions at a glance
+- See which categories have full/partial/no access
+- Grant or revoke permissions directly
+- Refresh status after making changes
+
+**Option 2: Settings > Permissions**
 
 Go to **MyMacCleaner > Settings > Permissions** to:
 - View Full Disk Access status

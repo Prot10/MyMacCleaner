@@ -80,7 +80,7 @@ struct ApplicationsView: View {
                 VStack {
                     ToastView(
                         message: viewModel.toastMessage,
-                        type: toastType,
+                        type: viewModel.toastType,
                         onDismiss: viewModel.dismissToast
                     )
                     .padding(.top, Theme.Spacing.lg)
@@ -108,14 +108,6 @@ struct ApplicationsView: View {
             }
             // Start background discovery when view appears
             viewModel.startBackgroundDiscovery()
-        }
-    }
-
-    private var toastType: HomeViewModel.ToastType {
-        switch viewModel.toastType {
-        case .success: return .success
-        case .error: return .error
-        case .info: return .info
         }
     }
 
