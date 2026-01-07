@@ -923,6 +923,53 @@ MyMacCleaner/
 
 ---
 
+### 2026-01-07 - Comprehensive PR CI Workflow
+
+**Session Goal**: Add comprehensive CI checks for pull requests
+
+**Completed**:
+
+**PR Checks Workflow:**
+- Created `.github/workflows/pr-checks.yml` with:
+  - **Build Job**: Debug + Release builds on macOS 26
+  - **Unit Tests**: Runs test suite with code coverage
+  - **UI Tests**: Optional (continue-on-error) UI test execution
+  - **Archive Test**: Verifies release archive creation works
+  - **SwiftLint**: Code style checking (non-blocking)
+  - **Documentation**: Verifies CLAUDE.md and README.md exist
+  - **Appcast Validation**: XML validation for Sparkle feed
+  - **Summary Job**: Required check for branch protection (`pr-check-complete`)
+
+**Additional Features:**
+- Concurrency control: Cancels in-progress runs for same PR
+- SPM caching: Faster builds via cached dependencies
+- Timeout limits: Prevents stuck jobs
+- Artifact upload: Test results saved for review
+
+**SwiftLint Configuration:**
+- Created `.swiftlint.yml` with sensible defaults
+- Disabled overly strict rules (line_length, file_length, etc.)
+- Enabled useful opt-in rules (force_unwrapping, empty_count, etc.)
+- Excluded test files and resources
+
+**Files Created**:
+- `.github/workflows/pr-checks.yml`
+- `.swiftlint.yml`
+
+**Files Modified**:
+- `CLAUDE.md` (this changelog entry)
+
+**Build Status**: SUCCESS
+
+**Branch Protection Setup (Manual)**:
+User should configure in GitHub: Settings > Branches > Add rule for `main`:
+- Require pull request before merging
+- Require status checks: `pr-check-complete`
+- Require conversation resolution
+- Restrict who can push (optional - only owner)
+
+---
+
 ## Constraints & Guidelines
 
 ### Code Quality
