@@ -48,6 +48,7 @@ enum NavigationSection: String, CaseIterable, Identifiable {
     case startupItems
     case portManagement
     case systemHealth
+    case permissions
 
     var id: String { rawValue }
 
@@ -60,6 +61,7 @@ enum NavigationSection: String, CaseIterable, Identifiable {
         case .startupItems: return "power.circle.fill"
         case .portManagement: return "network"
         case .systemHealth: return "heart.text.square.fill"
+        case .permissions: return "lock.shield.fill"
         }
     }
 
@@ -80,6 +82,7 @@ enum NavigationSection: String, CaseIterable, Identifiable {
         case .startupItems: return Theme.Colors.startup   // Yellow
         case .portManagement: return Theme.Colors.ports   // Cyan
         case .systemHealth: return Theme.Colors.health    // Red
+        case .permissions: return Theme.Colors.permissions // Indigo
         }
     }
 }
@@ -365,6 +368,8 @@ struct DetailContentView: View {
             PortManagementView(viewModel: appState.portManagementViewModel)
         case .systemHealth:
             SystemHealthView(viewModel: appState.systemHealthViewModel)
+        case .permissions:
+            PermissionsView(viewModel: appState.permissionsViewModel)
         }
     }
 }

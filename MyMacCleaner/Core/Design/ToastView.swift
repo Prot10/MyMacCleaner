@@ -1,35 +1,45 @@
 import SwiftUI
 
-// MARK: - Toast View
+// MARK: - Shared Toast Type
 
-struct ToastView: View {
-    let message: String
-    let type: HomeViewModel.ToastType
-    let onDismiss: () -> Void
-
-    @State private var isVisible = false
+/// Shared toast notification type used across all ViewModels
+/// Consolidates the previously duplicated ToastType enums
+enum ToastType: Sendable {
+    case success
+    case error
+    case info
 
     var icon: String {
-        switch type {
+        switch self {
         case .success: return "checkmark.circle.fill"
         case .error: return "xmark.circle.fill"
         case .info: return "info.circle.fill"
         }
     }
 
-    var iconColor: Color {
-        switch type {
+    var color: Color {
+        switch self {
         case .success: return .green
         case .error: return .red
         case .info: return .blue
         }
     }
+}
+
+// MARK: - Toast View
+
+struct ToastView: View {
+    let message: String
+    let type: ToastType
+    let onDismiss: () -> Void
+
+    @State private var isVisible = false
 
     var body: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            Image(systemName: icon)
+            Image(systemName: type.icon)
                 .font(.title3)
-                .foregroundStyle(iconColor)
+                .foregroundStyle(type.color)
 
             Text(message)
                 .font(Theme.Typography.subheadline)
@@ -52,7 +62,7 @@ struct ToastView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: Theme.CornerRadius.large)
-                .strokeBorder(iconColor.opacity(0.3), lineWidth: 1)
+                .strokeBorder(type.color.opacity(0.3), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.15), radius: 20, y: 10)
         .opacity(isVisible ? 1 : 0)

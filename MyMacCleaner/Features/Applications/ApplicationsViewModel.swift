@@ -62,10 +62,6 @@ class ApplicationsViewModel: ObservableObject {
         }
     }
 
-    enum ToastType {
-        case success, error, info
-    }
-
     // MARK: - Private Properties
 
     private var discoveryTask: Task<Void, Never>?

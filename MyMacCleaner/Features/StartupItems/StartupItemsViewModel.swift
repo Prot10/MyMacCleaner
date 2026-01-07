@@ -24,10 +24,6 @@ class StartupItemsViewModel: ObservableObject {
     @Published var toastMessage = ""
     @Published var toastType: ToastType = .success
 
-    enum ToastType {
-        case success, error, info
-    }
-
     enum SortOrder: String, CaseIterable {
         case name
         case type

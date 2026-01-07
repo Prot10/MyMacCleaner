@@ -78,7 +78,8 @@ MyMacCleaner/
     │   │   ├── HomebrewService.swift
     │   │   └── LocalizationManager.swift
     │   ├── Models/
-    │   │   └── ScanResult.swift
+    │   │   ├── ScanResult.swift
+    │   │   └── PermissionCategory.swift
     │   └── Extensions/
     ├── Features/
     │   ├── Home/
@@ -98,7 +99,14 @@ MyMacCleaner/
     │   ├── Performance/
     │   ├── Applications/
     │   ├── PortManagement/
-    │   └── SystemHealth/
+    │   ├── SystemHealth/
+    │   ├── StartupItems/
+    │   └── Permissions/
+    │       ├── PermissionsView.swift
+    │       ├── PermissionsViewModel.swift
+    │       └── Components/
+    │           ├── PermissionCategoryCard.swift
+    │           └── PermissionFolderRow.swift
     ├── Resources/
     │   └── Assets.xcassets/
     └── MyMacCleaner.entitlements
@@ -828,6 +836,90 @@ MyMacCleaner/
 **Build Status**: SUCCESS
 
 **Release Status**: v1.0.0 PUBLISHED
+
+---
+
+### 2026-01-05 - Permissions Management Page & Warning Fixes
+
+**Session Goal**: Add new Permissions page for reviewing and managing folder access permissions, fix all compiler warnings
+
+**Completed**:
+
+**Permissions Management Page:**
+- Created PermissionCategory.swift data models:
+  - PermissionCategoryType enum (fullDiskAccess, userFolders, systemFolders, applicationData, startupPaths)
+  - FolderAccessInfo struct (path, displayName, status, requiresFDA, canTriggerTCCDialog)
+  - FolderAccessStatus enum (accessible, denied, notExists, checking)
+  - PermissionCategoryState struct for UI state
+- Created PermissionsViewModel.swift:
+  - buildCategories() creates all 5 category states with folder paths
+  - checkAllPermissions() tests actual read access to each folder
+  - requestFolderAccess() triggers TCC dialog for user folders
+  - revokeFolderAccess() opens appropriate System Settings pane
+  - Auto-refresh on app activation
+- Created PermissionFolderRow.swift component:
+  - Status icon (green checkmark / red X / orange ?)
+  - Folder displayName and path
+  - "Grant" button (green for TCC, blue gear for FDA)
+  - "Revoke" button (red, opens System Settings)
+- Created PermissionCategoryCard.swift:
+  - Expandable glassCard with header showing category status
+  - Lists all folders with PermissionFolderRow
+- Created PermissionsView.swift:
+  - Header with title, subtitle, and refresh button
+  - Summary card showing X/Y folders accessible
+  - Expandable category cards
+  - Auto-refresh on NSApplication.didBecomeActiveNotification
+- Updated ContentView.swift:
+  - Added NavigationSection.permissions case
+  - Icon: "lock.shield.fill", Color: Theme.Colors.permissions (indigo)
+- Updated AppState.swift:
+  - Added permissionsViewModel property
+- Updated Theme.swift:
+  - Added permissions color (indigo)
+- Updated Localizable.xcstrings:
+  - Added 25+ translation keys (EN/IT/ES) for permissions UI
+
+**Warning Fixes:**
+- Fixed AuthorizationService.swift:73,91 - "capture of 'self' with non-Sendable type"
+  - Moved escapeForAppleScript() call before async block to capture escaped string instead of self
+- Fixed SpaceLensViewModel.swift:178 - "makeIterator unavailable from async"
+  - Changed `for case let fileURL as URL in enumerator` to `while let fileURL = enumerator.nextObject() as? URL`
+- Fixed PortManagementViewModel.swift:148 - "call to actor-isolated method"
+  - Made parseLsofOutput() and parseAddressPort() nonisolated functions
+- Fixed FileScanner.swift:211,298 - "makeIterator unavailable from async"
+  - Changed both for-in loops to while-let pattern
+- Fixed AppUpdateChecker.swift:95 - "reference to captured var"
+  - Used collected.count instead of mutable captured variable
+- Fixed StartupItemsService.swift:180,520 - "call to actor-isolated method"
+  - Reordered modifiers to `private static nonisolated func` for parseBTMOutput and getCodeSigningTeam
+
+**Files Created**:
+- `MyMacCleaner/Core/Models/PermissionCategory.swift`
+- `MyMacCleaner/Features/Permissions/PermissionsView.swift`
+- `MyMacCleaner/Features/Permissions/PermissionsViewModel.swift`
+- `MyMacCleaner/Features/Permissions/Components/PermissionCategoryCard.swift`
+- `MyMacCleaner/Features/Permissions/Components/PermissionFolderRow.swift`
+
+**Files Modified**:
+- `MyMacCleaner/App/ContentView.swift` (added permissions navigation)
+- `MyMacCleaner/App/AppState.swift` (added permissionsViewModel)
+- `MyMacCleaner/Core/Design/Theme.swift` (added permissions color)
+- `MyMacCleaner/Core/Services/AuthorizationService.swift` (fixed self capture warning)
+- `MyMacCleaner/Core/Services/FileScanner.swift` (fixed makeIterator warning)
+- `MyMacCleaner/Core/Services/AppUpdateChecker.swift` (fixed captured var warning)
+- `MyMacCleaner/Core/Services/StartupItemsService.swift` (fixed actor-isolated warnings)
+- `MyMacCleaner/Features/SpaceLens/SpaceLensViewModel.swift` (fixed makeIterator warning)
+- `MyMacCleaner/Features/PortManagement/PortManagementViewModel.swift` (fixed actor-isolated warning)
+- `MyMacCleaner/Resources/Localizable.xcstrings` (added permissions translations)
+
+**Key Technical Decisions**:
+- TCC folders (Downloads, Documents, Desktop) trigger system permission dialog via FileManager.contentsOfDirectory()
+- FDA folders cannot trigger dialog programmatically - show "Open Settings" button
+- Permission revocation not possible programmatically on macOS - opens appropriate System Settings pane
+- Auto-refresh permissions when app becomes active (user returns from System Settings)
+
+**Build Status**: SUCCESS (0 warnings)
 
 ---
 

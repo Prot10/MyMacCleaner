@@ -36,3 +36,7 @@ npm-debug.log*
 .env
 .env.local
 .env.*.local
+
+# Profiling
+*.profraw
+*.profdata

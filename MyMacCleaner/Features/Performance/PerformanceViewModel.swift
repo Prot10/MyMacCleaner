@@ -38,10 +38,6 @@ class PerformanceViewModel: ObservableObject {
     @Published var toastMessage = ""
     @Published var toastType: ToastType = .success
 
-    enum ToastType {
-        case success, error, info
-    }
-
     // MARK: - Private Properties
 
     private var monitorTimer: Timer?
@@ -64,6 +60,7 @@ class PerformanceViewModel: ObservableObject {
 
     deinit {
         monitorTimer?.invalidate()
+        processTimer?.invalidate()
     }
 
     // MARK: - Monitoring
@@ -256,8 +253,9 @@ class PerformanceViewModel: ObservableObject {
             var adminResults: [Bool] = []
             if !adminCommands.isEmpty {
                 // Show first admin task as running
-                if let firstAdmin = adminTasks.first {
-                    runAllCurrentIndex = maintenanceTasks.firstIndex(where: { $0.id == firstAdmin.id })! + 1
+                if let firstAdmin = adminTasks.first,
+                   let firstAdminIndex = maintenanceTasks.firstIndex(where: { $0.id == firstAdmin.id }) {
+                    runAllCurrentIndex = firstAdminIndex + 1
                     runningTaskId = firstAdmin.id
                     taskResults[firstAdmin.id] = .running
                 }
@@ -279,7 +277,9 @@ class PerformanceViewModel: ObservableObject {
                     continue
                 }
 
-                runAllCurrentIndex = maintenanceTasks.firstIndex(where: { $0.id == task.id })! + 1
+                if let taskIndex = maintenanceTasks.firstIndex(where: { $0.id == task.id }) {
+                    runAllCurrentIndex = taskIndex + 1
+                }
                 runningTaskId = task.id
                 taskProgress = 0
                 taskResults[task.id] = .running
@@ -309,9 +309,9 @@ class PerformanceViewModel: ObservableObject {
 
             // Show summary toast
             if failedCount == 0 {
-                showToastMessage("All \(successCount) tasks completed successfully!", type: .success)
+                showToastMessage(LFormat("performance.toast.allCompleted %lld", successCount), type: .success)
             } else {
-                showToastMessage("\(successCount) succeeded, \(failedCount) failed or cancelled", type: .info)
+                showToastMessage(LFormat("performance.toast.partialCompleted %lld %lld", successCount, failedCount), type: .info)
             }
 
             // Clear results after a delay
@@ -474,34 +474,6 @@ class PerformanceViewModel: ObservableObject {
                     continuation.resume(returning: [])
                 }
             }
-        }
-    }
-
-    private func parseMemoryString(_ str: String) -> Int {
-        // Remove whitespace and + suffix, convert to uppercase
-        var cleanStr = str.trimmingCharacters(in: .whitespaces).uppercased()
-        cleanStr = cleanStr.replacingOccurrences(of: "+", with: "")
-        cleanStr = cleanStr.replacingOccurrences(of: "-", with: "")
-
-        if cleanStr.hasSuffix("G") || cleanStr.hasSuffix("GB") {
-            let numStr = cleanStr.replacingOccurrences(of: "GB", with: "").replacingOccurrences(of: "G", with: "")
-            let num = Double(numStr) ?? 0
-            return Int(num * 1024 * 1024) // GB to KB
-        } else if cleanStr.hasSuffix("M") || cleanStr.hasSuffix("MB") {
-            let numStr = cleanStr.replacingOccurrences(of: "MB", with: "").replacingOccurrences(of: "M", with: "")
-            let num = Double(numStr) ?? 0
-            return Int(num * 1024) // MB to KB
-        } else if cleanStr.hasSuffix("K") || cleanStr.hasSuffix("KB") {
-            let numStr = cleanStr.replacingOccurrences(of: "KB", with: "").replacingOccurrences(of: "K", with: "")
-            let num = Double(numStr) ?? 0
-            return Int(num) // Already KB
-        } else if cleanStr.hasSuffix("B") {
-            let numStr = cleanStr.replacingOccurrences(of: "B", with: "")
-            let num = Double(numStr) ?? 0
-            return Int(num / 1024) // Bytes to KB
-        } else {
-            // Assume bytes if no suffix
-            return Int((Double(cleanStr) ?? 0) / 1024)
         }
     }
 

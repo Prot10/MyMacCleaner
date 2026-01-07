@@ -47,7 +47,7 @@ struct StartupItemsView: View {
                 VStack {
                     ToastView(
                         message: viewModel.toastMessage,
-                        type: toastType,
+                        type: viewModel.toastType,
                         onDismiss: viewModel.dismissToast
                     )
                     .padding(.top, Theme.Spacing.lg)
@@ -89,14 +89,6 @@ struct StartupItemsView: View {
             withAnimation(Theme.Animation.springSmooth) {
                 isVisible = true
             }
-        }
-    }
-
-    private var toastType: HomeViewModel.ToastType {
-        switch viewModel.toastType {
-        case .success: return .success
-        case .error: return .error
-        case .info: return .info
         }
     }
 
