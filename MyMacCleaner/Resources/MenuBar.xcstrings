@@ -1,0 +1,328 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "menuBar.action.openApp": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open App"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir App"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri App"
+          }
+        }
+      }
+    },
+    "menuBar.action.scan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smart Scan"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escaneo Inteligente"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scansione Rapida"
+          }
+        }
+      }
+    },
+    "menuBar.cpu": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU"
+          }
+        }
+      }
+    },
+    "menuBar.disk": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disk"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disco"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disco"
+          }
+        }
+      }
+    },
+    "menuBar.displayMode.compact": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compact"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compacto"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compatto"
+          }
+        }
+      }
+    },
+    "menuBar.displayMode.cpuAndRam": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU & RAM"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU y RAM"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU e RAM"
+          }
+        }
+      }
+    },
+    "menuBar.displayMode.cpuOnly": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU Only"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo CPU"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo CPU"
+          }
+        }
+      }
+    },
+    "menuBar.displayMode.ramOnly": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RAM Only"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo RAM"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo RAM"
+          }
+        }
+      }
+    },
+    "menuBar.lastUpdate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live monitoring"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monitoreo en vivo"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monitoraggio in tempo reale"
+          }
+        }
+      }
+    },
+    "menuBar.memory": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memory"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoria"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoria"
+          }
+        }
+      }
+    },
+    "menuBar.memory.pressure.critical": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memory pressure critical"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presión de memoria crítica"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pressione memoria critica"
+          }
+        }
+      }
+    },
+    "menuBar.memory.pressure.normal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memory pressure normal"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presión de memoria normal"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pressione memoria normale"
+          }
+        }
+      }
+    },
+    "menuBar.memory.pressure.warning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memory pressure elevated"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presión de memoria elevada"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pressione memoria elevata"
+          }
+        }
+      }
+    },
+    "menuBar.quit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salir"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esci"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.1"
+}
