@@ -1,5 +1,6 @@
 import Foundation
 import CryptoKit
+import SwiftUI
 
 // MARK: - Duplicate Group Model
 
@@ -119,14 +120,36 @@ enum FileType: String, CaseIterable {
     }
 }
 
-import SwiftUI
-
 // MARK: - Duplicate Scanner
 
 actor DuplicateScanner {
     static let shared = DuplicateScanner()
 
+    private var isCancelled = false
+
+    // Files to skip during scanning
+    private let skipFileNames: Set<String> = [
+        ".DS_Store", ".localized", ".Spotlight-V100", ".Trashes",
+        ".fseventsd", ".TemporaryItems", "Thumbs.db", "desktop.ini",
+        ".git", ".svn", ".hg"
+    ]
+
+    // Extensions to skip (system/temp files)
+    private let skipExtensions: Set<String> = [
+        "tmp", "temp", "swp", "swo", "lock", "pid"
+    ]
+
     private init() {}
+
+    // MARK: - Cancellation
+
+    func cancel() {
+        isCancelled = true
+    }
+
+    private func resetCancellation() {
+        isCancelled = false
+    }
 
     // MARK: - Main Scan
 
@@ -141,6 +164,7 @@ actor DuplicateScanner {
         minSize: Int64 = 1024,
         progress: @escaping (Double, String) -> Void
     ) async -> [DuplicateGroup] {
+        resetCancellation()
         var duplicateGroups: [DuplicateGroup] = []
 
         await MainActor.run { progress(0.05, L("duplicates.scan.enumerating")) }
@@ -148,20 +172,69 @@ actor DuplicateScanner {
         // Step 1: Enumerate all files and group by size
         var sizeGroups: [Int64: [URL]] = [:]
         var totalFiles = 0
+        var lastProgressUpdate = Date()
+
+        let resourceKeys: Set<URLResourceKey> = [
+            .fileSizeKey,
+            .isDirectoryKey,
+            .isSymbolicLinkKey,
+            .isReadableKey,
+            .contentModificationDateKey
+        ]
 
         guard let enumerator = FileManager.default.enumerator(
             at: path,
-            includingPropertiesForKeys: [.fileSizeKey, .isDirectoryKey, .contentModificationDateKey],
+            includingPropertiesForKeys: Array(resourceKeys),
             options: [.skipsHiddenFiles, .skipsPackageDescendants]
         ) else {
+            await MainActor.run { progress(1.0, L("common.complete")) }
             return []
         }
 
-        while let fileURL = enumerator.nextObject() as? URL {
-            guard let resourceValues = try? fileURL.resourceValues(forKeys: [.fileSizeKey, .isDirectoryKey]),
-                  let isDirectory = resourceValues.isDirectory,
-                  !isDirectory,
-                  let fileSize = resourceValues.fileSize,
+        // Enumerate files with safety checks
+        while let item = enumerator.nextObject() {
+            // Check for cancellation
+            if isCancelled {
+                await MainActor.run { progress(1.0, L("duplicates.scan.cancelled")) }
+                return []
+            }
+
+            guard let fileURL = item as? URL else { continue }
+
+            // Get resource values safely
+            guard let resourceValues = try? fileURL.resourceValues(forKeys: resourceKeys) else {
+                continue
+            }
+
+            // Skip directories
+            if resourceValues.isDirectory == true {
+                continue
+            }
+
+            // Skip symbolic links to avoid infinite loops
+            if resourceValues.isSymbolicLink == true {
+                continue
+            }
+
+            // Skip unreadable files
+            if resourceValues.isReadable == false {
+                continue
+            }
+
+            // Skip system files by name
+            let fileName = fileURL.lastPathComponent
+            if skipFileNames.contains(fileName) {
+                continue
+            }
+
+            // Skip by extension
+            let ext = fileURL.pathExtension.lowercased()
+            if skipExtensions.contains(ext) {
+                continue
+            }
+
+            // Check file size
+            guard let fileSize = resourceValues.fileSize,
                   Int64(fileSize) >= minSize else {
                 continue
             }
@@ -169,6 +242,21 @@ actor DuplicateScanner {
             let size = Int64(fileSize)
             sizeGroups[size, default: []].append(fileURL)
             totalFiles += 1
+
+            // Throttle progress updates to every 100ms
+            let now = Date()
+            if now.timeIntervalSince(lastProgressUpdate) > 0.1 {
+                lastProgressUpdate = now
+                let currentProgress = min(0.15, 0.05 + Double(totalFiles) / 100000.0 * 0.1)
+                await MainActor.run {
+                    progress(currentProgress, LFormat("duplicates.scan.foundFiles %lld", Int64(totalFiles)))
+                }
+            }
+        }
+
+        if isCancelled {
+            await MainActor.run { progress(1.0, L("duplicates.scan.cancelled")) }
+            return []
         }
 
         await MainActor.run { progress(0.2, LFormat("duplicates.scan.foundFiles %lld", Int64(totalFiles))) }
@@ -178,33 +266,57 @@ actor DuplicateScanner {
         let totalGroupsToProcess = potentialDuplicates.count
         var processedGroups = 0
 
+        if totalGroupsToProcess == 0 {
+            await MainActor.run { progress(1.0, L("common.complete")) }
+            return []
+        }
+
         // Step 2: For each size group, calculate partial hashes
         for (_, files) in potentialDuplicates {
+            // Check for cancellation
+            if isCancelled {
+                await MainActor.run { progress(1.0, L("duplicates.scan.cancelled")) }
+                return []
+            }
+
             processedGroups += 1
             let baseProgress = 0.2 + (Double(processedGroups) / Double(totalGroupsToProcess)) * 0.6
 
-            await MainActor.run {
-                progress(baseProgress, LFormat("duplicates.scan.comparingFiles %lld %lld", Int64(processedGroups), Int64(totalGroupsToProcess)))
+            // Throttle UI updates
+            if processedGroups % 10 == 0 || processedGroups == totalGroupsToProcess {
+                await MainActor.run {
+                    progress(baseProgress, LFormat("duplicates.scan.comparingFiles %lld %lld", Int64(processedGroups), Int64(totalGroupsToProcess)))
+                }
             }
 
             // Calculate partial hash for all files in this size group
             var partialHashGroups: [String: [URL]] = [:]
 
             for file in files {
-                if let hash = partialHash(file) {
+                if isCancelled { break }
+
+                if let hash = await safePartialHash(file) {
                     partialHashGroups[hash, default: []].append(file)
                 }
             }
 
+            if isCancelled { continue }
+
             // Step 3: For matching partial hashes, calculate full hash
             for (_, partialGroup) in partialHashGroups where partialGroup.count > 1 {
+                if isCancelled { break }
+
                 var fullHashGroups: [String: [URL]] = [:]
 
                 for file in partialGroup {
-                    if let hash = fullHash(file) {
+                    if isCancelled { break }
+
+                    if let hash = await safeFullHash(file) {
                         fullHashGroups[hash, default: []].append(file)
                     }
                 }
+
+                if isCancelled { continue }
 
                 // Step 4: Create duplicate groups for matching full hashes
                 for (hash, matchingFiles) in fullHashGroups where matchingFiles.count > 1 {
@@ -233,6 +345,11 @@ actor DuplicateScanner {
             }
         }
 
+        if isCancelled {
+            await MainActor.run { progress(1.0, L("duplicates.scan.cancelled")) }
+            return []
+        }
+
         await MainActor.run { progress(0.95, L("duplicates.scan.finalizing")) }
 
         // Sort groups by wasted size (largest first)
@@ -254,6 +371,11 @@ actor DuplicateScanner {
         for group in groups {
             for file in group.files where file.isSelected && !file.isKept {
                 do {
+                    // Verify file still exists before trying to delete
+                    guard FileManager.default.fileExists(atPath: file.url.path) else {
+                        continue
+                    }
+
                     try FileManager.default.trashItem(at: file.url, resultingItemURL: nil)
                     deleted += 1
                     freedSpace += file.size
@@ -266,36 +388,92 @@ actor DuplicateScanner {
         return (deleted, freedSpace, errors)
     }
 
-    // MARK: - Private Helpers
+    // MARK: - Safe Hash Methods
 
-    /// Calculate partial hash (first 4KB) for quick comparison
-    private func partialHash(_ url: URL) -> String? {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
-        defer { try? handle.close() }
-
-        let data = handle.readData(ofLength: 4096)
-        guard !data.isEmpty else { return nil }
-
-        let hash = SHA256.hash(data: data)
-        return hash.map { String(format: "%02x", $0) }.joined()
+    /// Calculate partial hash with proper error handling
+    private func safePartialHash(_ url: URL) async -> String? {
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                autoreleasepool {
+                    let result = self.partialHashSync(url)
+                    continuation.resume(returning: result)
+                }
+            }
+        }
     }
 
-    /// Calculate full SHA256 hash
-    private func fullHash(_ url: URL) -> String? {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
-        defer { try? handle.close() }
+    /// Calculate full hash with proper error handling
+    private func safeFullHash(_ url: URL) async -> String? {
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                autoreleasepool {
+                    let result = self.fullHashSync(url)
+                    continuation.resume(returning: result)
+                }
+            }
+        }
+    }
 
-        var hasher = SHA256()
-        let bufferSize = 65536 // 64KB chunks
+    /// Calculate partial hash (first 4KB) for quick comparison - synchronous
+    private nonisolated func partialHashSync(_ url: URL) -> String? {
+        do {
+            // Check file is readable
+            guard FileManager.default.isReadableFile(atPath: url.path) else {
+                return nil
+            }
 
-        while autoreleasepool(invoking: {
-            let data = handle.readData(ofLength: bufferSize)
-            if data.isEmpty { return false }
-            hasher.update(data: data)
-            return true
-        }) {}
+            let handle = try FileHandle(forReadingFrom: url)
+            defer {
+                try? handle.close()
+            }
 
-        let hash = hasher.finalize()
-        return hash.map { String(format: "%02x", $0) }.joined()
+            let data = try handle.read(upToCount: 4096) ?? Data()
+            guard !data.isEmpty else { return nil }
+
+            let hash = SHA256.hash(data: data)
+            return hash.compactMap { String(format: "%02x", $0) }.joined()
+        } catch {
+            // Silently fail for unreadable files
+            return nil
+        }
+    }
+
+    /// Calculate full SHA256 hash - synchronous
+    private nonisolated func fullHashSync(_ url: URL) -> String? {
+        do {
+            // Check file is readable
+            guard FileManager.default.isReadableFile(atPath: url.path) else {
+                return nil
+            }
+
+            let handle = try FileHandle(forReadingFrom: url)
+            defer {
+                try? handle.close()
+            }
+
+            var hasher = SHA256()
+            let bufferSize = 65536 // 64KB chunks
+
+            var keepReading = true
+            while keepReading {
+                autoreleasepool {
+                    do {
+                        if let data = try handle.read(upToCount: bufferSize), !data.isEmpty {
+                            hasher.update(data: data)
+                        } else {
+                            keepReading = false
+                        }
+                    } catch {
+                        keepReading = false
+                    }
+                }
+            }
+
+            let hash = hasher.finalize()
+            return hash.compactMap { String(format: "%02x", $0) }.joined()
+        } catch {
+            // Silently fail for unreadable files
+            return nil
+        }
     }
 }
