@@ -8,12 +8,36 @@ struct MyMacCleanerApp: App {
     /// Update manager for Sparkle auto-updates
     @State private var updateManager = UpdateManager()
 
+    /// Menu bar controller
+    @StateObject private var menuBarController = MenuBarController.shared
+
+    /// Menu bar visibility setting
+    @AppStorage("showInMenuBar") private var showInMenuBar = false
+
+    init() {
+        // Load saved display mode
+        MenuBarController.shared.loadSavedDisplayMode()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
                 .environment(LocalizationManager.shared)
                 .environment(updateManager)
+                .onAppear {
+                    // Setup menu bar if enabled
+                    if showInMenuBar {
+                        menuBarController.setup()
+                    }
+                }
+                .onChange(of: showInMenuBar) { _, newValue in
+                    if newValue {
+                        menuBarController.setup()
+                    } else {
+                        menuBarController.teardown()
+                    }
+                }
         }
         .windowStyle(.automatic)
         .windowToolbarStyle(.unified(showsTitle: false))
@@ -34,6 +58,7 @@ struct MyMacCleanerApp: App {
             SettingsView()
                 .environment(LocalizationManager.shared)
                 .environment(updateManager)
+                .environmentObject(menuBarController)
         }
         #endif
     }
@@ -74,11 +99,31 @@ struct SettingsView: View {
 struct GeneralSettingsView: View {
     @AppStorage("launchAtLogin") private var launchAtLogin = false
     @AppStorage("showInMenuBar") private var showInMenuBar = false
+    @EnvironmentObject var menuBarController: MenuBarController
 
     var body: some View {
         Form {
             Toggle(String(localized: "settings.launchAtLogin"), isOn: $launchAtLogin)
-            Toggle(String(localized: "settings.showInMenuBar"), isOn: $showInMenuBar)
+
+            Section {
+                Toggle(String(localized: "settings.showInMenuBar"), isOn: $showInMenuBar)
+
+                if showInMenuBar {
+                    Picker(String(localized: "settings.menuBarDisplay"), selection: Binding(
+                        get: { menuBarController.displayMode },
+                        set: { menuBarController.setDisplayMode($0) }
+                    )) {
+                        ForEach(MenuBarController.DisplayMode.allCases, id: \.rawValue) { mode in
+                            Text(mode.localizedName).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.menu)
+
+                    Text(String(localized: "settings.menuBarDescription"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
         .padding()
     }
