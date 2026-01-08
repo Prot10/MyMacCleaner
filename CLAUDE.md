@@ -52,10 +52,13 @@ MyMacCleaner/
 │   ├── home.md
 │   ├── disk-cleaner.md
 │   ├── space-lens.md
+│   ├── orphaned-files.md
+│   ├── duplicates.md
 │   ├── performance.md
 │   ├── applications.md
 │   ├── port-management.md
 │   ├── system-health.md
+│   ├── menu-bar.md
 │   └── permissions.md
 ├── MyMacCleaner.xcodeproj/      # Xcode project
 ├── MyMacCleanerTests/           # Unit tests
@@ -76,7 +79,11 @@ MyMacCleaner/
     │   │   ├── AuthorizationService.swift
     │   │   ├── AppUpdateChecker.swift
     │   │   ├── HomebrewService.swift
-    │   │   └── LocalizationManager.swift
+    │   │   ├── LocalizationManager.swift
+    │   │   ├── BrowserCleanerService.swift
+    │   │   ├── OrphanedFilesScanner.swift
+    │   │   ├── DuplicateScanner.swift
+    │   │   └── SystemStatsProvider.swift
     │   ├── Models/
     │   │   ├── ScanResult.swift
     │   │   └── PermissionCategory.swift
@@ -91,11 +98,18 @@ MyMacCleaner/
     │   ├── DiskCleaner/
     │   │   ├── DiskCleanerView.swift
     │   │   ├── DiskCleanerViewModel.swift
+    │   │   ├── BrowserPrivacyView.swift
     │   │   └── Components/
     │   │       └── CleanupCategoryCard.swift
     │   ├── SpaceLens/
     │   │   ├── SpaceLensView.swift
     │   │   └── SpaceLensViewModel.swift
+    │   ├── OrphanedFiles/
+    │   │   ├── OrphanedFilesView.swift
+    │   │   └── OrphanedFilesViewModel.swift
+    │   ├── Duplicates/
+    │   │   ├── DuplicatesView.swift
+    │   │   └── DuplicatesViewModel.swift
     │   ├── Performance/
     │   ├── Applications/
     │   ├── PortManagement/
@@ -107,6 +121,9 @@ MyMacCleaner/
     │       └── Components/
     │           ├── PermissionCategoryCard.swift
     │           └── PermissionFolderRow.swift
+    ├── MenuBar/
+    │   ├── MenuBarController.swift
+    │   └── MenuBarView.swift
     ├── Resources/
     │   └── Assets.xcassets/
     └── MyMacCleaner.entitlements
@@ -967,6 +984,61 @@ User should configure in GitHub: Settings > Branches > Add rule for `main`:
 - Require status checks: `pr-check-complete`
 - Require conversation resolution
 - Restrict who can push (optional - only owner)
+
+---
+
+### 2026-01-08 - New Features & Documentation
+
+**Session Goal**: Complete Phase 4 (Menu Bar) and add stability fixes for Duplicate Scanner
+
+**Completed**:
+
+**Phase 4 - Menu Bar Monitor:**
+- Created `SystemStatsProvider.swift` - Shared service for CPU/RAM monitoring
+- Created `MenuBarController.swift` - NSStatusItem controller with 4 display modes
+- Created `MenuBarView.swift` - SwiftUI popover with CPU, RAM, Disk stats
+- Integrated with Settings (General tab) for enable/disable and display mode
+- Added localization strings for all menu bar UI (EN/ES/IT)
+
+**Duplicate Scanner Stability Fixes:**
+- Added cancellation support with cancel button during scanning
+- Added symbolic link detection to prevent infinite loops
+- Added file readability checks before processing
+- Added skip lists for system files (.DS_Store, .localized, etc.)
+- Added skip lists for temp file extensions (.tmp, .lock, etc.)
+- Moved file I/O to background threads with autoreleasepool
+- Added proper error handling with do-catch blocks
+- Throttled progress updates to reduce UI overhead
+- Added "Change Folder" button in empty state and header
+
+**Documentation:**
+- Created `docs/orphaned-files.md` - Full documentation for Orphaned Files feature
+- Created `docs/duplicates.md` - Full documentation for Duplicate Finder
+- Created `docs/menu-bar.md` - Full documentation for Menu Bar Monitor
+- Updated `docs/disk-cleaner.md` - Added Browser Privacy section
+- Updated `README.md` - Added new features to table and documentation links
+- Updated `CLAUDE.md` - Updated project structure with new files
+
+**Files Created**:
+- `MyMacCleaner/Core/Services/SystemStatsProvider.swift`
+- `MyMacCleaner/MenuBar/MenuBarController.swift`
+- `MyMacCleaner/MenuBar/MenuBarView.swift`
+- `docs/orphaned-files.md`
+- `docs/duplicates.md`
+- `docs/menu-bar.md`
+
+**Files Modified**:
+- `MyMacCleaner/Core/Services/DuplicateScanner.swift` (stability fixes)
+- `MyMacCleaner/Features/Duplicates/DuplicatesView.swift` (cancel button, change folder)
+- `MyMacCleaner/Features/Duplicates/DuplicatesViewModel.swift` (cancelScan method)
+- `MyMacCleaner/Features/DiskCleaner/DiskCleanerView.swift` (ScanningOverlay cancel)
+- `MyMacCleaner/App/MyMacCleanerApp.swift` (menu bar integration)
+- `MyMacCleaner/Resources/Localizable.xcstrings` (menu bar + duplicates strings)
+- `docs/disk-cleaner.md` (Browser Privacy section)
+- `README.md` (new features)
+- `CLAUDE.md` (project structure, changelog)
+
+**Build Status**: SUCCESS
 
 ---
 

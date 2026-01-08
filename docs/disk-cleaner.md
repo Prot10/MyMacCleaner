@@ -55,6 +55,54 @@ Web browser caches and data.
 | Firefox | `~/Library/Caches/Firefox` |
 | Edge | `~/Library/Caches/Microsoft Edge` |
 
+## Browser Privacy
+
+The Browser Privacy tab provides deep cleaning of browser data for enhanced privacy.
+
+### Supported Browsers
+
+| Browser | Supported |
+|---------|-----------|
+| Safari | Yes |
+| Google Chrome | Yes |
+| Mozilla Firefox | Yes |
+| Microsoft Edge | Yes |
+
+### Cleanable Data Types
+
+| Data Type | Description | Privacy Impact |
+|-----------|-------------|----------------|
+| **Browsing History** | Record of visited websites | High |
+| **Cookies** | Website tracking and session data | High |
+| **Cache** | Cached images, scripts, stylesheets | Medium |
+| **Downloads History** | Record of downloaded files | Medium |
+| **Form Data** | Autofill data for forms | High |
+| **Saved Passwords** | Stored login credentials | Critical |
+| **Local Storage** | Website data stored locally | Medium |
+
+### How to Use Browser Privacy
+
+1. Navigate to **Disk Cleaner** in the sidebar
+2. Click the **Browser Privacy** tab
+3. Select browsers you want to clean
+4. Choose data types to remove (checkboxes)
+5. Click **Clean Selected**
+6. Confirm the action
+
+### Warnings
+
+- **Close browsers first** - Browsers should be closed during cleaning
+- **Saved Passwords** - Will require re-entering passwords on websites
+- **Cookies** - Will log you out of websites
+- **Form Data** - Will clear autofill suggestions
+
+### Best Practices
+
+1. Keep browsers closed during cleaning
+2. Be cautious with password deletion
+3. Export important bookmarks first
+4. Consider which cookies you want to keep (banking sites, etc.)
+
 ### Mail Attachments
 
 Email attachments that take up space.
