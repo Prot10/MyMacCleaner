@@ -61,7 +61,7 @@ struct SpaceLensView: View {
                 // Bubbles
                 GeometryReader { geometry in
                     BubblePackingView(
-                        nodes: currentNode.children,
+                        nodes: viewModel.currentChildren,
                         parentSize: currentNode.size,
                         size: geometry.size,
                         onSelect: { node in
@@ -74,6 +74,7 @@ struct SpaceLensView: View {
                     )
                 }
                 .padding(Theme.Spacing.md)
+                .id("\(viewModel.sizeFilter.rawValue)-\(viewModel.ageFilter.rawValue)") // Force rebuild on filter change
 
                 // Bottom bar
                 bottomBar
@@ -141,60 +142,132 @@ struct SpaceLensView: View {
     // MARK: - Header Bar
 
     private func headerBar(_ currentNode: FileNode) -> some View {
-        HStack {
-            // Navigation button
-            Button(action: viewModel.navigateUp) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(viewModel.navigationStack.count > 1 ? .primary : .tertiary)
-                    .frame(width: 32, height: 32)
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-            .buttonStyle(.plain)
-            .disabled(viewModel.navigationStack.count <= 1)
+        VStack(spacing: 0) {
+            // Navigation row
+            HStack {
+                // Navigation button
+                Button(action: viewModel.navigateUp) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(viewModel.navigationStack.count > 1 ? .primary : .tertiary)
+                        .frame(width: 32, height: 32)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+                .disabled(viewModel.navigationStack.count <= 1)
 
-            Spacer()
+                Spacer()
 
-            // Breadcrumb
-            HStack(spacing: Theme.Spacing.xs) {
-                ForEach(Array(viewModel.breadcrumbs.enumerated()), id: \.element.id) { index, node in
-                    if index > 0 {
-                        Image(systemName: "chevron.right")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                    }
-
-                    Button(action: { viewModel.navigateTo(node) }) {
-                        HStack(spacing: 4) {
-                            if index == 0 {
-                                Image(systemName: "internaldrive.fill")
-                                    .font(.caption)
-                            }
-                            Text(node.name)
-                                .font(Theme.Typography.caption)
+                // Breadcrumb
+                HStack(spacing: Theme.Spacing.xs) {
+                    ForEach(Array(viewModel.breadcrumbs.enumerated()), id: \.element.id) { index, node in
+                        if index > 0 {
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
                         }
-                        .foregroundStyle(index == viewModel.breadcrumbs.count - 1 ? .primary : .secondary)
+
+                        Button(action: { viewModel.navigateTo(node) }) {
+                            HStack(spacing: 4) {
+                                if index == 0 {
+                                    Image(systemName: "internaldrive.fill")
+                                        .font(.caption)
+                                }
+                                Text(node.name)
+                                    .font(Theme.Typography.caption)
+                            }
+                            .foregroundStyle(index == viewModel.breadcrumbs.count - 1 ? .primary : .secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                Spacer()
+
+                // Rescan button
+                Button(action: viewModel.scanHomeDirectory) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, height: 32)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, Theme.Spacing.lg)
+            .padding(.vertical, Theme.Spacing.sm)
+
+            // Filter row
+            HStack(spacing: Theme.Spacing.md) {
+                // Size filter
+                HStack(spacing: Theme.Spacing.xs) {
+                    Image(systemName: "arrow.up.arrow.down")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+
+                    Picker("", selection: $viewModel.sizeFilter) {
+                        ForEach(SizeFilter.allCases, id: \.self) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .frame(width: 90)
+                }
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, 4)
+                .background(viewModel.sizeFilter != .all ? Color.blue.opacity(0.15) : Color.white.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                // Age filter
+                HStack(spacing: Theme.Spacing.xs) {
+                    Image(systemName: "clock")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+
+                    Picker("", selection: $viewModel.ageFilter) {
+                        ForEach(AgeFilter.allCases, id: \.self) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .frame(width: 90)
+                }
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, 4)
+                .background(viewModel.ageFilter != .all ? Color.orange.opacity(0.15) : Color.white.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                // Clear filters button
+                if viewModel.hasActiveFilters {
+                    Button(action: viewModel.clearFilters) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 10))
+                            Text(L("spaceLens.filter.clear"))
+                                .font(.system(size: 11))
+                        }
+                        .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
                 }
-            }
 
-            Spacer()
+                Spacer()
 
-            // Rescan button
-            Button(action: viewModel.scanHomeDirectory) {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 32, height: 32)
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                // Filter stats
+                if viewModel.hasActiveFilters {
+                    Text(LFormat("spaceLens.filter.showing %lld %lld", Int64(viewModel.filteredCount), Int64(viewModel.totalCount)))
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
             }
-            .buttonStyle(.plain)
+            .padding(.horizontal, Theme.Spacing.lg)
+            .padding(.vertical, Theme.Spacing.xs)
+            .background(Color.white.opacity(0.02))
         }
-        .padding(.horizontal, Theme.Spacing.lg)
-        .padding(.vertical, Theme.Spacing.sm)
         .background(Color.white.opacity(0.03))
     }
 
@@ -222,6 +295,20 @@ struct SpaceLensView: View {
                         Text("(\(Int(Double(hovered.size) / Double(parent.size) * 100))%)")
                             .font(Theme.Typography.caption)
                             .foregroundStyle(.tertiary)
+                    }
+
+                    // Show last access date for files
+                    if !hovered.isDirectory, let accessStr = hovered.formattedLastAccess {
+                        Text("·")
+                            .foregroundStyle(.tertiary)
+
+                        HStack(spacing: 2) {
+                            Image(systemName: "clock")
+                                .font(.system(size: 10))
+                            Text(accessStr)
+                        }
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.secondary)
                     }
                 }
             } else {

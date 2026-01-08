@@ -33,6 +33,12 @@ class AppState: ObservableObject {
     /// Permissions section state
     let permissionsViewModel = PermissionsViewModel()
 
+    /// Orphaned Files section state
+    let orphanedFilesViewModel = OrphanedFilesViewModel()
+
+    /// Duplicates section state
+    let duplicatesViewModel = DuplicatesViewModel()
+
     // MARK: - Initialization
 
     init() {

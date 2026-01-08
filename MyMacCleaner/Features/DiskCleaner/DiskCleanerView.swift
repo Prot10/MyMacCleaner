@@ -3,6 +3,7 @@ import SwiftUI
 struct DiskCleanerView: View {
     @ObservedObject var viewModel: DiskCleanerViewModel
     @ObservedObject var spaceLensViewModel: SpaceLensViewModel
+    @StateObject private var privacyViewModel = BrowserPrivacyViewModel()
     @State private var isVisible = false
     @State private var selectedTab: DiskCleanerTab = .cleaner
 
@@ -11,11 +12,13 @@ struct DiskCleanerView: View {
 
     enum DiskCleanerTab: String, CaseIterable {
         case cleaner
+        case privacy
         case spaceLens
 
         var icon: String {
             switch self {
             case .cleaner: return "trash"
+            case .privacy: return "hand.raised.fill"
             case .spaceLens: return "circle.hexagongrid.fill"
             }
         }
@@ -23,6 +26,7 @@ struct DiskCleanerView: View {
         var localizedName: String {
             switch self {
             case .cleaner: return L("diskCleaner.tab.cleaner")
+            case .privacy: return L("diskCleaner.tab.privacy")
             case .spaceLens: return L("diskCleaner.tab.spaceLens")
             }
         }
@@ -44,6 +48,9 @@ struct DiskCleanerView: View {
                     switch selectedTab {
                     case .cleaner:
                         cleanerContent
+                            .staggeredAnimation(index: 2, isActive: isVisible)
+                    case .privacy:
+                        BrowserPrivacyView(viewModel: privacyViewModel)
                             .staggeredAnimation(index: 2, isActive: isVisible)
                     case .spaceLens:
                         SpaceLensView(viewModel: spaceLensViewModel)
