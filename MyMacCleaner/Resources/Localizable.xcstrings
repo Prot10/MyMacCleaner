@@ -4228,6 +4228,29 @@
         }
       }
     },
+    "duplicates.changeFolder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Folder"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar Carpeta"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambia Cartella"
+          }
+        }
+      }
+    },
     "duplicates.scanAgain" : {
       "extractionState" : "manual",
       "localizations" : {

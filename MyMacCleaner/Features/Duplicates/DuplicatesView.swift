@@ -102,15 +102,45 @@ struct DuplicatesView: View {
                 Text(L("navigation.duplicates"))
                     .font(.system(size: 28, weight: .bold))
 
-                Text(L("navigation.duplicates.description"))
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 8) {
+                    Text(L("navigation.duplicates.description"))
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+
+                    if viewModel.hasScanned {
+                        Text("•")
+                            .foregroundStyle(.tertiary)
+
+                        Button(action: viewModel.chooseScanLocation) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "folder.fill")
+                                    .font(.system(size: 10))
+                                Text(viewModel.scanPath.lastPathComponent)
+                                    .lineLimit(1)
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 8))
+                            }
+                            .font(.system(size: 12))
+                            .foregroundStyle(sectionColor)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
             }
 
             Spacer()
 
             if viewModel.hasScanned && !viewModel.duplicateGroups.isEmpty {
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
+                    // Rescan button
+                    Button(action: viewModel.startScan) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help(L("duplicates.scanAgain"))
+
                     VStack(alignment: .trailing, spacing: 4) {
                         Text(viewModel.formattedTotalWastedSize)
                             .font(.system(size: 22, weight: .semibold))
