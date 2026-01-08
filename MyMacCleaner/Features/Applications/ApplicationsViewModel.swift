@@ -527,6 +527,7 @@ class ApplicationsViewModel: ObservableObject {
 
         // Common locations for app-related files
         let searchPaths: [(URL, String)] = [
+            // User Library paths
             (homeDir.appendingPathComponent("Library/Application Support"), bundleId),
             (homeDir.appendingPathComponent("Library/Application Support"), app.name),
             (homeDir.appendingPathComponent("Library/Preferences"), bundleId),
@@ -538,6 +539,10 @@ class ApplicationsViewModel: ObservableObject {
             (homeDir.appendingPathComponent("Library/Group Containers"), bundleId),
             (homeDir.appendingPathComponent("Library/Saved Application State"), "\(bundleId).savedState"),
             (homeDir.appendingPathComponent("Library/WebKit"), bundleId),
+            (homeDir.appendingPathComponent("Library/HTTPStorages"), bundleId),
+
+            // System Library paths (require admin/FDA)
+            (URL(fileURLWithPath: "/Library/Application Support"), app.name),
         ]
 
         for (basePath, searchTerm) in searchPaths {
@@ -552,6 +557,41 @@ class ApplicationsViewModel: ObservableObject {
                 let plistPath = basePath.appendingPathComponent("\(searchTerm).plist")
                 if FileManager.default.fileExists(atPath: plistPath.path) {
                     relatedFiles.append(plistPath)
+                }
+            }
+        }
+
+        // Check for Group Containers with partial bundle ID match (e.g., group.com.company.*)
+        let groupContainersPath = homeDir.appendingPathComponent("Library/Group Containers")
+        if let groupContents = try? FileManager.default.contentsOfDirectory(atPath: groupContainersPath.path) {
+            let bundleParts = bundleId.split(separator: ".").map(String.init)
+            for item in groupContents {
+                // Check if the group container matches the bundle ID pattern
+                for i in 1..<bundleParts.count {
+                    let partialMatch = bundleParts.suffix(from: i).joined(separator: ".")
+                    if item.contains(partialMatch) {
+                        let itemPath = groupContainersPath.appendingPathComponent(item)
+                        if !relatedFiles.contains(itemPath) {
+                            relatedFiles.append(itemPath)
+                        }
+                        break
+                    }
+                }
+            }
+        }
+
+        // Check for LaunchAgents with bundle ID in filename
+        let launchAgentPaths = [
+            homeDir.appendingPathComponent("Library/LaunchAgents"),
+            URL(fileURLWithPath: "/Library/LaunchAgents")
+        ]
+
+        for launchAgentPath in launchAgentPaths {
+            if let contents = try? FileManager.default.contentsOfDirectory(atPath: launchAgentPath.path) {
+                for item in contents {
+                    if item.contains(bundleId) || item.lowercased().contains(app.name.lowercased()) {
+                        relatedFiles.append(launchAgentPath.appendingPathComponent(item))
+                    }
                 }
             }
         }

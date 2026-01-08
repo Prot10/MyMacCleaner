@@ -43,6 +43,8 @@ struct ContentView: View {
 enum NavigationSection: String, CaseIterable, Identifiable {
     case home
     case diskCleaner
+    case orphanedFiles
+    case duplicates
     case performance
     case applications
     case startupItems
@@ -56,6 +58,8 @@ enum NavigationSection: String, CaseIterable, Identifiable {
         switch self {
         case .home: return "house.fill"
         case .diskCleaner: return "internaldrive.fill"
+        case .orphanedFiles: return "doc.questionmark.fill"
+        case .duplicates: return "doc.on.doc.fill"
         case .performance: return "gauge.with.needle.fill"
         case .applications: return "square.grid.2x2.fill"
         case .startupItems: return "power.circle.fill"
@@ -77,6 +81,8 @@ enum NavigationSection: String, CaseIterable, Identifiable {
         switch self {
         case .home: return Theme.Colors.home              // Blue
         case .diskCleaner: return Theme.Colors.storage    // Orange
+        case .orphanedFiles: return Theme.Colors.orphans  // Pink
+        case .duplicates: return Theme.Colors.duplicates  // Teal
         case .performance: return Theme.Colors.memory     // Purple
         case .applications: return Theme.Colors.apps      // Green
         case .startupItems: return Theme.Colors.startup   // Yellow
@@ -358,6 +364,10 @@ struct DetailContentView: View {
                 viewModel: appState.diskCleanerViewModel,
                 spaceLensViewModel: appState.spaceLensViewModel
             )
+        case .orphanedFiles:
+            OrphanedFilesView(viewModel: appState.orphanedFilesViewModel)
+        case .duplicates:
+            DuplicatesView(viewModel: appState.duplicatesViewModel)
         case .performance:
             PerformanceView(viewModel: appState.performanceViewModel)
         case .applications:

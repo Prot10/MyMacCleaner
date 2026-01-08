@@ -44,6 +44,8 @@ enum Theme {
         static let ports = Color.cyan                   // Cyan / Light Blue
         static let health = Color.red                   // Red
         static let permissions = Color.indigo           // Indigo
+        static let orphans = Color.pink                 // Pink
+        static let duplicates = Color.teal              // Teal
     }
 
     // MARK: - Typography
