@@ -169,6 +169,33 @@ class DuplicatesViewModel: ObservableObject {
             duplicateGroups = results
             isScanning = false
             hasScanned = true
+
+            // Show toast if no duplicates found
+            if results.isEmpty && scanProgress >= 1.0 {
+                toastMessage = L("duplicates.noDuplicatesFound")
+                toastType = .info
+                showToast = true
+
+                try? await Task.sleep(for: .seconds(3))
+                showToast = false
+            }
+        }
+    }
+
+    func cancelScan() {
+        Task {
+            await scanner.cancel()
+            isScanning = false
+            hasScanned = false
+            scanProgress = 0
+            currentScanStatus = ""
+
+            toastMessage = L("duplicates.scan.cancelled")
+            toastType = .info
+            showToast = true
+
+            try? await Task.sleep(for: .seconds(2))
+            showToast = false
         }
     }
 

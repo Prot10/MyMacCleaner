@@ -55,7 +55,8 @@ struct DuplicatesView: View {
                 ScanningOverlay(
                     progress: viewModel.scanProgress,
                     category: viewModel.currentScanStatus,
-                    accentColor: sectionColor
+                    accentColor: sectionColor,
+                    onCancel: { viewModel.cancelScan() }
                 )
                 .transition(.scale.combined(with: .opacity))
             }
@@ -219,12 +220,43 @@ struct DuplicatesView: View {
                     .multilineTextAlignment(.center)
             }
 
-            Button(action: viewModel.startScan) {
-                Text(L("duplicates.scanAgain"))
+            // Current scan location
+            HStack(spacing: 8) {
+                Image(systemName: "folder.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+
+                Text(viewModel.scanPath.lastPathComponent)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.white.opacity(0.05))
+            .cornerRadius(6)
+
+            HStack(spacing: 16) {
+                Button(action: viewModel.chooseScanLocation) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "folder.badge.gearshape")
+                        Text(L("duplicates.changeFolder"))
+                    }
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+
+                Button(action: viewModel.startScan) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.clockwise")
+                        Text(L("duplicates.scanAgain"))
+                    }
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(sectionColor)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(32)
         .frame(maxWidth: .infinity)

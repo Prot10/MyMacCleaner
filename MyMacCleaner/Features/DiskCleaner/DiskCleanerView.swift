@@ -384,6 +384,7 @@ struct ScanningOverlay: View {
     let progress: Double
     let category: String
     var accentColor: Color = .blue
+    var onCancel: (() -> Void)? = nil
 
     @State private var isAnimating = false
 
@@ -441,6 +442,21 @@ struct ScanningOverlay: View {
                 }
             }
             .frame(width: 200, height: 8)
+
+            // Cancel button (optional)
+            if let onCancel = onCancel {
+                Button(action: onCancel) {
+                    Text(L("common.cancel"))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 8)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 8)
+            }
         }
         .padding(28)
         .frame(width: 280)
