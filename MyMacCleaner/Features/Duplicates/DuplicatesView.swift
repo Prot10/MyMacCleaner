@@ -444,6 +444,9 @@ struct DuplicatesView: View {
                     onToggleFile: { file in
                         viewModel.toggleFileSelection(file, in: group)
                     },
+                    onToggleAll: {
+                        viewModel.toggleAllInGroup(group)
+                    },
                     onSetKept: { file in
                         viewModel.setKeptFile(file, in: group)
                     },
@@ -493,18 +496,65 @@ struct DuplicateGroupCard: View {
     let isExpanded: Bool
     let onToggleExpand: () -> Void
     let onToggleFile: (DuplicateFile) -> Void
+    let onToggleAll: () -> Void
     let onSetKept: (DuplicateFile) -> Void
     let onReveal: (DuplicateFile) -> Void
     let accentColor: Color
 
+    // Files that can be selected (not the kept one)
+    var selectableFiles: [DuplicateFile] {
+        group.files.filter { !$0.isKept }
+    }
+
     var selectedCount: Int {
-        group.files.filter { $0.isSelected && !$0.isKept }.count
+        selectableFiles.filter { $0.isSelected }.count
+    }
+
+    var allSelected: Bool {
+        selectableFiles.allSatisfy { $0.isSelected }
+    }
+
+    var someSelected: Bool {
+        selectableFiles.contains { $0.isSelected } && !allSelected
     }
 
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            Button(action: onToggleExpand) {
+            HStack(spacing: 0) {
+                // Checkbox for selecting all duplicates - separate hit area
+                Button(action: onToggleAll) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(allSelected || someSelected ? accentColor : Color.secondary.opacity(0.5), lineWidth: 1.5)
+                            .frame(width: 20, height: 20)
+
+                        if allSelected {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(accentColor)
+                                .frame(width: 20, height: 20)
+
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.white)
+                        } else if someSelected {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(accentColor.opacity(0.5))
+                                .frame(width: 20, height: 20)
+
+                            Image(systemName: "minus")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.white)
+                        }
+                    }
+                    .padding(.leading, Theme.Spacing.md)
+                    .padding(.trailing, Theme.Spacing.md)
+                    .padding(.vertical, Theme.Spacing.md)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                // Expandable area - everything else
                 HStack(spacing: Theme.Spacing.md) {
                     // File type icon
                     ZStack {
@@ -545,9 +595,15 @@ struct DuplicateGroupCard: View {
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(accentColor)
 
-                        Text(L("duplicates.wasted"))
-                            .font(.system(size: 11))
-                            .foregroundStyle(.tertiary)
+                        if selectedCount > 0 {
+                            Text(LFormat("duplicates.selectedCount %lld", Int64(selectedCount)))
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text(L("duplicates.wasted"))
+                                .font(.system(size: 11))
+                                .foregroundStyle(.tertiary)
+                        }
                     }
 
                     // Expand indicator
@@ -555,9 +611,11 @@ struct DuplicateGroupCard: View {
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.tertiary)
                 }
-                .padding(Theme.Spacing.md)
+                .padding(.trailing, Theme.Spacing.md)
+                .padding(.vertical, Theme.Spacing.md)
+                .contentShape(Rectangle())
+                .onTapGesture(perform: onToggleExpand)
             }
-            .buttonStyle(.plain)
 
             // Expanded content
             if isExpanded {
@@ -595,18 +653,35 @@ struct DuplicateFileRow: View {
 
     var body: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            // Checkbox or kept indicator
-            if file.isKept {
+            // Keep button - always visible, acts like radio button
+            Button(action: onSetKept) {
                 ZStack {
+                    // Larger invisible hit area
                     Circle()
-                        .fill(.green.opacity(0.15))
-                        .frame(width: 22, height: 22)
+                        .fill(Color.clear)
+                        .frame(width: 32, height: 32)
 
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.green)
+                    // Visible circle
+                    Circle()
+                        .stroke(file.isKept ? Color.green : Color.secondary.opacity(0.4), lineWidth: 2)
+                        .frame(width: 20, height: 20)
+
+                    if file.isKept {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 12, height: 12)
+                    }
                 }
-                .help(L("duplicates.keepingThisCopy"))
+                .contentShape(Circle().scale(1.6))
+            }
+            .buttonStyle(.plain)
+            .help(file.isKept ? L("duplicates.keepingThisCopy") : L("duplicates.keepThisCopy"))
+
+            // Delete checkbox - only for non-kept files
+            if file.isKept {
+                // Spacer to align with checkbox width
+                Color.clear
+                    .frame(width: 18, height: 18)
             } else {
                 Button(action: onToggle) {
                     ZStack {
@@ -619,13 +694,14 @@ struct DuplicateFileRow: View {
                                 .fill(accentColor)
                                 .frame(width: 18, height: 18)
 
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .bold))
+                            Image(systemName: "trash.fill")
+                                .font(.system(size: 9, weight: .bold))
                                 .foregroundStyle(.white)
                         }
                     }
                 }
                 .buttonStyle(.plain)
+                .help(file.isSelected ? L("duplicates.willDelete") : L("duplicates.markForDeletion"))
             }
 
             // File info
@@ -633,15 +709,23 @@ struct DuplicateFileRow: View {
                 HStack(spacing: 6) {
                     Text(file.parentFolder)
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(file.isKept ? .green : .primary)
+                        .foregroundStyle(file.isKept ? .green : (file.isSelected ? accentColor : .primary))
 
                     if file.isKept {
                         Text(L("duplicates.keeping"))
                             .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(.green)
+                            .foregroundStyle(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(.green.opacity(0.15))
+                            .background(Color.green)
+                            .cornerRadius(4)
+                    } else if file.isSelected {
+                        Text(L("duplicates.willBeDeleted"))
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(accentColor.opacity(0.8))
                             .cornerRadius(4)
                     }
                 }
@@ -649,8 +733,10 @@ struct DuplicateFileRow: View {
                 Text(file.url.path)
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
+                    .opacity(file.isSelected && !file.isKept ? 0.6 : 1.0)
                     .lineLimit(1)
                     .truncationMode(.middle)
+                    .strikethrough(file.isSelected && !file.isKept, color: Color.secondary.opacity(0.5))
             }
 
             Spacer()
@@ -660,33 +746,27 @@ struct DuplicateFileRow: View {
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
 
-            // Actions
-            if isHovered {
-                HStack(spacing: 8) {
-                    if !file.isKept {
-                        Button(action: onSetKept) {
-                            Image(systemName: "star")
-                                .font(.system(size: 12))
-                                .foregroundStyle(.orange)
-                        }
-                        .buttonStyle(.plain)
-                        .help(L("duplicates.keepThisCopy"))
-                    }
+            // Size
+            Text(ByteCountFormatter.string(fromByteCount: file.size, countStyle: .file))
+                .font(.system(size: 11).monospacedDigit())
+                .foregroundStyle(file.isSelected && !file.isKept ? accentColor : .secondary)
+                .frame(minWidth: 60, alignment: .trailing)
 
-                    Button(action: onReveal) {
-                        Image(systemName: "folder")
-                            .font(.system(size: 12))
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                    .help(L("common.revealInFinder"))
-                }
-                .transition(.opacity)
+            // Reveal in Finder - always visible
+            Button(action: onReveal) {
+                Image(systemName: "folder")
+                    .font(.system(size: 12))
+                    .foregroundStyle(isHovered ? .secondary : .tertiary)
             }
+            .buttonStyle(.plain)
+            .help(L("common.revealInFinder"))
         }
         .padding(.horizontal, Theme.Spacing.md)
-        .padding(.vertical, Theme.Spacing.xs)
-        .background(isHovered ? Color.white.opacity(0.03) : Color.clear)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(file.isKept ? Color.green.opacity(0.08) : (file.isSelected ? accentColor.opacity(0.05) : (isHovered ? Color.white.opacity(0.03) : Color.clear)))
+        )
         .contentShape(Rectangle())
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.15)) {

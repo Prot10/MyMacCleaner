@@ -208,7 +208,32 @@ class DuplicatesViewModel: ObservableObject {
         // Don't allow selecting the kept file
         guard !duplicateGroups[groupIndex].files[fileIndex].isKept else { return }
 
-        duplicateGroups[groupIndex].files[fileIndex].isSelected.toggle()
+        // Create a mutable copy to ensure @Published triggers properly
+        var updatedGroups = duplicateGroups
+        updatedGroups[groupIndex].files[fileIndex].isSelected.toggle()
+        duplicateGroups = updatedGroups
+    }
+
+    func toggleAllInGroup(_ group: DuplicateGroup) {
+        guard let groupIndex = duplicateGroups.firstIndex(where: { $0.id == group.id }) else {
+            return
+        }
+
+        // Check if all selectable files are selected
+        let selectableFiles = duplicateGroups[groupIndex].files.filter { !$0.isKept }
+        let allSelected = selectableFiles.allSatisfy { $0.isSelected }
+
+        // Create a mutable copy to ensure @Published triggers properly
+        var updatedGroups = duplicateGroups
+
+        // Toggle: if all selected, deselect all; otherwise select all
+        for fileIndex in updatedGroups[groupIndex].files.indices {
+            if !updatedGroups[groupIndex].files[fileIndex].isKept {
+                updatedGroups[groupIndex].files[fileIndex].isSelected = !allSelected
+            }
+        }
+
+        duplicateGroups = updatedGroups
     }
 
     func setKeptFile(_ file: DuplicateFile, in group: DuplicateGroup) {
@@ -217,14 +242,24 @@ class DuplicatesViewModel: ObservableObject {
             return
         }
 
-        // Clear all kept flags in this group
-        for i in duplicateGroups[groupIndex].files.indices {
-            duplicateGroups[groupIndex].files[i].isKept = false
-            duplicateGroups[groupIndex].files[i].isSelected = false
+        // Create a mutable copy to ensure @Published triggers properly
+        var updatedGroups = duplicateGroups
+
+        // Clear kept flag from all files in this group
+        for i in updatedGroups[groupIndex].files.indices {
+            if updatedGroups[groupIndex].files[i].isKept {
+                // The previously kept file becomes selected for deletion
+                updatedGroups[groupIndex].files[i].isKept = false
+                updatedGroups[groupIndex].files[i].isSelected = true
+            }
         }
 
-        // Set the new kept file
-        duplicateGroups[groupIndex].files[fileIndex].isKept = true
+        // Set the new kept file (and make sure it's not selected for deletion)
+        updatedGroups[groupIndex].files[fileIndex].isKept = true
+        updatedGroups[groupIndex].files[fileIndex].isSelected = false
+
+        // Assign back to trigger @Published change notification
+        duplicateGroups = updatedGroups
     }
 
     func selectAllDuplicates() {
