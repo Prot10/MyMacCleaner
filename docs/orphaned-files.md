@@ -91,7 +91,7 @@ Application log files. Safe to delete unless debugging issues.
 Full Disk Access is recommended for complete scanning:
 - Required for `~/Library/Containers`
 - Required for some Application Support folders
-- See [Permissions Guide](permissions.md) for setup
+- See [Permissions Guide](/MyMacCleaner/docs/permissions/) for setup
 
 ## Troubleshooting
 

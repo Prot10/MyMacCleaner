@@ -126,6 +126,6 @@ Individual cards show the status of each health component:
 
 ## Related Features
 
-- [Disk Cleaner](disk-cleaner.md) - Free up disk space
-- [Performance](performance.md) - Memory management and optimization
-- [Startup Items](startup-items.md) - Manage login items
+- [Disk Cleaner](/MyMacCleaner/docs/disk-cleaner/) - Free up disk space
+- [Performance](/MyMacCleaner/docs/performance/) - Memory management and optimization
+- [Startup Items](/MyMacCleaner/docs/startup-items/) - Manage login items
