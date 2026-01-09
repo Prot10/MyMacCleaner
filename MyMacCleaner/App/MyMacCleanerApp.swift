@@ -12,7 +12,7 @@ struct MyMacCleanerApp: App {
     @StateObject private var menuBarController = MenuBarController.shared
 
     /// Menu bar visibility setting
-    @AppStorage("showInMenuBar") private var showInMenuBar = false
+    @AppStorage("showInMenuBar") private var showInMenuBar = true
 
     init() {
         // Load saved display mode
@@ -100,7 +100,7 @@ struct SettingsView: View {
 
 struct GeneralSettingsView: View {
     @AppStorage("launchAtLogin") private var launchAtLogin = false
-    @AppStorage("showInMenuBar") private var showInMenuBar = false
+    @AppStorage("showInMenuBar") private var showInMenuBar = true
     @EnvironmentObject var menuBarController: MenuBarController
     @Environment(LocalizationManager.self) var localization
 
