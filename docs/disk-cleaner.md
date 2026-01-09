@@ -180,4 +180,4 @@ Full Disk Access is required to scan:
 - Mail data
 - Some application containers
 
-See [Permissions Guide](permissions.md) for setup instructions.
+See [Permissions Guide](/MyMacCleaner/docs/permissions/) for setup instructions.

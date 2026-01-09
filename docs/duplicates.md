@@ -125,7 +125,7 @@ The scanner automatically skips:
 
 - No special permissions for user folders
 - Full Disk Access needed for some system locations
-- See [Permissions Guide](permissions.md) for setup
+- See [Permissions Guide](/MyMacCleaner/docs/permissions/) for setup
 
 ## Troubleshooting
 
