@@ -112,6 +112,33 @@ Email attachments that take up space.
 | Mail Downloads | `~/Library/Containers/com.apple.mail/Data/Library/Mail Downloads` |
 | Mail Attachments | `~/Library/Mail/V*/Mailboxes` |
 
+## Empty Trash
+
+A dedicated card at the bottom of the Cleaner tab provides quick access to empty your Trash.
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Size Display** | Shows current Trash size |
+| **One-Click Empty** | Empty Trash with a single click |
+| **Confirmation** | Asks for confirmation before permanently deleting |
+| **FDA Badge** | Shows if Full Disk Access is needed for complete cleanup |
+
+### Permission Requirements
+
+- **With Full Disk Access**: Empties all Trash contents including protected files
+- **Without Full Disk Access**: May not be able to remove some files
+
+The "Needs FDA" badge is clickable - click it to open System Settings and grant Full Disk Access.
+
+### How to Use
+
+1. Check the Trash size displayed on the card
+2. Click **Empty Trash** button
+3. Confirm the action in the dialog
+4. Wait for the operation to complete
+
 ## How to Use
 
 1. Navigate to **Disk Cleaner** in the sidebar
