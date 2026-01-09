@@ -1197,6 +1197,29 @@
         }
       }
     },
+    "applications.toast.adminDenied": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Administrator access denied"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso de administrador denegado"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accesso amministratore negato"
+          }
+        }
+      }
+    },
     "applications.toast.uninstalled %@": {
       "extractionState": "manual",
       "localizations": {
