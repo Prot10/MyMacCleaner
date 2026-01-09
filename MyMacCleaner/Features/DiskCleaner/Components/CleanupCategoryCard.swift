@@ -40,8 +40,8 @@ struct CleanupCategoryCard: View {
     // MARK: - Header Row
 
     private var headerRow: some View {
-        HStack(spacing: Theme.Spacing.md) {
-            // Selection checkbox
+        HStack(spacing: 0) {
+            // Selection checkbox - separate hit area
             Button(action: onToggleSelection) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 4)
@@ -66,55 +66,60 @@ struct CleanupCategoryCard: View {
                             .foregroundStyle(.white)
                     }
                 }
+                .padding(.leading, Theme.Spacing.md)
+                .padding(.trailing, Theme.Spacing.md)
+                .padding(.vertical, Theme.Spacing.md)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            // Category icon
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(result.category.color.opacity(0.15))
-                    .frame(width: 44, height: 44)
+            // Expandable area - everything else
+            HStack(spacing: Theme.Spacing.md) {
+                // Category icon
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(result.category.color.opacity(0.15))
+                        .frame(width: 44, height: 44)
 
-                Image(systemName: result.category.icon)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(result.category.color)
-            }
+                    Image(systemName: result.category.icon)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(result.category.color)
+                }
 
-            // Category info
-            VStack(alignment: .leading, spacing: 2) {
-                Text(result.category.localizedName)
-                    .font(Theme.Typography.body)
+                // Category info
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(result.category.localizedName)
+                        .font(Theme.Typography.body)
 
-                Text(result.category.localizedDescription)
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(.tertiary)
-            }
+                    Text(result.category.localizedDescription)
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.tertiary)
+                }
 
-            Spacer()
+                Spacer()
 
-            // Size and count
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(ByteCountFormatter.string(fromByteCount: result.totalSize, countStyle: .file))
-                    .font(Theme.Typography.subheadline.monospacedDigit())
-                    .foregroundStyle(result.category.color)
+                // Size and count
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(ByteCountFormatter.string(fromByteCount: result.totalSize, countStyle: .file))
+                        .font(Theme.Typography.subheadline.monospacedDigit())
+                        .foregroundStyle(result.category.color)
 
-                Text(LFormat("common.items %lld", result.itemCount))
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(.tertiary)
-            }
+                    Text(LFormat("common.items %lld", result.itemCount))
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.tertiary)
+                }
 
-            // Expand button
-            Button(action: onToggleExpand) {
+                // Expand chevron
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .rotationEffect(.degrees(isExpanded ? 90 : 0))
             }
-            .buttonStyle(.plain)
+            .padding(.trailing, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.md)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onToggleExpand)
         }
-        .padding(Theme.Spacing.md)
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onToggleExpand)
     }
 
     // MARK: - Expanded Content
