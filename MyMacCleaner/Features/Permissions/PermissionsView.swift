@@ -26,6 +26,10 @@ struct PermissionsView: View {
             withAnimation(Theme.Animation.springSmooth) {
                 isVisible = true
             }
+            // Trigger full permission check when user visits the Permissions page
+            // This includes TCC-triggerable folders (Downloads, Documents, Desktop)
+            // that are skipped at app startup to avoid permission dialogs on launch
+            viewModel.refreshAllPermissions()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             viewModel.refreshAllPermissions()
