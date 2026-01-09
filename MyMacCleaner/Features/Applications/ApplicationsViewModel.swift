@@ -305,7 +305,7 @@ class ApplicationsViewModel: ObservableObject {
                 if updates.isEmpty {
                     showToastMessage(L("applications.toast.allUpToDate"), type: .success)
                 } else {
-                    showToastMessage(L("applications.toast.updatesFound \(updates.count)"), type: .info)
+                    showToastMessage(LFormat("applications.toast.updatesFound %lld", Int64(updates.count)), type: .info)
                 }
             }
         }
@@ -356,13 +356,13 @@ class ApplicationsViewModel: ObservableObject {
                 await MainActor.run {
                     // Remove from outdated list
                     outdatedCasks.removeAll { $0.name == cask.name }
-                    showToastMessage(L("applications.toast.caskUpgraded \(cask.displayName)"), type: .success)
+                    showToastMessage(LFormat("applications.toast.caskUpgraded %@", cask.displayName), type: .success)
                 }
                 // Refresh cask list
                 loadHomebrewStatus()
             } catch {
                 await MainActor.run {
-                    showToastMessage(L("applications.toast.caskUpgradeFailed \(cask.displayName)"), type: .error)
+                    showToastMessage(LFormat("applications.toast.caskUpgradeFailed %@", cask.displayName), type: .error)
                 }
             }
         }
@@ -395,11 +395,11 @@ class ApplicationsViewModel: ObservableObject {
                 await MainActor.run {
                     homebrewCasks.removeAll { $0.name == cask.name }
                     outdatedCasks.removeAll { $0.name == cask.name }
-                    showToastMessage(L("applications.toast.caskUninstalled \(cask.displayName)"), type: .success)
+                    showToastMessage(LFormat("applications.toast.caskUninstalled %@", cask.displayName), type: .success)
                 }
             } catch {
                 await MainActor.run {
-                    showToastMessage(L("applications.toast.caskUninstallFailed \(cask.displayName)"), type: .error)
+                    showToastMessage(LFormat("applications.toast.caskUninstallFailed %@", cask.displayName), type: .error)
                 }
             }
         }

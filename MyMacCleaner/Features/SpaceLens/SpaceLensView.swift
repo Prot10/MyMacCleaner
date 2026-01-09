@@ -33,7 +33,7 @@ struct SpaceLensView: View {
             Button(L("spaceLens.delete.moveToTrash"), role: .destructive) { viewModel.confirmDelete() }
         } message: {
             if let node = viewModel.nodeToDelete {
-                Text(L("spaceLens.delete.confirm \(node.name) \(node.formattedSize)"))
+                Text(LFormat("spaceLens.delete.confirm %@ %@", node.name, node.formattedSize))
             }
         }
         .onAppear {

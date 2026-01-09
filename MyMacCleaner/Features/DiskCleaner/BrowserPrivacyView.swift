@@ -109,10 +109,10 @@ class BrowserPrivacyViewModel: ObservableObject {
             isCleaning = false
 
             if result.errors.isEmpty {
-                toastMessage = L("privacy.clean.success \(result.cleaned) \(ByteCountFormatter.string(fromByteCount: result.freedSpace, countStyle: .file))")
+                toastMessage = LFormat("privacy.clean.success %lld %@", Int64(result.cleaned), ByteCountFormatter.string(fromByteCount: result.freedSpace, countStyle: .file))
                 toastType = .success
             } else {
-                toastMessage = L("privacy.clean.partial \(result.cleaned) \(result.errors.count)")
+                toastMessage = LFormat("privacy.clean.partial %lld %lld", Int64(result.cleaned), Int64(result.errors.count))
                 toastType = .error
             }
             showToast = true
@@ -189,7 +189,7 @@ struct BrowserPrivacyView: View {
             }
         } message: {
             VStack {
-                Text(L("privacy.clean.confirmMessage \(viewModel.selectedCount) \(viewModel.formattedSelectedSize)"))
+                Text(LFormat("privacy.clean.confirmMessage %lld %@", Int64(viewModel.selectedCount), viewModel.formattedSelectedSize))
                 if viewModel.hasWarningItems {
                     Text(L("privacy.clean.warning"))
                         .foregroundStyle(.red)

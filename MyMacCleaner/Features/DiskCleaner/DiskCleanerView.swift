@@ -126,7 +126,17 @@ struct DiskCleanerView: View {
                 viewModel.confirmClean()
             }
         } message: {
-            Text(L("diskCleaner.clean.confirmMessage \(viewModel.selectedItemCount) \(viewModel.formattedSelectedSize)"))
+            Text(LFormat("diskCleaner.clean.confirmMessage %lld %@", Int64(viewModel.selectedItemCount), viewModel.formattedSelectedSize))
+        }
+        .alert(L("diskCleaner.emptyTrash.confirmTitle"), isPresented: $viewModel.showEmptyTrashConfirmation) {
+            Button(L("common.cancel"), role: .cancel) {
+                viewModel.cancelEmptyTrash()
+            }
+            Button(L("diskCleaner.emptyTrash.confirmButton"), role: .destructive) {
+                viewModel.confirmEmptyTrash()
+            }
+        } message: {
+            Text(LFormat("diskCleaner.emptyTrash.confirmMessage %@", viewModel.formattedTrashSize))
         }
         .onAppear {
             withAnimation(Theme.Animation.springSmooth) {
@@ -202,6 +212,10 @@ struct DiskCleanerView: View {
             // Clean button
             cleanButtonSection
         }
+
+        // Empty Trash card (always visible)
+        emptyTrashSection
+            .staggeredAnimation(index: 3, isActive: isVisible)
     }
 
     // MARK: - Scan Prompt
@@ -375,6 +389,89 @@ struct DiskCleanerView: View {
         .padding(20)
         .glassCard()
         .shadow(color: sectionColor.opacity(0.2), radius: 15, y: 5)
+    }
+
+    // MARK: - Empty Trash Section
+
+    private var emptyTrashSection: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            // Trash icon
+            ZStack {
+                Circle()
+                    .fill(Color.orange.opacity(0.1))
+                    .frame(width: 48, height: 48)
+
+                Image(systemName: "trash.fill")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(Color.orange.gradient)
+            }
+
+            // Info
+            VStack(alignment: .leading, spacing: 4) {
+                Text(L("diskCleaner.emptyTrash.title"))
+                    .font(Theme.Typography.subheadline.weight(.semibold))
+
+                if viewModel.trashSize > 0 {
+                    Text(LFormat("diskCleaner.emptyTrash.size %@", viewModel.formattedTrashSize))
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(L("diskCleaner.emptyTrash.empty"))
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Spacer()
+
+            // FDA warning if needed - clickable to open settings
+            if !viewModel.hasFullDiskAccess {
+                Button(action: {
+                    PermissionsService.shared.openFullDiskAccessSettings()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 10))
+                        Text(L("diskCleaner.emptyTrash.needsFDA"))
+                            .font(.system(size: 10, weight: .medium))
+                    }
+                    .foregroundStyle(.orange)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.orange.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                }
+                .buttonStyle(.plain)
+                .help(L("diskCleaner.emptyTrash.clickToGrant"))
+            }
+
+            // Empty button
+            Button(action: viewModel.prepareEmptyTrash) {
+                HStack(spacing: 6) {
+                    if viewModel.isEmptyingTrash {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "trash")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    Text(viewModel.isEmptyingTrash ? L("diskCleaner.emptyTrash.emptying") : L("diskCleaner.emptyTrash.button"))
+                        .font(.system(size: 13, weight: .medium))
+                }
+                .foregroundStyle(viewModel.trashSize > 0 && !viewModel.isEmptyingTrash ? Color.orange : .secondary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.orange.opacity(viewModel.trashSize > 0 ? 0.15 : 0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+            .disabled(viewModel.isEmptyingTrash || viewModel.trashSize == 0)
+        }
+        .padding(Theme.Spacing.md)
+        .glassCard()
+        .onAppear {
+            viewModel.refreshTrashSize()
+        }
     }
 }
 
