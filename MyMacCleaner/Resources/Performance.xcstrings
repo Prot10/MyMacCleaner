@@ -392,6 +392,29 @@
         }
       }
     },
+    "performance.maintenance.run": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ejecutar"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esegui"
+          }
+        }
+      }
+    },
     "performance.maintenance.runAll": {
       "extractionState": "manual",
       "localizations": {
