@@ -197,15 +197,55 @@ class ApplicationsViewModel: ObservableObject {
         guard let app = appToUninstall else { return }
 
         Task {
-            do {
-                // Move app to trash
-                try FileManager.default.trashItem(at: app.url, resultingItemURL: nil)
+            var success = false
+            var errorMessage: String?
 
-                // Move related files to trash
+            // Check if app is in /Applications (requires admin privileges)
+            let requiresAdmin = app.url.path.hasPrefix("/Applications")
+
+            if requiresAdmin {
+                // Use admin privileges to delete
+                var commands: [(command: String, arguments: [String])] = []
+
+                // Add command to delete the app
+                commands.append((command: "/bin/rm", arguments: ["-rf", app.url.path]))
+
+                // Add commands for related files
                 for file in relatedFiles {
-                    try? FileManager.default.trashItem(at: file, resultingItemURL: nil)
+                    // Only use admin for files outside user directory
+                    if !file.path.hasPrefix(FileManager.default.homeDirectoryForCurrentUser.path) {
+                        commands.append((command: "/bin/rm", arguments: ["-rf", file.path]))
+                    }
                 }
 
+                let results = await AuthorizationService.shared.runBatchCommands(commands)
+                success = results.first ?? false
+
+                if success {
+                    // Delete remaining user-space files without admin
+                    for file in relatedFiles {
+                        if file.path.hasPrefix(FileManager.default.homeDirectoryForCurrentUser.path) {
+                            try? FileManager.default.trashItem(at: file, resultingItemURL: nil)
+                        }
+                    }
+                } else {
+                    errorMessage = L("applications.toast.adminDenied")
+                }
+            } else {
+                // Standard deletion for user-installed apps
+                do {
+                    try FileManager.default.trashItem(at: app.url, resultingItemURL: nil)
+
+                    for file in relatedFiles {
+                        try? FileManager.default.trashItem(at: file, resultingItemURL: nil)
+                    }
+                    success = true
+                } catch {
+                    errorMessage = error.localizedDescription
+                }
+            }
+
+            if success {
                 // Remove from list
                 applications.removeAll { $0.id == app.id }
 
@@ -213,10 +253,13 @@ class ApplicationsViewModel: ObservableObject {
                 appToUninstall = nil
                 relatedFiles = []
 
-                showToastMessage(L("applications.toast.uninstalled \(app.name)"), type: .success)
+                showToastMessage(LFormat("applications.toast.uninstalled %@", app.name), type: .success)
+            } else {
+                showUninstallConfirmation = false
+                appToUninstall = nil
+                relatedFiles = []
 
-            } catch {
-                showToastMessage(L("applications.toast.uninstallFailed \(error.localizedDescription)"), type: .error)
+                showToastMessage(LFormat("applications.toast.uninstallFailed %@", errorMessage ?? "Unknown error"), type: .error)
             }
         }
     }
