@@ -137,7 +137,9 @@ class HomeViewModel: ObservableObject {
         Task {
             var totalFreed: Int64 = 0
             var failedCount = 0
-            let allItems = scanResults.flatMap { $0.items }
+            // Only include items from selected categories
+            let selectedCategories = scanResults.filter { $0.isSelected }
+            let allItems = selectedCategories.flatMap { $0.items }
             let selectedItems = allItems.filter { $0.isSelected }
             let totalItems = selectedItems.count
 

@@ -27,7 +27,7 @@ struct HomeView: View {
                     // Scan Results (if available)
                     if viewModel.showScanResults {
                         ScanResultsCard(
-                            results: viewModel.scanResults,
+                            results: $viewModel.scanResults,
                             onClean: viewModel.cleanSelectedItems,
                             onViewDetails: { result in
                                 print("View details for \(result.category.rawValue)")
