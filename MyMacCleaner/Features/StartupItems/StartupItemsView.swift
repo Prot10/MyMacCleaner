@@ -67,9 +67,9 @@ struct StartupItemsView: View {
         } message: {
             if let item = viewModel.itemToToggle {
                 if item.isEnabled {
-                    Text(L("startupItems.toggle.disableMessage \(item.displayName)"))
+                    Text(LFormat("startupItems.toggle.disableMessage %@", item.displayName))
                 } else {
-                    Text(L("startupItems.toggle.enableMessage \(item.displayName)"))
+                    Text(LFormat("startupItems.toggle.enableMessage %@", item.displayName))
                 }
             }
         }
@@ -82,7 +82,7 @@ struct StartupItemsView: View {
             }
         } message: {
             if let item = viewModel.itemToRemove {
-                Text(L("startupItems.remove.message \(item.displayName)"))
+                Text(LFormat("startupItems.remove.message %@", item.displayName))
             }
         }
         .onAppear {

@@ -174,12 +174,12 @@ class StartupItemsViewModel: ObservableObject {
                 }
 
                 if newState {
-                    showToastMessage(L("startupItems.toast.enabled \(item.displayName)"), type: .success)
+                    showToastMessage(LFormat("startupItems.toast.enabled %@", item.displayName), type: .success)
                 } else {
-                    showToastMessage(L("startupItems.toast.disabled \(item.displayName)"), type: .success)
+                    showToastMessage(LFormat("startupItems.toast.disabled %@", item.displayName), type: .success)
                 }
             } else {
-                showToastMessage(L("startupItems.toast.modifyFailed \(item.displayName)"), type: .error)
+                showToastMessage(LFormat("startupItems.toast.modifyFailed %@", item.displayName), type: .error)
             }
 
             showDisableConfirmation = false
@@ -211,9 +211,9 @@ class StartupItemsViewModel: ObservableObject {
 
             if success {
                 items.removeAll { $0.id == item.id }
-                showToastMessage(L("startupItems.toast.removed \(item.displayName)"), type: .success)
+                showToastMessage(LFormat("startupItems.toast.removed %@", item.displayName), type: .success)
             } else {
-                showToastMessage(L("startupItems.toast.removeFailed \(item.displayName)"), type: .error)
+                showToastMessage(LFormat("startupItems.toast.removeFailed %@", item.displayName), type: .error)
             }
 
             showRemoveConfirmation = false

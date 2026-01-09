@@ -62,7 +62,7 @@ struct PortManagementView: View {
             }
         } message: {
             if let connection = viewModel.connectionToKill {
-                Text(L("portManagement.kill.message \(connection.processName) \(String(connection.pid)) \(connection.localPort)"))
+                Text(LFormat("portManagement.kill.message %@ %@ %@", connection.processName, String(connection.pid), connection.localPort))
             }
         }
         .onAppear {

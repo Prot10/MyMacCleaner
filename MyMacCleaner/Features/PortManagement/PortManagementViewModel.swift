@@ -104,7 +104,7 @@ class PortManagementViewModel: ObservableObject {
 
             if success {
                 connections.removeAll { $0.id == connection.id }
-                showToastMessage(L("portManagement.toast.terminated \(connection.processName)"), type: .success)
+                showToastMessage(LFormat("portManagement.toast.terminated %@", connection.processName), type: .success)
             } else {
                 showToastMessage(L("portManagement.toast.failedAdmin"), type: .error)
             }
