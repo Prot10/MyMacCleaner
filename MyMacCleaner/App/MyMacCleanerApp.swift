@@ -65,31 +65,33 @@ struct MyMacCleanerApp: App {
 }
 
 struct SettingsView: View {
+    @Environment(LocalizationManager.self) var localization
+
     var body: some View {
         TabView {
             GeneralSettingsView()
                 .tabItem {
-                    Label(String(localized: "settings.general"), systemImage: "gear")
+                    Label(L("settings.general"), systemImage: "gear")
                 }
 
             LanguageSettingsView()
                 .tabItem {
-                    Label(String(localized: "settings.language"), systemImage: "globe")
+                    Label(L("settings.language"), systemImage: "globe")
                 }
 
             UpdateSettingsView()
                 .tabItem {
-                    Label(String(localized: "settings.updates"), systemImage: "arrow.triangle.2.circlepath")
+                    Label(L("settings.updates"), systemImage: "arrow.triangle.2.circlepath")
                 }
 
             PermissionsSettingsView()
                 .tabItem {
-                    Label(String(localized: "settings.permissions"), systemImage: "lock.shield")
+                    Label(L("settings.permissions"), systemImage: "lock.shield")
                 }
 
             AboutSettingsView()
                 .tabItem {
-                    Label(String(localized: "settings.about"), systemImage: "info.circle")
+                    Label(L("settings.about"), systemImage: "info.circle")
                 }
         }
         .frame(width: 450, height: 320)
@@ -100,16 +102,17 @@ struct GeneralSettingsView: View {
     @AppStorage("launchAtLogin") private var launchAtLogin = false
     @AppStorage("showInMenuBar") private var showInMenuBar = false
     @EnvironmentObject var menuBarController: MenuBarController
+    @Environment(LocalizationManager.self) var localization
 
     var body: some View {
         Form {
-            Toggle(String(localized: "settings.launchAtLogin"), isOn: $launchAtLogin)
+            Toggle(L("settings.launchAtLogin"), isOn: $launchAtLogin)
 
             Section {
-                Toggle(String(localized: "settings.showInMenuBar"), isOn: $showInMenuBar)
+                Toggle(L("settings.showInMenuBar"), isOn: $showInMenuBar)
 
                 if showInMenuBar {
-                    Picker(String(localized: "settings.menuBarDisplay"), selection: Binding(
+                    Picker(L("settings.menuBarDisplay"), selection: Binding(
                         get: { menuBarController.displayMode },
                         set: { menuBarController.setDisplayMode($0) }
                     )) {
@@ -119,7 +122,7 @@ struct GeneralSettingsView: View {
                     }
                     .pickerStyle(.menu)
 
-                    Text(String(localized: "settings.menuBarDescription"))
+                    Text(L("settings.menuBarDescription"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -134,10 +137,10 @@ struct LanguageSettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(String(localized: "settings.language"))
+            Text(L("settings.language"))
                 .font(.headline)
 
-            Picker(String(localized: "settings.language"), selection: Binding(
+            Picker(L("settings.language"), selection: Binding(
                 get: { localization.currentLanguage },
                 set: { localization.setLanguage($0) }
             )) {
@@ -148,7 +151,7 @@ struct LanguageSettingsView: View {
             .pickerStyle(.radioGroup)
             .labelsHidden()
 
-            Text(String(localized: "settings.languageNote"))
+            Text(L("settings.languageNote"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -160,19 +163,20 @@ struct LanguageSettingsView: View {
 
 struct UpdateSettingsView: View {
     @Environment(UpdateManager.self) var updateManager
+    @Environment(LocalizationManager.self) var localization
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(String(localized: "settings.updates"))
+            Text(L("settings.updates"))
                 .font(.headline)
 
-            Toggle(String(localized: "settings.autoCheckUpdates"), isOn: Binding(
+            Toggle(L("settings.autoCheckUpdates"), isOn: Binding(
                 get: { updateManager.automaticChecksEnabled },
                 set: { updateManager.automaticChecksEnabled = $0 }
             ))
 
             HStack {
-                Button(String(localized: "settings.checkNow")) {
+                Button(L("settings.checkNow")) {
                     updateManager.checkForUpdates()
                 }
                 .disabled(!updateManager.canCheckForUpdates)
@@ -180,13 +184,13 @@ struct UpdateSettingsView: View {
                 Spacer()
 
                 if let lastCheck = updateManager.lastUpdateCheck {
-                    Text(String(localized: "settings.lastChecked \(lastCheck.formatted())"))
+                    Text(LFormat("settings.lastChecked %@", lastCheck.formatted()))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
 
-            Text(String(localized: "settings.updatesDescription"))
+            Text(L("settings.updatesDescription"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -197,22 +201,24 @@ struct UpdateSettingsView: View {
 }
 
 struct PermissionsSettingsView: View {
+    @Environment(LocalizationManager.self) var localization
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(String(localized: "settings.permissions"))
+            Text(L("settings.permissions"))
                 .font(.headline)
 
             HStack {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.green)
-                Text(String(localized: "settings.fullDiskAccess"))
+                Text(L("settings.fullDiskAccess"))
                 Spacer()
-                Button(String(localized: "settings.openSettings")) {
+                Button(L("settings.openSettings")) {
                     openSystemPreferences()
                 }
             }
 
-            Text(String(localized: "settings.fdaDescription"))
+            Text(L("settings.fdaDescription"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -228,6 +234,8 @@ struct PermissionsSettingsView: View {
 }
 
 struct AboutSettingsView: View {
+    @Environment(LocalizationManager.self) var localization
+
     private var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
@@ -246,11 +254,11 @@ struct AboutSettingsView: View {
             Text("Version \(appVersion)")
                 .foregroundStyle(.secondary)
 
-            Text(String(localized: "settings.aboutDescription"))
+            Text(L("settings.aboutDescription"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Link(String(localized: "settings.viewOnGitHub"), destination: URL(string: "https://github.com/Prot10/MyMacCleaner")!)
+            Link(L("settings.viewOnGitHub"), destination: URL(string: "https://github.com/Prot10/MyMacCleaner")!)
                 .font(.caption)
 
             Spacer()
