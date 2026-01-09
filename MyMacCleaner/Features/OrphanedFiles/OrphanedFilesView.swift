@@ -371,10 +371,47 @@ struct OrphanCategoryCard: View {
         files.allSatisfy { $0.isSelected }
     }
 
+    var someSelected: Bool {
+        files.contains { $0.isSelected } && !allSelected
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            Button(action: onToggleExpand) {
+            HStack(spacing: 0) {
+                // Checkbox for selecting all - separate hit area
+                Button(action: onToggleAll) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(allSelected || someSelected ? accentColor : Color.secondary.opacity(0.5), lineWidth: 1.5)
+                            .frame(width: 20, height: 20)
+
+                        if allSelected {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(accentColor)
+                                .frame(width: 20, height: 20)
+
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.white)
+                        } else if someSelected {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(accentColor.opacity(0.5))
+                                .frame(width: 20, height: 20)
+
+                            Image(systemName: "minus")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.white)
+                        }
+                    }
+                    .padding(.leading, Theme.Spacing.md)
+                    .padding(.trailing, Theme.Spacing.md)
+                    .padding(.vertical, Theme.Spacing.md)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                // Expandable area - everything else
                 HStack(spacing: Theme.Spacing.md) {
                     // Category icon
                     ZStack {
@@ -417,32 +454,16 @@ struct OrphanCategoryCard: View {
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.tertiary)
                 }
-                .padding(Theme.Spacing.md)
+                .padding(.trailing, Theme.Spacing.md)
+                .padding(.vertical, Theme.Spacing.md)
+                .contentShape(Rectangle())
+                .onTapGesture(perform: onToggleExpand)
             }
-            .buttonStyle(.plain)
 
             // Expanded content
             if isExpanded {
                 Divider()
                     .padding(.horizontal, Theme.Spacing.md)
-
-                // Select all for category
-                HStack {
-                    Button(action: onToggleAll) {
-                        HStack(spacing: 6) {
-                            Image(systemName: allSelected ? "checkmark.square.fill" : "square")
-                                .foregroundStyle(allSelected ? accentColor : .secondary)
-                            Text(allSelected ? L("orphans.deselectAll") : L("orphans.selectAll"))
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .buttonStyle(.plain)
-
-                    Spacer()
-                }
-                .padding(.horizontal, Theme.Spacing.md)
-                .padding(.top, Theme.Spacing.sm)
 
                 // File list
                 VStack(spacing: 0) {
