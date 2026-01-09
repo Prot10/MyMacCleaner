@@ -71,9 +71,10 @@ struct MenuBarView: View {
 
     private var headerSection: some View {
         HStack(spacing: 8) {
-            Image(systemName: "gauge.with.needle.fill")
-                .font(.title3)
-                .foregroundStyle(.blue)
+            Image("MenuBarIcon")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 20, height: 20)
 
             Text("MyMacCleaner")
                 .font(.headline)
@@ -221,7 +222,7 @@ struct MenuBarView: View {
         case .cpuOnly: return "cpu"
         case .ramOnly: return "memorychip"
         case .cpuAndRam: return "square.grid.2x2"
-        case .compact: return "circle.grid.2x1"
+        case .icon: return "gauge.with.needle"
         }
     }
 
