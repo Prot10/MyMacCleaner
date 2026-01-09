@@ -93,6 +93,29 @@
         }
       }
     },
+    "menuBar.displayMode": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display Mode"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo de Visualización"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modalità di Visualizzazione"
+          }
+        }
+      }
+    },
     "menuBar.displayMode.compact": {
       "extractionState": "manual",
       "localizations": {

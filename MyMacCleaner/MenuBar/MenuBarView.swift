@@ -1,114 +1,101 @@
 import SwiftUI
+import AppKit
+
+// MARK: - Visual Effect Background
+
+struct VisualEffectBackground: NSViewRepresentable {
+    let material: NSVisualEffectView.Material
+    let blendingMode: NSVisualEffectView.BlendingMode
+
+    init(
+        material: NSVisualEffectView.Material = .popover,
+        blendingMode: NSVisualEffectView.BlendingMode = .behindWindow
+    ) {
+        self.material = material
+        self.blendingMode = blendingMode
+    }
+
+    func makeNSView(context: Context) -> NSVisualEffectView {
+        let view = NSVisualEffectView()
+        view.material = material
+        view.blendingMode = blendingMode
+        view.state = .active
+        return view
+    }
+
+    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
+        nsView.material = material
+        nsView.blendingMode = blendingMode
+    }
+}
 
 // MARK: - Menu Bar View
 
 struct MenuBarView: View {
     @StateObject private var statsProvider = SystemStatsProvider.shared
     @StateObject private var menuBarController = MenuBarController.shared
-    @State private var isHoveringOpenApp = false
-    @State private var isHoveringScan = false
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             // Header
             headerSection
 
             Divider()
+                .padding(.horizontal, 12)
 
-            // Stats
-            ScrollView {
-                VStack(spacing: 12) {
-                    cpuSection
-                    memorySection
-                    diskSection
-                }
-                .padding(16)
+            // Stats sections
+            VStack(alignment: .leading, spacing: 2) {
+                cpuSection
+                memorySection
+                diskSection
             }
+            .padding(.vertical, 8)
 
             Divider()
+                .padding(.horizontal, 12)
 
-            // Quick Actions
-            quickActionsSection
+            // Display mode section
+            displayModeSection
 
             Divider()
+                .padding(.horizontal, 12)
 
-            // Footer
-            footerSection
+            // Actions
+            actionsSection
         }
-        .frame(width: 320)
-        .background(Color(nsColor: .windowBackgroundColor))
+        .frame(width: 280)
+        .background(VisualEffectBackground(material: .popover))
     }
 
     // MARK: - Header
 
     private var headerSection: some View {
-        HStack {
+        HStack(spacing: 8) {
             Image(systemName: "gauge.with.needle.fill")
-                .font(.title2)
-                .foregroundStyle(.blue.gradient)
+                .font(.title3)
+                .foregroundStyle(.blue)
 
             Text("MyMacCleaner")
                 .font(.headline)
 
             Spacer()
-
-            // Display mode picker
-            Menu {
-                ForEach(MenuBarController.DisplayMode.allCases, id: \.rawValue) { mode in
-                    Button {
-                        menuBarController.setDisplayMode(mode)
-                    } label: {
-                        HStack {
-                            Text(mode.localizedName)
-                            if menuBarController.displayMode == mode {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
-                }
-            } label: {
-                Image(systemName: "gearshape")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-            }
-            .menuStyle(.borderlessButton)
-            .frame(width: 24)
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
 
     // MARK: - CPU Section
 
     private var cpuSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "cpu")
-                    .foregroundStyle(.blue)
-                Text(L("menuBar.cpu"))
-                    .font(.subheadline.weight(.medium))
-                Spacer()
-                Text(statsProvider.stats.formattedCPU)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(cpuColor)
-            }
-
-            // CPU Progress Bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 8)
-
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(cpuColor.gradient)
-                        .frame(width: geometry.size.width * min(statsProvider.stats.cpuUsage / 100, 1.0), height: 8)
-                }
-            }
-            .frame(height: 8)
-        }
-        .padding(12)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(10)
+        MenuBarRow(
+            icon: "cpu",
+            iconColor: cpuColor,
+            title: L("menuBar.cpu"),
+            value: statsProvider.stats.formattedCPU,
+            valueColor: cpuColor,
+            progress: statsProvider.stats.cpuUsage / 100,
+            progressColor: cpuColor
+        )
     }
 
     private var cpuColor: Color {
@@ -121,45 +108,29 @@ struct MenuBarView: View {
     // MARK: - Memory Section
 
     private var memorySection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "memorychip")
-                    .foregroundStyle(.purple)
-                Text(L("menuBar.memory"))
-                    .font(.subheadline.weight(.medium))
-                Spacer()
-                Text("\(statsProvider.stats.formattedMemory) / \(statsProvider.stats.formattedMemoryTotal)")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(memoryColor)
-            }
-
-            // Memory Progress Bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 8)
-
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(memoryColor.gradient)
-                        .frame(width: geometry.size.width * min(statsProvider.stats.memoryUsagePercent / 100, 1.0), height: 8)
-                }
-            }
-            .frame(height: 8)
+        VStack(alignment: .leading, spacing: 0) {
+            MenuBarRow(
+                icon: "memorychip",
+                iconColor: memoryColor,
+                title: L("menuBar.memory"),
+                value: "\(statsProvider.stats.formattedMemory) / \(statsProvider.stats.formattedMemoryTotal)",
+                valueColor: memoryColor,
+                progress: statsProvider.stats.memoryUsagePercent / 100,
+                progressColor: memoryColor
+            )
 
             // Memory pressure indicator
-            HStack(spacing: 4) {
+            HStack(spacing: 6) {
                 Circle()
                     .fill(memoryColor)
-                    .frame(width: 6, height: 6)
+                    .frame(width: 8, height: 8)
                 Text(memoryPressureText)
-                    .font(.caption)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
         }
-        .padding(12)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(10)
     }
 
     private var memoryColor: Color {
@@ -179,35 +150,15 @@ struct MenuBarView: View {
     // MARK: - Disk Section
 
     private var diskSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "internaldrive")
-                    .foregroundStyle(.orange)
-                Text(L("menuBar.disk"))
-                    .font(.subheadline.weight(.medium))
-                Spacer()
-                Text(diskUsageText)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(diskColor)
-            }
-
-            // Disk Progress Bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 8)
-
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(diskColor.gradient)
-                        .frame(width: geometry.size.width * diskUsagePercent, height: 8)
-                }
-            }
-            .frame(height: 8)
-        }
-        .padding(12)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(10)
+        MenuBarRow(
+            icon: "internaldrive",
+            iconColor: diskColor,
+            title: L("menuBar.disk"),
+            value: diskUsageText,
+            valueColor: diskColor,
+            progress: diskUsagePercent,
+            progressColor: diskColor
+        )
     }
 
     private var diskUsageText: String {
@@ -242,50 +193,64 @@ struct MenuBarView: View {
         }
     }
 
-    // MARK: - Quick Actions
+    // MARK: - Display Mode Section
 
-    private var quickActionsSection: some View {
-        HStack(spacing: 12) {
-            Button {
+    private var displayModeSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(L("menuBar.displayMode"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+            ForEach(MenuBarController.DisplayMode.allCases, id: \.rawValue) { mode in
+                MenuBarButton(
+                    title: mode.localizedName,
+                    icon: iconForMode(mode),
+                    isSelected: menuBarController.displayMode == mode
+                ) {
+                    menuBarController.setDisplayMode(mode)
+                }
+            }
+        }
+        .padding(.bottom, 8)
+    }
+
+    private func iconForMode(_ mode: MenuBarController.DisplayMode) -> String {
+        switch mode {
+        case .cpuOnly: return "cpu"
+        case .ramOnly: return "memorychip"
+        case .cpuAndRam: return "square.grid.2x2"
+        case .compact: return "circle.grid.2x1"
+        }
+    }
+
+    // MARK: - Actions Section
+
+    private var actionsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            MenuBarButton(title: L("menuBar.action.scan"), icon: "magnifyingglass") {
                 openMainApp()
                 runSmartScan()
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "magnifyingglass")
-                    Text(L("menuBar.action.scan"))
-                }
-                .font(.subheadline.weight(.medium))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(isHoveringScan ? Color.blue.opacity(0.2) : Color.blue.opacity(0.1))
-                .cornerRadius(8)
             }
-            .buttonStyle(.plain)
-            .onHover { isHoveringScan = $0 }
 
-            Button {
+            MenuBarButton(title: L("menuBar.action.openApp"), icon: "macwindow") {
                 openMainApp()
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "macwindow")
-                    Text(L("menuBar.action.openApp"))
-                }
-                .font(.subheadline.weight(.medium))
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(isHoveringOpenApp ? Color.gray.opacity(0.2) : Color.gray.opacity(0.1))
-                .cornerRadius(8)
             }
-            .buttonStyle(.plain)
-            .onHover { isHoveringOpenApp = $0 }
+
+            Divider()
+                .padding(.horizontal, 12)
+
+            MenuBarButton(title: L("menuBar.quit"), icon: "power") {
+                NSApp.terminate(nil)
+            }
         }
-        .padding(16)
+        .padding(.vertical, 4)
     }
 
     private func openMainApp() {
         NSApp.activate(ignoringOtherApps: true)
 
-        // Find and activate the main window
         for window in NSApp.windows {
             if window.title == "MyMacCleaner" || window.contentView?.subviews.first is NSHostingView<ContentView> {
                 window.makeKeyAndOrderFront(nil)
@@ -293,38 +258,101 @@ struct MenuBarView: View {
             }
         }
 
-        // If no window found, create a new one
         if let mainWindow = NSApp.windows.first(where: { $0.isVisible }) {
             mainWindow.makeKeyAndOrderFront(nil)
         }
     }
 
     private func runSmartScan() {
-        // Post notification to trigger scan in main app
         NotificationCenter.default.post(name: .triggerSmartScan, object: nil)
     }
+}
 
-    // MARK: - Footer
+// MARK: - Menu Bar Row Component
 
-    private var footerSection: some View {
-        HStack {
-            Text(L("menuBar.lastUpdate"))
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+struct MenuBarRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    let value: String
+    let valueColor: Color
+    let progress: Double
+    let progressColor: Color
 
-            Spacer()
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Image(systemName: icon)
+                    .font(.subheadline)
+                    .foregroundStyle(iconColor)
+                    .frame(width: 20)
 
-            Button {
-                NSApp.terminate(nil)
-            } label: {
-                Text(L("menuBar.quit"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Text(title)
+                    .font(.subheadline)
+
+                Spacer()
+
+                Text(value)
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(valueColor)
             }
-            .buttonStyle(.plain)
+
+            // Progress bar
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.primary.opacity(0.1))
+                        .frame(height: 4)
+
+                    Capsule()
+                        .fill(progressColor)
+                        .frame(width: geometry.size.width * min(max(progress, 0), 1), height: 4)
+                }
+            }
+            .frame(height: 4)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
+    }
+}
+
+// MARK: - Menu Bar Button Component
+
+struct MenuBarButton: View {
+    let title: String
+    let icon: String
+    var isSelected: Bool = false
+    let action: () -> Void
+
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: isSelected ? "\(icon).fill" : icon)
+                    .font(.subheadline)
+                    .foregroundStyle(isSelected ? .blue : .secondary)
+                    .frame(width: 20)
+
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.blue)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(isHovering ? Color.primary.opacity(0.1) : Color.clear)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering = $0 }
     }
 }
 
@@ -338,5 +366,5 @@ extension Notification.Name {
 
 #Preview {
     MenuBarView()
-        .frame(height: 400)
+        .frame(height: 450)
 }
