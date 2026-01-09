@@ -20,14 +20,14 @@ class MenuBarController: NSObject, ObservableObject {
         case cpuOnly = "CPU"
         case ramOnly = "RAM"
         case cpuAndRam = "CPU & RAM"
-        case compact = "Compact"
+        case icon = "Icon"
 
         var localizedName: String {
             switch self {
             case .cpuOnly: return L("menuBar.displayMode.cpuOnly")
             case .ramOnly: return L("menuBar.displayMode.ramOnly")
             case .cpuAndRam: return L("menuBar.displayMode.cpuAndRam")
-            case .compact: return L("menuBar.displayMode.compact")
+            case .icon: return L("menuBar.displayMode.icon")
             }
         }
     }
@@ -47,7 +47,8 @@ class MenuBarController: NSObject, ObservableObject {
         if let button = statusItem?.button {
             button.action = #selector(togglePopover)
             button.target = self
-            updateButtonTitle()
+            button.imagePosition = .imageLeft
+            updateButtonDisplay()
         }
 
         // Create popover
@@ -66,7 +67,7 @@ class MenuBarController: NSObject, ObservableObject {
         // Observe stats changes
         Task { @MainActor in
             for await _ in statsProvider.$stats.values {
-                self.updateButtonTitle()
+                self.updateButtonDisplay()
             }
         }
 
@@ -91,32 +92,89 @@ class MenuBarController: NSObject, ObservableObject {
 
     // MARK: - Display Update
 
-    private func updateButtonTitle() {
+    private func updateButtonDisplay() {
         guard let button = statusItem?.button else { return }
 
         let stats = statsProvider.stats
 
+        // Reset button state
+        button.image = nil
+        button.title = ""
+
         switch displayMode {
         case .cpuOnly:
-            button.title = "CPU \(Int(stats.cpuUsage))%"
+            // CPU icon + percentage
+            let image = NSImage(systemSymbolName: "cpu", accessibilityDescription: "CPU")
+            image?.isTemplate = true
+            button.image = image
+            button.imagePosition = .imageLeft
+            button.title = " \(Int(stats.cpuUsage))%"
+            button.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
 
         case .ramOnly:
-            button.title = "RAM \(stats.formattedMemory)"
+            // Memory icon + percentage
+            let image = NSImage(systemSymbolName: "memorychip", accessibilityDescription: "Memory")
+            image?.isTemplate = true
+            button.image = image
+            button.imagePosition = .imageLeft
+            button.title = " \(Int(stats.memoryUsagePercent))%"
+            button.font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
 
         case .cpuAndRam:
-            button.title = "CPU \(Int(stats.cpuUsage))% | RAM \(stats.formattedMemory)"
+            // Both icons with percentages using attributed string
+            let attachment1 = NSTextAttachment()
+            attachment1.image = createTemplateImage(systemName: "cpu")
 
-        case .compact:
-            // Use symbols for compact mode
-            let cpuIcon = stats.cpuUsage > 80 ? "🔴" : (stats.cpuUsage > 50 ? "🟡" : "🟢")
-            let memIcon = stats.memoryUsagePercent > 80 ? "🔴" : (stats.memoryUsagePercent > 50 ? "🟡" : "🟢")
-            button.title = "\(cpuIcon)\(Int(stats.cpuUsage))% \(memIcon)\(Int(stats.memoryUsagePercent))%"
+            let attachment2 = NSTextAttachment()
+            attachment2.image = createTemplateImage(systemName: "memorychip")
+
+            let attributedString = NSMutableAttributedString()
+
+            // CPU icon
+            attributedString.append(NSAttributedString(attachment: attachment1))
+            // CPU percentage
+            attributedString.append(NSAttributedString(string: " \(Int(stats.cpuUsage))%  "))
+            // Memory icon
+            attributedString.append(NSAttributedString(attachment: attachment2))
+            // Memory percentage
+            attributedString.append(NSAttributedString(string: " \(Int(stats.memoryUsagePercent))%"))
+
+            // Apply monospaced digit font
+            let font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
+            attributedString.addAttribute(.font, value: font, range: NSRange(location: 0, length: attributedString.length))
+
+            button.attributedTitle = attributedString
+            button.image = nil
+
+        case .icon:
+            // Just the app icon from Assets (colored, not template)
+            if let image = NSImage(named: "MenuBarIcon") {
+                image.isTemplate = false  // Keep original colors
+                image.size = NSSize(width: 18, height: 18)  // Proper menu bar size
+                button.image = image
+            } else {
+                // Fallback to SF Symbol if custom icon not found
+                let image = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "MyMacCleaner")
+                image?.isTemplate = true
+                button.image = image
+            }
+            button.imagePosition = .imageOnly
+            button.title = ""
         }
+    }
+
+    /// Creates a template image from SF Symbol for use in attributed strings
+    private func createTemplateImage(systemName: String) -> NSImage? {
+        let config = NSImage.SymbolConfiguration(pointSize: NSFont.systemFontSize, weight: .regular)
+        let image = NSImage(systemSymbolName: systemName, accessibilityDescription: nil)?
+            .withSymbolConfiguration(config)
+        // Note: Template mode is handled by the system for menu bar items
+        return image
     }
 
     func setDisplayMode(_ mode: DisplayMode) {
         displayMode = mode
-        updateButtonTitle()
+        updateButtonDisplay()
         UserDefaults.standard.set(mode.rawValue, forKey: "menuBarDisplayMode")
     }
 

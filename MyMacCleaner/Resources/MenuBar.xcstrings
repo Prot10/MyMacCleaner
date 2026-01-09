@@ -116,25 +116,25 @@
         }
       }
     },
-    "menuBar.displayMode.compact": {
+    "menuBar.displayMode.icon": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compact"
+            "value": "Icon Only"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compacto"
+            "value": "Solo Icono"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Compatto"
+            "value": "Solo Icona"
           }
         }
       }
