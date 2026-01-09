@@ -127,7 +127,7 @@ struct PortManagementView: View {
     // MARK: - Controls Section
 
     private var controlsSection: some View {
-        HStack(spacing: Theme.Spacing.md) {
+        HStack(spacing: Theme.ControlSize.controlSpacing) {
             // Search
             GlassSearchField(text: $viewModel.searchText, placeholder: L("portManagement.search"))
 

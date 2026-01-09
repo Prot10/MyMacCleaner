@@ -90,6 +90,34 @@ enum Theme {
         static let pill: CGFloat = 100
     }
 
+    // MARK: - Control Sizes (Standardized UI Controls)
+
+    enum ControlSize {
+        /// Standard toolbar control height (matches macOS native .regular)
+        static let toolbarHeight: CGFloat = 28
+
+        /// Search field max width for consistency across views
+        static let searchFieldMaxWidth: CGFloat = 300
+
+        /// Horizontal padding for glass controls
+        static let horizontalPadding: CGFloat = 12
+
+        /// Vertical padding for glass controls
+        static let verticalPadding: CGFloat = 6
+
+        /// Standard font for controls
+        static let controlFont: Font = .system(size: 13, weight: .medium)
+
+        /// Icon size in controls
+        static let controlIconSize: CGFloat = 12
+
+        /// Corner radius for control backgrounds
+        static let controlRadius: CGFloat = 8
+
+        /// Spacing between controls in a filter bar
+        static let controlSpacing: CGFloat = 8
+    }
+
     // MARK: - Shadows
 
     enum Shadows {

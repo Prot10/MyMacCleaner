@@ -345,33 +345,24 @@ struct DuplicatesView: View {
     // MARK: - Controls Section
 
     private var controlsSection: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Theme.ControlSize.controlSpacing) {
             // Search
             GlassSearchField(
                 text: $viewModel.searchText,
                 placeholder: L("duplicates.search.placeholder")
             )
-            .frame(maxWidth: 250)
 
             // Sort
-            Menu {
+            GlassMenuButton(
+                icon: "arrow.up.arrow.down",
+                title: viewModel.sortOrder.localizedName
+            ) {
                 ForEach(DuplicatesViewModel.SortOrder.allCases, id: \.self) { order in
                     Button(order.localizedName) {
                         viewModel.sortOrder = order
                     }
                 }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.up.arrow.down")
-                    Text(viewModel.sortOrder.localizedName)
-                }
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .glassCard(cornerRadius: 8)
             }
-            .buttonStyle(.plain)
 
             if viewModel.filterType != nil || !viewModel.searchText.isEmpty {
                 Button(action: viewModel.clearFilter) {
@@ -379,7 +370,7 @@ struct DuplicatesView: View {
                         Image(systemName: "xmark.circle.fill")
                         Text(L("duplicates.clearFilters"))
                     }
-                    .font(.system(size: 12, weight: .medium))
+                    .font(Theme.ControlSize.controlFont)
                     .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -388,7 +379,10 @@ struct DuplicatesView: View {
             Spacer()
 
             // Smart selection
-            Menu {
+            GlassMenuButton(
+                icon: "checklist",
+                title: L("duplicates.smartSelect")
+            ) {
                 Button(L("duplicates.selectAllDuplicates")) {
                     viewModel.selectAllDuplicates()
                 }
@@ -399,18 +393,7 @@ struct DuplicatesView: View {
                 Button(L("diskCleaner.deselectAll")) {
                     viewModel.deselectAll()
                 }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "checklist")
-                    Text(L("duplicates.smartSelect"))
-                }
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(sectionColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .glassCard(cornerRadius: 8)
             }
-            .buttonStyle(.plain)
 
             // Rescan
             Button(action: viewModel.startScan) {
@@ -418,11 +401,12 @@ struct DuplicatesView: View {
                     Image(systemName: "arrow.clockwise")
                     Text(L("diskCleaner.rescan"))
                 }
-                .font(.system(size: 12, weight: .medium))
+                .font(Theme.ControlSize.controlFont)
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .glassCard(cornerRadius: 8)
+                .padding(.horizontal, Theme.ControlSize.horizontalPadding)
+                .padding(.vertical, Theme.ControlSize.verticalPadding)
+                .frame(height: Theme.ControlSize.toolbarHeight)
+                .glassCard(cornerRadius: Theme.ControlSize.controlRadius)
             }
             .buttonStyle(.plain)
         }
