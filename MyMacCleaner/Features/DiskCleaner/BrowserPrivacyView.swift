@@ -347,6 +347,15 @@ struct BrowserPrivacyView: View {
                         onToggleItem: { item in
                             viewModel.toggleSelection(item)
                         },
+                        onToggleAll: {
+                            // If all selected, deselect all; otherwise select all
+                            let allSelected = browserItems.allSatisfy { $0.isSelected }
+                            if allSelected {
+                                viewModel.deselectAllForBrowser(browser)
+                            } else {
+                                viewModel.selectAllForBrowser(browser)
+                            }
+                        },
                         accentColor: privacyColor
                     )
                 }
@@ -392,6 +401,7 @@ struct BrowserDataCard: View {
     let isExpanded: Bool
     let onToggleExpand: () -> Void
     let onToggleItem: (BrowserDataItem) -> Void
+    let onToggleAll: () -> Void
     let accentColor: Color
 
     var totalSize: Int64 {
@@ -406,10 +416,47 @@ struct BrowserDataCard: View {
         items.allSatisfy { $0.isSelected }
     }
 
+    var someSelected: Bool {
+        items.contains { $0.isSelected } && !allSelected
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            Button(action: onToggleExpand) {
+            HStack(spacing: 0) {
+                // Checkbox for selecting all - separate hit area
+                Button(action: onToggleAll) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(allSelected || someSelected ? accentColor : Color.secondary.opacity(0.5), lineWidth: 1.5)
+                            .frame(width: 20, height: 20)
+
+                        if allSelected {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(accentColor)
+                                .frame(width: 20, height: 20)
+
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.white)
+                        } else if someSelected {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(accentColor.opacity(0.5))
+                                .frame(width: 20, height: 20)
+
+                            Image(systemName: "minus")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.white)
+                        }
+                    }
+                    .padding(.leading, Theme.Spacing.md)
+                    .padding(.trailing, Theme.Spacing.md)
+                    .padding(.vertical, Theme.Spacing.md)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                // Expandable area - everything else
                 HStack(spacing: Theme.Spacing.md) {
                     // Browser icon
                     ZStack {
@@ -452,9 +499,11 @@ struct BrowserDataCard: View {
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.tertiary)
                 }
-                .padding(Theme.Spacing.md)
+                .padding(.trailing, Theme.Spacing.md)
+                .padding(.vertical, Theme.Spacing.md)
+                .contentShape(Rectangle())
+                .onTapGesture(perform: onToggleExpand)
             }
-            .buttonStyle(.plain)
 
             // Expanded content
             if isExpanded {
