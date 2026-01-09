@@ -231,6 +231,29 @@
         }
       }
     },
+    "common.items %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld items"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld elementos"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld elementi"
+          }
+        }
+      }
+    },
     "common.ok" : {
       "extractionState" : "manual",
       "localizations" : {
