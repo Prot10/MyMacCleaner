@@ -636,65 +636,91 @@ struct MaintenanceTaskCard: View {
     @State private var isHovered = false
 
     var body: some View {
-        Button(action: onRun) {
-            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                HStack {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(iconBackgroundColor.opacity(0.15))
-                            .frame(width: 44, height: 44)
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            // Header row: Icon + Name on left, Run button on right
+            HStack(spacing: Theme.Spacing.sm) {
+                // Icon
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(iconBackgroundColor.opacity(0.15))
+                        .frame(width: 32, height: 32)
 
-                        if isRunning {
-                            ProgressView()
-                                .controlSize(.small)
-                        } else if let result = result {
-                            resultIcon(for: result)
-                        } else {
-                            Image(systemName: task.icon)
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(task.color)
-                        }
-                    }
-
-                    Spacer()
-
-                    // Status badge
-                    if let result = result, result != .pending && result != .running {
-                        statusBadge(for: result)
-                    } else if task.requiresAdmin {
-                        Image(systemName: "lock.shield")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                    if isRunning {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else if let result = result, result != .pending {
+                        resultIcon(for: result)
+                    } else {
+                        Image(systemName: task.icon)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(task.color)
                     }
                 }
 
+                // Task name
                 Text(task.localizedName)
                     .font(Theme.Typography.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
 
-                Text(task.localizedDescription)
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+                // Admin badge
+                if task.requiresAdmin {
+                    Image(systemName: "lock.shield")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.tertiary)
+                }
 
-                if isRunning {
-                    ProgressView(value: progress)
-                        .progressViewStyle(.linear)
-                        .tint(task.color)
+                Spacer()
+
+                // Run button or status
+                if let result = result, result != .pending && result != .running {
+                    statusBadge(for: result)
+                } else {
+                    Button(action: onRun) {
+                        HStack(spacing: 4) {
+                            if isRunning {
+                                ProgressView()
+                                    .controlSize(.mini)
+                            } else {
+                                Image(systemName: "play.fill")
+                                    .font(.system(size: 10))
+                            }
+                            Text(isRunning ? L("performance.maintenance.running") : L("performance.maintenance.run"))
+                        }
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(isRunning ? .secondary : task.color)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(task.color.opacity(isHovered && !isRunning ? 0.2 : 0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isRunning)
                 }
             }
-            .padding(Theme.Spacing.md)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .glassCard()
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
-                    .stroke(borderColor, lineWidth: borderColor == .clear ? 0 : 2)
-            )
-            .hoverEffect(isHovered: isHovered)
+
+            // Description
+            Text(task.localizedDescription)
+                .font(Theme.Typography.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+
+            // Progress bar when running
+            if isRunning {
+                ProgressView(value: progress)
+                    .progressViewStyle(.linear)
+                    .tint(task.color)
+            }
         }
-        .buttonStyle(.plain)
+        .padding(Theme.Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard()
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
+                .stroke(borderColor, lineWidth: borderColor == .clear ? 0 : 2)
+        )
         .onHover { isHovered = $0 }
         .animation(Theme.Animation.spring, value: result)
+        .animation(Theme.Animation.spring, value: isRunning)
     }
 
     private var iconBackgroundColor: Color {
@@ -722,19 +748,19 @@ struct MaintenanceTaskCard: View {
         switch result {
         case .success:
             Image(systemName: "checkmark")
-                .font(.system(size: 18, weight: .bold))
+                .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(.green)
         case .failed:
             Image(systemName: "xmark")
-                .font(.system(size: 18, weight: .bold))
+                .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(.red)
         case .skipped:
             Image(systemName: "forward.fill")
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.orange)
         case .pending:
             Image(systemName: task.icon)
-                .font(.system(size: 18, weight: .semibold))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(task.color.opacity(0.5))
         case .running:
             ProgressView()
