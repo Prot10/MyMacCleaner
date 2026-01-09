@@ -535,14 +535,14 @@ struct GlassSearchField: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: Theme.ControlSize.controlIconSize, weight: .medium))
                 .foregroundStyle(.secondary)
 
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
-                .font(.system(size: 14))
+                .font(Theme.ControlSize.controlFont)
                 .focused($isFocused)
 
             if !text.isEmpty {
@@ -550,14 +550,16 @@ struct GlassSearchField: View {
                     text = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
+                        .font(.system(size: Theme.ControlSize.controlIconSize))
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, Theme.ControlSize.horizontalPadding)
+        .padding(.vertical, Theme.ControlSize.verticalPadding)
+        .frame(height: Theme.ControlSize.toolbarHeight)
+        .frame(maxWidth: Theme.ControlSize.searchFieldMaxWidth)
         .modifier(SearchFieldGlassModifier(isFocused: isFocused))
         .scaleEffect(isFocused ? 1.01 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isFocused)
@@ -572,15 +574,144 @@ struct SearchFieldGlassModifier: ViewModifier {
         if #available(macOS 26, *) {
             content.glassEffect(
                 isFocused ? .regular : .clear,
-                in: RoundedRectangle(cornerRadius: 12)
+                in: RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
             )
         } else {
             content
                 .background(isFocused ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.clear))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
                         .strokeBorder(.white.opacity(isFocused ? 0.2 : 0.1), lineWidth: 1)
+                )
+        }
+    }
+}
+
+// MARK: - Glass Control Modifier (Shared styling for Pickers/Toggles)
+
+struct GlassControlModifier: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *) {
+            content
+                .padding(.horizontal, Theme.ControlSize.horizontalPadding)
+                .padding(.vertical, Theme.ControlSize.verticalPadding)
+                .frame(height: Theme.ControlSize.toolbarHeight)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
+        } else {
+            content
+                .padding(.horizontal, Theme.ControlSize.horizontalPadding)
+                .padding(.vertical, Theme.ControlSize.verticalPadding)
+                .frame(height: Theme.ControlSize.toolbarHeight)
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
+                        .strokeBorder(.white.opacity(0.1), lineWidth: 1)
+                )
+        }
+    }
+}
+
+extension View {
+    func glassControlStyle() -> some View {
+        self.modifier(GlassControlModifier())
+    }
+}
+
+// MARK: - Glass Picker (Native Picker with Glass Styling)
+
+struct GlassPicker<T: Hashable, Content: View>: View {
+    let icon: String
+    @Binding var selection: T
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        Picker(selection: $selection) {
+            content()
+        } label: {
+            Image(systemName: icon)
+                .font(.system(size: Theme.ControlSize.controlIconSize, weight: .medium))
+        }
+        .pickerStyle(.menu)
+        .labelsHidden()
+        .font(Theme.ControlSize.controlFont)
+        .foregroundStyle(.secondary)
+        .glassControlStyle()
+    }
+}
+
+// MARK: - Glass Toggle (Native Toggle with Glass Styling)
+
+struct GlassToggle: View {
+    let title: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(title)
+                .font(Theme.ControlSize.controlFont)
+                .foregroundStyle(.secondary)
+
+            Toggle("", isOn: $isOn)
+                .toggleStyle(.switch)
+                .controlSize(.small)
+                .labelsHidden()
+        }
+        .glassControlStyle()
+    }
+}
+
+// MARK: - Glass Menu Button (Custom Menu with Glass Styling)
+
+struct GlassMenuButton<Content: View>: View {
+    let icon: String
+    let title: String
+    @ViewBuilder let content: () -> Content
+
+    @State private var isHovered = false
+
+    var body: some View {
+        Menu {
+            content()
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: Theme.ControlSize.controlIconSize, weight: .medium))
+                Text(title)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10, weight: .medium))
+            }
+            .font(Theme.ControlSize.controlFont)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, Theme.ControlSize.horizontalPadding)
+            .padding(.vertical, Theme.ControlSize.verticalPadding)
+            .frame(height: Theme.ControlSize.toolbarHeight)
+            .modifier(GlassMenuModifier(isHovered: isHovered))
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+    }
+}
+
+struct GlassMenuModifier: ViewModifier {
+    let isHovered: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *) {
+            content.glassEffect(
+                isHovered ? .regular : .clear,
+                in: RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
+            )
+        } else {
+            content
+                .background(isHovered ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.clear))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
+                        .strokeBorder(.white.opacity(isHovered ? 0.15 : 0.1), lineWidth: 1)
                 )
         }
     }

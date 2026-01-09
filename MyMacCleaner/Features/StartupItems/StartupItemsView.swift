@@ -230,13 +230,15 @@ struct StartupItemsView: View {
     // MARK: - Controls Section
 
     private var controlsSection: some View {
-        HStack(spacing: Theme.Spacing.md) {
+        HStack(spacing: Theme.ControlSize.controlSpacing) {
             // Search
             GlassSearchField(text: $viewModel.searchText, placeholder: L("startupItems.search"))
-                .frame(maxWidth: 300)
 
             // Type filter
-            Menu {
+            GlassMenuButton(
+                icon: viewModel.selectedType?.icon ?? "line.3.horizontal.decrease.circle",
+                title: viewModel.selectedType?.localizedName ?? L("startupItems.filter.allTypes")
+            ) {
                 Button(action: { viewModel.selectedType = nil }) {
                     HStack {
                         Text(L("startupItems.filter.allTypes"))
@@ -259,22 +261,13 @@ struct StartupItemsView: View {
                         }
                     }
                 }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: viewModel.selectedType?.icon ?? "line.3.horizontal.decrease.circle")
-                    Text(viewModel.selectedType?.localizedName ?? L("startupItems.filter.allTypes"))
-                    Image(systemName: "chevron.down")
-                        .font(.caption2)
-                }
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .glassCard(cornerRadius: 12)
             }
 
             // Sort order
-            Menu {
+            GlassMenuButton(
+                icon: "arrow.up.arrow.down",
+                title: viewModel.sortOrder.localizedName
+            ) {
                 ForEach(StartupItemsViewModel.SortOrder.allCases, id: \.self) { order in
                     Button(action: { viewModel.sortOrder = order }) {
                         HStack {
@@ -286,35 +279,12 @@ struct StartupItemsView: View {
                         }
                     }
                 }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.up.arrow.down")
-                    Text(LFormat("startupItems.sort %@", viewModel.sortOrder.localizedName))
-                    Image(systemName: "chevron.down")
-                        .font(.caption2)
-                }
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .glassCard(cornerRadius: 12)
             }
 
             Spacer()
 
             // Show system items toggle
-            HStack(spacing: 8) {
-                Text(L("startupItems.systemItems"))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.secondary)
-
-                Toggle("", isOn: $viewModel.showSystemItems)
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .glassCard(cornerRadius: 12)
+            GlassToggle(title: L("startupItems.systemItems"), isOn: $viewModel.showSystemItems)
         }
     }
 

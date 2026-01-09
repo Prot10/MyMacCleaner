@@ -568,12 +568,15 @@ struct ApplicationsView: View {
     // MARK: - Controls Section
 
     private var controlsSection: some View {
-        HStack(spacing: Theme.Spacing.md) {
+        HStack(spacing: Theme.ControlSize.controlSpacing) {
             // Search
             GlassSearchField(text: $viewModel.searchText, placeholder: L("applications.search"))
 
             // Sort picker
-            Menu {
+            GlassMenuButton(
+                icon: "arrow.up.arrow.down",
+                title: viewModel.sortOrder.localizedName
+            ) {
                 ForEach(ApplicationsViewModel.SortOrder.allCases, id: \.self) { order in
                     Button(action: { viewModel.sortOrder = order }) {
                         HStack {
@@ -584,18 +587,6 @@ struct ApplicationsView: View {
                         }
                     }
                 }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.up.arrow.down")
-                    Text(LFormat("applications.sort %@", viewModel.sortOrder.localizedName))
-                    Image(systemName: "chevron.down")
-                        .font(.caption2)
-                }
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .glassCard(cornerRadius: 12)
             }
 
             // Refresh button
