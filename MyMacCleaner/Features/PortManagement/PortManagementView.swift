@@ -78,10 +78,10 @@ struct PortManagementView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(L("navigation.portManagement"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("portManagement.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -165,7 +165,7 @@ struct PortManagementView: View {
     private var emptySection: some View {
         VStack(spacing: Theme.Spacing.md) {
             Image(systemName: "network.slash")
-                .font(.system(size: 48))
+                .font(Theme.Typography.size48)
                 .foregroundStyle(.tertiary)
 
             Text(L("portManagement.empty.title"))
@@ -238,7 +238,7 @@ struct PortStatCard: View {
                     .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(Theme.Typography.size18Semibold)
                     .foregroundStyle(color)
             }
 

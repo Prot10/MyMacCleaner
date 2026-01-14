@@ -94,13 +94,13 @@ struct SpaceLensView: View {
                         .frame(width: 48, height: 48)
 
                     Image(systemName: "internaldrive.fill")
-                        .font(.system(size: 22))
+                        .font(Theme.Typography.size22)
                         .foregroundStyle(.blue)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(currentNode.name)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(Theme.Typography.size15Semibold)
                         .lineLimit(1)
 
                     Text(LFormat("spaceLens.sizeItems %@ %lld", currentNode.formattedSize, currentNode.children.count))
@@ -148,7 +148,7 @@ struct SpaceLensView: View {
                 // Navigation button
                 Button(action: viewModel.navigateUp) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(Theme.Typography.size14Semibold)
                         .foregroundStyle(viewModel.navigationStack.count > 1 ? .primary : .tertiary)
                         .frame(width: 32, height: 32)
                         .background(Color.white.opacity(0.08))
@@ -188,7 +188,7 @@ struct SpaceLensView: View {
                 // Rescan button
                 Button(action: viewModel.scanHomeDirectory) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 12))
+                        .font(Theme.Typography.size12)
                         .foregroundStyle(.secondary)
                         .frame(width: 32, height: 32)
                         .background(Color.white.opacity(0.08))
@@ -204,7 +204,7 @@ struct SpaceLensView: View {
                 // Size filter
                 HStack(spacing: Theme.Spacing.xs) {
                     Image(systemName: "arrow.up.arrow.down")
-                        .font(.system(size: 10))
+                        .font(Theme.Typography.size10)
                         .foregroundStyle(.secondary)
 
                     Picker("", selection: $viewModel.sizeFilter) {
@@ -224,7 +224,7 @@ struct SpaceLensView: View {
                 // Age filter
                 HStack(spacing: Theme.Spacing.xs) {
                     Image(systemName: "clock")
-                        .font(.system(size: 10))
+                        .font(Theme.Typography.size10)
                         .foregroundStyle(.secondary)
 
                     Picker("", selection: $viewModel.ageFilter) {
@@ -246,9 +246,9 @@ struct SpaceLensView: View {
                     Button(action: viewModel.clearFilters) {
                         HStack(spacing: 4) {
                             Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 10))
+                                .font(Theme.Typography.size10)
                             Text(L("spaceLens.filter.clear"))
-                                .font(.system(size: 11))
+                                .font(Theme.Typography.size11)
                         }
                         .foregroundStyle(.secondary)
                     }
@@ -260,7 +260,7 @@ struct SpaceLensView: View {
                 // Filter stats
                 if viewModel.hasActiveFilters {
                     Text(LFormat("spaceLens.filter.showing %lld %lld", Int64(viewModel.filteredCount), Int64(viewModel.totalCount)))
-                        .font(.system(size: 11))
+                        .font(Theme.Typography.size11)
                         .foregroundStyle(.secondary)
                 }
             }
@@ -304,7 +304,7 @@ struct SpaceLensView: View {
 
                         HStack(spacing: 2) {
                             Image(systemName: "clock")
-                                .font(.system(size: 10))
+                                .font(Theme.Typography.size10)
                             Text(accessStr)
                         }
                         .font(Theme.Typography.caption)
@@ -363,7 +363,7 @@ struct SpaceLensView: View {
                         .frame(width: 80, height: 80)
 
                     Image(systemName: "circle.hexagongrid.fill")
-                        .font(.system(size: 32, weight: .medium))
+                        .font(Theme.Typography.size32Medium)
                         .foregroundStyle(.blue.gradient)
                 }
             }
@@ -407,7 +407,7 @@ struct SidebarFileRow: View {
             // Info button
             Button(action: onInfo) {
                 Image(systemName: "info.circle")
-                    .font(.system(size: 12))
+                    .font(Theme.Typography.size12)
                     .foregroundStyle(isHovered ? .secondary : .tertiary)
             }
             .buttonStyle(.plain)
@@ -419,20 +419,20 @@ struct SidebarFileRow: View {
                     .frame(width: 30, height: 30)
 
                 Image(systemName: node.icon)
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(node.color)
             }
 
             // Name
             Text(node.name)
-                .font(.system(size: 13))
+                .font(Theme.Typography.size13)
                 .lineLimit(1)
 
             Spacer()
 
             // Size
             Text(node.formattedSize)
-                .font(.system(size: 12).monospacedDigit())
+                .font(Theme.Typography.size12.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
         .padding(.horizontal, Theme.Spacing.sm)

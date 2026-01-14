@@ -46,9 +46,9 @@ struct PermissionCategoryCard: View {
                         Button(action: onOpenSettings) {
                             HStack(spacing: 6) {
                                 Image(systemName: "gear")
-                                    .font(.system(size: 12))
+                                    .font(Theme.Typography.size12)
                                 Text(L("permissions.action.openSettings"))
-                                    .font(.system(size: 12, weight: .medium))
+                                    .font(Theme.Typography.size12Medium)
                             }
                             .foregroundStyle(.blue)
                             .padding(.horizontal, 12)
@@ -76,7 +76,7 @@ struct PermissionCategoryCard: View {
                     .frame(width: 40, height: 40)
 
                 Image(systemName: category.type.icon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(Theme.Typography.size18Semibold)
                     .foregroundStyle(category.type.color)
             }
 
@@ -100,7 +100,7 @@ struct PermissionCategoryCard: View {
 
                 // Expand chevron
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(Theme.Typography.size12Semibold)
                     .foregroundStyle(.tertiary)
                     .rotationEffect(.degrees(category.isExpanded ? 90 : 0))
             }
@@ -118,11 +118,11 @@ struct PermissionCategoryCard: View {
                     .scaleEffect(0.5)
             } else {
                 Image(systemName: status.icon)
-                    .font(.system(size: 10))
+                    .font(Theme.Typography.size10)
             }
 
             Text(category.statusSummary)
-                .font(.system(size: 11, weight: .semibold))
+                .font(Theme.Typography.size11Semibold)
         }
         .foregroundStyle(status.color)
         .padding(.horizontal, 8)

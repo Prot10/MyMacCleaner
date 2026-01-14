@@ -218,17 +218,17 @@ struct BrowserPrivacyView: View {
                         }
 
                     Image(systemName: "hand.raised.fill")
-                        .font(.system(size: 32, weight: .medium))
+                        .font(Theme.Typography.size32Medium)
                         .foregroundStyle(privacyColor.gradient)
                 }
             }
 
             VStack(spacing: 8) {
                 Text(L("privacy.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("privacy.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -238,9 +238,9 @@ struct BrowserPrivacyView: View {
                 ForEach(viewModel.installedBrowsers) { browser in
                     HStack(spacing: 6) {
                         Image(systemName: browser.icon)
-                            .font(.system(size: 14))
+                            .font(Theme.Typography.size14)
                         Text(browser.rawValue)
-                            .font(.system(size: 13))
+                            .font(Theme.Typography.size13)
                     }
                     .foregroundStyle(.secondary)
                 }
@@ -264,22 +264,22 @@ struct BrowserPrivacyView: View {
     private var emptyStateSection: some View {
         VStack(spacing: 20) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 48))
+                .font(Theme.Typography.size48)
                 .foregroundStyle(.green)
 
             VStack(spacing: 8) {
                 Text(L("privacy.empty.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("privacy.empty.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
 
             Button(action: viewModel.scan) {
                 Text(L("privacy.scanAgain"))
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.size13Medium)
                     .foregroundStyle(privacyColor)
             }
             .buttonStyle(.plain)
@@ -304,7 +304,7 @@ struct BrowserPrivacyView: View {
                     viewModel.selectAll()
                 }
                 .buttonStyle(.plain)
-                .font(.system(size: 12, weight: .medium))
+                .font(Theme.Typography.size12Medium)
                 .foregroundStyle(privacyColor)
 
                 Text("·")
@@ -314,7 +314,7 @@ struct BrowserPrivacyView: View {
                     viewModel.deselectAll()
                 }
                 .buttonStyle(.plain)
-                .font(.system(size: 12, weight: .medium))
+                .font(Theme.Typography.size12Medium)
                 .foregroundStyle(privacyColor)
 
                 Button(action: viewModel.scan) {
@@ -322,7 +322,7 @@ struct BrowserPrivacyView: View {
                         Image(systemName: "arrow.clockwise")
                         Text(L("diskCleaner.rescan"))
                     }
-                    .font(.system(size: 12, weight: .medium))
+                    .font(Theme.Typography.size12Medium)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -369,10 +369,10 @@ struct BrowserPrivacyView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(LFormat("diskCleaner.selected %@", viewModel.formattedSelectedSize))
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(Theme.Typography.size15Semibold)
 
                 Text(LFormat("diskCleaner.itemCount %lld", Int64(viewModel.selectedCount)))
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.size11)
                     .foregroundStyle(.secondary)
             }
 
@@ -437,7 +437,7 @@ struct BrowserDataCard: View {
                                 .frame(width: 20, height: 20)
 
                             Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(Theme.Typography.size10Bold)
                                 .foregroundStyle(.white)
                         } else if someSelected {
                             RoundedRectangle(cornerRadius: 4)
@@ -445,7 +445,7 @@ struct BrowserDataCard: View {
                                 .frame(width: 20, height: 20)
 
                             Image(systemName: "minus")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(Theme.Typography.size10Bold)
                                 .foregroundStyle(.white)
                         }
                     }
@@ -465,17 +465,17 @@ struct BrowserDataCard: View {
                             .frame(width: 40, height: 40)
 
                         Image(systemName: browser.icon)
-                            .font(.system(size: 18))
+                            .font(Theme.Typography.size18)
                             .foregroundStyle(accentColor)
                     }
 
                     // Info
                     VStack(alignment: .leading, spacing: 2) {
                         Text(browser.rawValue)
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(Theme.Typography.size15Semibold)
 
                         Text(LFormat("privacy.items %lld", Int64(items.count)))
-                            .font(.system(size: 12))
+                            .font(Theme.Typography.size12)
                             .foregroundStyle(.secondary)
                     }
 
@@ -484,19 +484,19 @@ struct BrowserDataCard: View {
                     // Size
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file))
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(Theme.Typography.size14Semibold)
                             .foregroundStyle(accentColor)
 
                         if selectedSize > 0 && selectedSize < totalSize {
                             Text(LFormat("privacy.selected %@", ByteCountFormatter.string(fromByteCount: selectedSize, countStyle: .file)))
-                                .font(.system(size: 11))
+                                .font(Theme.Typography.size11)
                                 .foregroundStyle(.secondary)
                         }
                     }
 
                     // Expand indicator
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(Theme.Typography.size12Semibold)
                         .foregroundStyle(.tertiary)
                 }
                 .padding(.trailing, Theme.Spacing.md)
@@ -548,14 +548,14 @@ struct BrowserDataItemRow: View {
                             .frame(width: 18, height: 18)
 
                         Image(systemName: "checkmark")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(Theme.Typography.size10Bold)
                             .foregroundStyle(.white)
                     }
                 }
 
                 // Icon
                 Image(systemName: item.dataType.icon)
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(accentColor.opacity(0.8))
                     .frame(width: 24)
 
@@ -563,19 +563,19 @@ struct BrowserDataItemRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(item.dataType.rawValue)
-                            .font(.system(size: 13, weight: .medium))
+                            .font(Theme.Typography.size13Medium)
 
                         // Warning indicator
                         if let warning = item.dataType.warningLevel.message {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.system(size: 10))
+                                .font(Theme.Typography.size10)
                                 .foregroundStyle(.orange)
                                 .help(warning)
                         }
                     }
 
                     Text(item.dataType.description)
-                        .font(.system(size: 11))
+                        .font(Theme.Typography.size11)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -584,7 +584,7 @@ struct BrowserDataItemRow: View {
 
                 // Size
                 Text(item.formattedSize)
-                    .font(.system(size: 12).monospacedDigit())
+                    .font(Theme.Typography.size12.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
             .padding(.horizontal, Theme.Spacing.md)

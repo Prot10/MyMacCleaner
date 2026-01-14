@@ -33,7 +33,7 @@ struct PermissionFolderRow: View {
                 // FDA badge
                 if folder.requiresFDA {
                     Text("FDA")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(Theme.Typography.size10Semibold)
                         .foregroundStyle(.orange)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)
@@ -63,7 +63,7 @@ struct PermissionFolderRow: View {
         } else {
             Image(systemName: folder.status.icon)
                 .foregroundStyle(folder.status.color)
-                .font(.system(size: 14, weight: .semibold))
+                .font(Theme.Typography.size14Semibold)
                 .frame(width: 18, height: 18)
         }
     }
@@ -76,9 +76,9 @@ struct PermissionFolderRow: View {
             Button(action: onRevokeAccess) {
                 HStack(spacing: 4) {
                     Image(systemName: "minus.circle.fill")
-                        .font(.system(size: 10))
+                        .font(Theme.Typography.size10)
                     Text(L("permissions.folder.revoke"))
-                        .font(.system(size: 11, weight: .medium))
+                        .font(Theme.Typography.size11Medium)
                 }
                 .foregroundStyle(.white)
                 .padding(.horizontal, 8)
@@ -95,9 +95,9 @@ struct PermissionFolderRow: View {
                 Button(action: onRequestAccess) {
                     HStack(spacing: 4) {
                         Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 10))
+                            .font(Theme.Typography.size10)
                         Text(L("permissions.folder.grant"))
-                            .font(.system(size: 11, weight: .medium))
+                            .font(Theme.Typography.size11Medium)
                     }
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
@@ -111,9 +111,9 @@ struct PermissionFolderRow: View {
                 Button(action: onOpenSettings) {
                     HStack(spacing: 4) {
                         Image(systemName: "gear")
-                            .font(.system(size: 10))
+                            .font(Theme.Typography.size10)
                         Text(L("permissions.folder.grant"))
-                            .font(.system(size: 11, weight: .medium))
+                            .font(Theme.Typography.size11Medium)
                     }
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)

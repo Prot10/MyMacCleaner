@@ -98,10 +98,10 @@ struct StartupItemsView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(L("navigation.startupItems"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("startupItems.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -181,17 +181,17 @@ struct StartupItemsView: View {
                         }
 
                     Image(systemName: "power")
-                        .font(.system(size: 32, weight: .medium))
+                        .font(Theme.Typography.size32Medium)
                         .foregroundStyle(sectionColor.gradient)
                 }
             }
 
             VStack(spacing: 8) {
                 Text(L("startupItems.scan.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("startupItems.scan.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
@@ -310,7 +310,7 @@ struct StartupItemsView: View {
     private var emptyFilterSection: some View {
         VStack(spacing: Theme.Spacing.md) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 48))
+                .font(Theme.Typography.size48)
                 .foregroundStyle(.tertiary)
 
             Text(L("startupItems.empty.title"))
@@ -344,7 +344,7 @@ struct StartupStatCard: View {
                     .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(Theme.Typography.size18Semibold)
                     .foregroundStyle(color)
             }
 
@@ -389,7 +389,7 @@ struct StartupItemRow: View {
                         .frame(width: 44, height: 44)
 
                     Image(systemName: item.icon)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(Theme.Typography.size18Semibold)
                         .foregroundStyle(item.typeColor)
 
                     // Running indicator
@@ -414,7 +414,7 @@ struct StartupItemRow: View {
 
                         if item.isSystemItem {
                             Text(L("startupItems.badge.system"))
-                                .font(.system(size: 9, weight: .medium))
+                                .font(Theme.Typography.size9Medium)
                                 .foregroundStyle(.secondary)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
@@ -431,7 +431,7 @@ struct StartupItemRow: View {
                     if let developer = item.developer {
                         HStack(spacing: 4) {
                             Image(systemName: "building.2")
-                                .font(.system(size: 9))
+                                .font(Theme.Typography.size9)
                             Text(developer)
                                 .font(Theme.Typography.caption)
                         }
@@ -443,7 +443,7 @@ struct StartupItemRow: View {
 
                 // Type badge
                 Text(item.type.localizedName)
-                    .font(.system(size: 10, weight: .medium))
+                    .font(Theme.Typography.size10Medium)
                     .foregroundStyle(item.typeColor)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
@@ -468,7 +468,7 @@ struct StartupItemRow: View {
                         // Toggle button
                         Button(action: onToggle) {
                             Image(systemName: item.isEnabled ? "pause.circle" : "play.circle")
-                                .font(.system(size: 18))
+                                .font(Theme.Typography.size18)
                                 .foregroundStyle(item.isEnabled ? .orange : .green)
                         }
                         .buttonStyle(.plain)
@@ -487,7 +487,7 @@ struct StartupItemRow: View {
                             }
                         } label: {
                             Image(systemName: "ellipsis.circle")
-                                .font(.system(size: 18))
+                                .font(Theme.Typography.size18)
                                 .foregroundStyle(.secondary)
                         }
                         .menuStyle(.borderlessButton)
@@ -498,7 +498,7 @@ struct StartupItemRow: View {
                     // System items can only be revealed
                     Button(action: onReveal) {
                         Image(systemName: "folder")
-                            .font(.system(size: 16))
+                            .font(Theme.Typography.size16)
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)

@@ -71,7 +71,7 @@ struct PermissionsView: View {
                     }
                     Text(L("permissions.action.refresh"))
                 }
-                .font(.system(size: 13, weight: .medium))
+                .font(Theme.Typography.size13Medium)
                 .foregroundStyle(sectionColor)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
@@ -94,7 +94,7 @@ struct PermissionsView: View {
                     .frame(width: 60, height: 60)
 
                 Image(systemName: viewModel.overallStatus.icon)
-                    .font(.system(size: 28, weight: .semibold))
+                    .font(Theme.Typography.size28Semibold)
                     .foregroundStyle(viewModel.overallStatus.color)
             }
 
@@ -116,13 +116,13 @@ struct PermissionsView: View {
             VStack(alignment: .trailing, spacing: 4) {
                 HStack(spacing: 4) {
                     Text("\(viewModel.totalAccessible)")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .font(Theme.Typography.size24BoldRounded)
                         .foregroundStyle(.green)
                     Text("/")
-                        .font(.system(size: 18, weight: .medium))
+                        .font(Theme.Typography.size18Medium)
                         .foregroundStyle(.secondary)
                     Text("\(viewModel.totalExisting)")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .font(Theme.Typography.size24BoldRounded)
                         .foregroundStyle(.primary)
                 }
 

@@ -16,7 +16,7 @@ struct LanguageSwitcherButton: View {
                 Text(localization.currentLanguage.shortCode)
 
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 10))
+                    .font(Theme.Typography.size10)
                     .opacity(0.7)
             }
         }
@@ -65,14 +65,14 @@ struct LanguagePickerRow: View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Text(language.nativeName)
-                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                    .font(isSelected ? Theme.Typography.size13Semibold : Theme.Typography.size13)
                     .foregroundStyle(isSelected ? .primary : .secondary)
 
                 Spacer()
 
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(Theme.Typography.size11Semibold)
                         .foregroundStyle(Theme.Colors.accent)
                 }
             }
