@@ -151,10 +151,10 @@ struct DiskCleanerView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(L("navigation.diskCleaner"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("diskCleaner.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -164,11 +164,11 @@ struct DiskCleanerView: View {
                 HStack(spacing: 16) {
                     VStack(alignment: .trailing, spacing: 4) {
                         Text(viewModel.formattedTotalSize)
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(Theme.Typography.size22Semibold)
                             .foregroundStyle(sectionColor)
 
                         Text(LFormat("diskCleaner.itemsFound %lld", viewModel.totalItemCount))
-                            .font(.system(size: 11))
+                            .font(Theme.Typography.size11)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -239,17 +239,17 @@ struct DiskCleanerView: View {
                         }
 
                     Image(systemName: "internaldrive.fill")
-                        .font(.system(size: 32, weight: .medium))
+                        .font(Theme.Typography.size32Medium)
                         .foregroundStyle(sectionColor.gradient)
                 }
             }
 
             VStack(spacing: 8) {
                 Text(L("diskCleaner.scan.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("diskCleaner.scan.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -272,22 +272,22 @@ struct DiskCleanerView: View {
     private var emptyStateSection: some View {
         VStack(spacing: 20) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 48))
+                .font(Theme.Typography.size48)
                 .foregroundStyle(.green)
 
             VStack(spacing: 8) {
                 Text(L("diskCleaner.empty.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("diskCleaner.empty.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
 
             Button(action: viewModel.startScan) {
                 Text(L("diskCleaner.scanAgain"))
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.size13Medium)
                     .foregroundStyle(sectionColor)
             }
             .buttonStyle(.plain)
@@ -312,7 +312,7 @@ struct DiskCleanerView: View {
                     viewModel.selectAll()
                 }
                 .buttonStyle(.plain)
-                .font(.system(size: 12, weight: .medium))
+                .font(Theme.Typography.size12Medium)
                 .foregroundStyle(sectionColor)
 
                 Text("·")
@@ -322,7 +322,7 @@ struct DiskCleanerView: View {
                     viewModel.deselectAll()
                 }
                 .buttonStyle(.plain)
-                .font(.system(size: 12, weight: .medium))
+                .font(Theme.Typography.size12Medium)
                 .foregroundStyle(sectionColor)
 
                 Button(action: viewModel.startScan) {
@@ -330,7 +330,7 @@ struct DiskCleanerView: View {
                         Image(systemName: "arrow.clockwise")
                         Text(L("diskCleaner.rescan"))
                     }
-                    .font(.system(size: 12, weight: .medium))
+                    .font(Theme.Typography.size12Medium)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -368,10 +368,10 @@ struct DiskCleanerView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(LFormat("diskCleaner.selected %@", viewModel.formattedSelectedSize))
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(Theme.Typography.size15Semibold)
 
                 Text(LFormat("diskCleaner.itemCount %lld", viewModel.selectedItemCount))
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.size11)
                     .foregroundStyle(.secondary)
             }
 
@@ -402,7 +402,7 @@ struct DiskCleanerView: View {
                     .frame(width: 48, height: 48)
 
                 Image(systemName: "trash.fill")
-                    .font(.system(size: 20, weight: .medium))
+                    .font(Theme.Typography.size20Medium)
                     .foregroundStyle(Color.orange.gradient)
             }
 
@@ -431,9 +431,9 @@ struct DiskCleanerView: View {
                 }) {
                     HStack(spacing: 4) {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 10))
+                            .font(Theme.Typography.size10)
                         Text(L("diskCleaner.emptyTrash.needsFDA"))
-                            .font(.system(size: 10, weight: .medium))
+                            .font(Theme.Typography.size10Medium)
                     }
                     .foregroundStyle(.orange)
                     .padding(.horizontal, 8)
@@ -453,10 +453,10 @@ struct DiskCleanerView: View {
                             .controlSize(.small)
                     } else {
                         Image(systemName: "trash")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(Theme.Typography.size12Medium)
                     }
                     Text(viewModel.isEmptyingTrash ? L("diskCleaner.emptyTrash.emptying") : L("diskCleaner.emptyTrash.button"))
-                        .font(.system(size: 13, weight: .medium))
+                        .font(Theme.Typography.size13Medium)
                 }
                 .foregroundStyle(viewModel.trashSize > 0 && !viewModel.isEmptyingTrash ? Color.orange : .secondary)
                 .padding(.horizontal, 16)
@@ -509,20 +509,20 @@ struct ScanningOverlay: View {
                     .animation(Theme.Animation.spring, value: progress)
 
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 28, weight: .medium))
+                    .font(Theme.Typography.size28Medium)
                     .foregroundStyle(accentColor)
             }
 
             VStack(spacing: 4) {
                 Text(L("common.scanning"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(category)
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
 
                 Text("\(Int(progress * 100))%")
-                    .font(.system(size: 24, weight: .bold).monospacedDigit())
+                    .font(Theme.Typography.size24Bold.monospacedDigit())
                     .foregroundStyle(accentColor)
             }
 
@@ -544,7 +544,7 @@ struct ScanningOverlay: View {
             if let onCancel = onCancel {
                 Button(action: onCancel) {
                     Text(L("common.cancel"))
-                        .font(.system(size: 14, weight: .medium))
+                        .font(Theme.Typography.size14Medium)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 8)

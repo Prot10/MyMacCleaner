@@ -43,10 +43,10 @@ struct SystemHealthView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(L("navigation.systemHealth"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("systemHealth.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -105,7 +105,7 @@ struct SystemHealthView: View {
                 // Score text
                 VStack(spacing: 4) {
                     Text("\(viewModel.healthScore)")
-                        .font(.system(size: 44, weight: .bold, design: .rounded))
+                        .font(Theme.Typography.size44BoldRounded)
                         .foregroundStyle(viewModel.healthStatus.color)
 
                     Text("/ 100")
@@ -221,7 +221,7 @@ struct HealthCheckCard: View {
                         .controlSize(.small)
                 } else {
                     Image(systemName: check.status.icon)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(Theme.Typography.size18Semibold)
                         .foregroundStyle(check.status.color)
                 }
             }
