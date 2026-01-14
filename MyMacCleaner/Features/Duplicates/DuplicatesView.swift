@@ -98,11 +98,11 @@ struct DuplicatesView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.duplicates"))
                     .font(Theme.Typography.size28Bold)
 
-                HStack(spacing: 8) {
+                HStack(spacing: Theme.Spacing.xs) {
                     Text(L("navigation.duplicates.description"))
                         .font(Theme.Typography.size13)
                         .foregroundStyle(.secondary)
@@ -131,7 +131,7 @@ struct DuplicatesView: View {
             Spacer()
 
             if viewModel.hasScanned && !viewModel.duplicateGroups.isEmpty {
-                HStack(spacing: 12) {
+                HStack(spacing: Theme.Spacing.sm) {
                     // Rescan button
                     Button(action: viewModel.startScan) {
                         Image(systemName: "arrow.clockwise")
@@ -141,7 +141,7 @@ struct DuplicatesView: View {
                     .buttonStyle(.plain)
                     .help(L("duplicates.scanAgain"))
 
-                    VStack(alignment: .trailing, spacing: 4) {
+                    VStack(alignment: .trailing, spacing: Theme.Spacing.xxs) {
                         Text(viewModel.formattedTotalWastedSize)
                             .font(Theme.Typography.size22Semibold)
                             .foregroundStyle(sectionColor)
@@ -151,7 +151,7 @@ struct DuplicatesView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Theme.Spacing.md)
                 .padding(.vertical, 10)
                 .glassCard(cornerRadius: 12)
             }
@@ -183,7 +183,7 @@ struct DuplicatesView: View {
                 }
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("duplicates.scan.title"))
                     .font(Theme.Typography.size20Semibold)
 
@@ -195,7 +195,7 @@ struct DuplicatesView: View {
             }
 
             // Scan location
-            VStack(spacing: 12) {
+            VStack(spacing: Theme.Spacing.sm) {
                 HStack {
                     Image(systemName: "folder.fill")
                         .foregroundStyle(sectionColor)
@@ -215,7 +215,7 @@ struct DuplicatesView: View {
                     .font(Theme.Typography.size12Medium)
                     .foregroundStyle(sectionColor)
                 }
-                .padding(12)
+                .padding(Theme.Spacing.sm)
                 .glassCard(cornerRadius: 10)
             }
 
@@ -227,7 +227,7 @@ struct DuplicatesView: View {
                 viewModel.startScan()
             }
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -235,12 +235,12 @@ struct DuplicatesView: View {
     // MARK: - Empty State
 
     private var emptyStateSection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Theme.Spacing.lg) {
             Image(systemName: "checkmark.circle.fill")
                 .font(Theme.Typography.size48)
                 .foregroundStyle(.green)
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("duplicates.empty.title"))
                     .font(Theme.Typography.size20Semibold)
 
@@ -251,7 +251,7 @@ struct DuplicatesView: View {
             }
 
             // Current scan location
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Spacing.xs) {
                 Image(systemName: "folder.fill")
                     .font(Theme.Typography.size12)
                     .foregroundStyle(.secondary)
@@ -261,12 +261,12 @@ struct DuplicatesView: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, Theme.Spacing.sm)
             .padding(.vertical, 6)
             .background(Color.white.opacity(0.05))
             .cornerRadius(6)
 
-            HStack(spacing: 16) {
+            HStack(spacing: Theme.Spacing.md) {
                 Button(action: viewModel.chooseScanLocation) {
                     HStack(spacing: 6) {
                         Image(systemName: "folder.badge.gearshape")
@@ -288,7 +288,7 @@ struct DuplicatesView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -296,9 +296,9 @@ struct DuplicatesView: View {
     // MARK: - Stats Section
 
     private var statsSection: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Theme.Spacing.sm) {
             ForEach(viewModel.fileTypeStats.prefix(4), id: \.0) { type, count, size in
-                VStack(spacing: 8) {
+                VStack(spacing: Theme.Spacing.xs) {
                     ZStack {
                         Circle()
                             .fill(type.color.opacity(0.15))
@@ -323,7 +323,7 @@ struct DuplicatesView: View {
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                .padding(.vertical, Theme.Spacing.sm)
                 .glassCard(cornerRadius: 12)
                 .onTapGesture {
                     if viewModel.filterType == type {
@@ -415,7 +415,7 @@ struct DuplicatesView: View {
     // MARK: - Duplicate List
 
     private var duplicateListSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Theme.Spacing.sm) {
             ForEach(viewModel.filteredGroups) { group in
                 DuplicateGroupCard(
                     group: group,
@@ -447,7 +447,7 @@ struct DuplicatesView: View {
 
     private var cleanButtonSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(LFormat("diskCleaner.selected %@", viewModel.formattedSelectedSize))
                     .font(Theme.Typography.size15Semibold)
 
@@ -467,7 +467,7 @@ struct DuplicatesView: View {
                 viewModel.prepareClean()
             }
         }
-        .padding(20)
+        .padding(Theme.Spacing.lg)
         .glassCard()
         .shadow(color: sectionColor.opacity(0.2), radius: 15, y: 5)
     }
@@ -557,7 +557,7 @@ struct DuplicateGroupCard: View {
                             .font(Theme.Typography.size15Semibold)
                             .lineLimit(1)
 
-                        HStack(spacing: 8) {
+                        HStack(spacing: Theme.Spacing.xs) {
                             Text(LFormat("duplicates.copies %lld", Int64(group.files.count)))
                                 .font(Theme.Typography.size12)
                                 .foregroundStyle(.secondary)
@@ -746,7 +746,7 @@ struct DuplicateFileRow: View {
             .help(L("common.revealInFinder"))
         }
         .padding(.horizontal, Theme.Spacing.md)
-        .padding(.vertical, 8)
+        .padding(.vertical, Theme.Spacing.xs)
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(file.isKept ? Color.green.opacity(0.08) : (file.isSelected ? accentColor.opacity(0.05) : (isHovered ? Color.white.opacity(0.03) : Color.clear)))

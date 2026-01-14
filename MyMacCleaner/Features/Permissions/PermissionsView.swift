@@ -98,7 +98,7 @@ struct PermissionsView: View {
                     .foregroundStyle(viewModel.overallStatus.color)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("permissions.summary.title"))
                     .font(Theme.Typography.headline)
                     .foregroundStyle(.primary)
@@ -113,8 +113,8 @@ struct PermissionsView: View {
             Spacer()
 
             // Stats
-            VStack(alignment: .trailing, spacing: 4) {
-                HStack(spacing: 4) {
+            VStack(alignment: .trailing, spacing: Theme.Spacing.xxs) {
+                HStack(spacing: Theme.Spacing.xxs) {
                     Text("\(viewModel.totalAccessible)")
                         .font(Theme.Typography.size24BoldRounded)
                         .foregroundStyle(.green)

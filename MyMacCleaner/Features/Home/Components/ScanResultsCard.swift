@@ -114,7 +114,7 @@ struct ScanResultsCard: View {
                     allExpanded.toggle()
                 }
             }) {
-                HStack(spacing: 8) {
+                HStack(spacing: Theme.Spacing.xs) {
                     Image(systemName: allExpanded ? "chevron.up.2" : "list.bullet")
                     Text(allExpanded ? L("scanResults.collapseAll") : L("scanResults.viewAll"))
                 }
@@ -134,7 +134,7 @@ struct ScanResultsCard: View {
                     }
                 }
             }) {
-                HStack(spacing: 8) {
+                HStack(spacing: Theme.Spacing.xs) {
                     Image(systemName: results.allSatisfy({ $0.isSelected }) ? "checkmark.circle.fill" : "circle")
                     Text(results.allSatisfy({ $0.isSelected }) ? L("scanResults.deselectAll") : L("scanResults.selectAll"))
                 }
@@ -150,7 +150,7 @@ struct ScanResultsCard: View {
 
             // Clean button
             Button(action: onClean) {
-                HStack(spacing: 8) {
+                HStack(spacing: Theme.Spacing.xs) {
                     Image(systemName: "trash.fill")
                     Text(LFormat("scanResults.clean %@", ByteCountFormatter.string(fromByteCount: selectedSize, countStyle: .file)))
                 }

@@ -89,7 +89,7 @@ struct OrphanedFilesView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.orphanedFiles"))
                     .font(Theme.Typography.size28Bold)
 
@@ -101,8 +101,8 @@ struct OrphanedFilesView: View {
             Spacer()
 
             if viewModel.hasScanned && !viewModel.orphanedFiles.isEmpty {
-                HStack(spacing: 16) {
-                    VStack(alignment: .trailing, spacing: 4) {
+                HStack(spacing: Theme.Spacing.md) {
+                    VStack(alignment: .trailing, spacing: Theme.Spacing.xxs) {
                         Text(viewModel.formattedTotalSize)
                             .font(Theme.Typography.size22Semibold)
                             .foregroundStyle(sectionColor)
@@ -144,7 +144,7 @@ struct OrphanedFilesView: View {
                 }
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("orphans.scan.title"))
                     .font(Theme.Typography.size20Semibold)
 
@@ -156,14 +156,14 @@ struct OrphanedFilesView: View {
             }
 
             // Info about what we scan
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                 ForEach([
                     ("folder.fill", L("orphans.info.applicationSupport")),
                     ("gearshape.fill", L("orphans.info.preferences")),
                     ("archivebox.fill", L("orphans.info.caches")),
                     ("shippingbox.fill", L("orphans.info.containers"))
                 ], id: \.0) { icon, text in
-                    HStack(spacing: 8) {
+                    HStack(spacing: Theme.Spacing.xs) {
                         Image(systemName: icon)
                             .font(Theme.Typography.size12)
                             .foregroundStyle(sectionColor)
@@ -175,7 +175,7 @@ struct OrphanedFilesView: View {
                     }
                 }
             }
-            .padding(12)
+            .padding(Theme.Spacing.sm)
             .glassCard(cornerRadius: 10)
 
             GlassActionButton(
@@ -186,7 +186,7 @@ struct OrphanedFilesView: View {
                 viewModel.startScan()
             }
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -194,12 +194,12 @@ struct OrphanedFilesView: View {
     // MARK: - Empty State
 
     private var emptyStateSection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Theme.Spacing.lg) {
             Image(systemName: "checkmark.circle.fill")
                 .font(Theme.Typography.size48)
                 .foregroundStyle(.green)
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("orphans.empty.title"))
                     .font(Theme.Typography.size20Semibold)
 
@@ -216,7 +216,7 @@ struct OrphanedFilesView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -224,7 +224,7 @@ struct OrphanedFilesView: View {
     // MARK: - Controls Section
 
     private var controlsSection: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Theme.Spacing.sm) {
             // Search
             GlassSearchField(
                 text: $viewModel.searchText,
@@ -274,7 +274,7 @@ struct OrphanedFilesView: View {
 
             // Rescan
             Button(action: viewModel.startScan) {
-                HStack(spacing: 4) {
+                HStack(spacing: Theme.Spacing.xxs) {
                     Image(systemName: "arrow.clockwise")
                     Text(L("diskCleaner.rescan"))
                 }
@@ -291,7 +291,7 @@ struct OrphanedFilesView: View {
     // MARK: - Category List
 
     private var categoryListSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Theme.Spacing.sm) {
             ForEach(viewModel.categoriesWithFiles, id: \.self) { category in
                 if let files = viewModel.filesByCategory[category], !files.isEmpty {
                     OrphanCategoryCard(
@@ -321,7 +321,7 @@ struct OrphanedFilesView: View {
 
     private var cleanButtonSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(LFormat("diskCleaner.selected %@", viewModel.formattedSelectedSize))
                     .font(Theme.Typography.size15Semibold)
 
@@ -341,7 +341,7 @@ struct OrphanedFilesView: View {
                 viewModel.prepareClean()
             }
         }
-        .padding(20)
+        .padding(Theme.Spacing.lg)
         .glassCard()
         .shadow(color: sectionColor.opacity(0.2), radius: 15, y: 5)
     }

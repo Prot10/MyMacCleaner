@@ -115,7 +115,7 @@ struct ApplicationsView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.applications"))
                     .font(Theme.Typography.size28Bold)
 
@@ -127,8 +127,8 @@ struct ApplicationsView: View {
             Spacer()
 
             if viewModel.analysisState == .completed {
-                HStack(spacing: 16) {
-                    VStack(alignment: .trailing, spacing: 4) {
+                HStack(spacing: Theme.Spacing.md) {
+                    VStack(alignment: .trailing, spacing: Theme.Spacing.xxs) {
                         Text(viewModel.formattedTotalSize)
                             .font(Theme.Typography.size22Semibold)
                             .foregroundStyle(sectionColor)
@@ -254,7 +254,7 @@ struct ApplicationsView: View {
                         }
                     }
 
-                    VStack(spacing: 8) {
+                    VStack(spacing: Theme.Spacing.xs) {
                         Text(L("applications.analyze.title"))
                             .font(Theme.Typography.size20Semibold)
 
@@ -277,7 +277,7 @@ struct ApplicationsView: View {
 
                     // Discovery status
                     if viewModel.discoveryState == .discovering {
-                        HStack(spacing: 8) {
+                        HStack(spacing: Theme.Spacing.xs) {
                             ProgressView()
                                 .controlSize(.small)
                                 .frame(width: 16, height: 16)
@@ -288,7 +288,7 @@ struct ApplicationsView: View {
                         }
                     }
                 }
-                .padding(32)
+                .padding(Theme.Spacing.xxl)
                 .frame(maxWidth: .infinity)
                 .glassCard()
             }
@@ -353,7 +353,7 @@ struct ApplicationsView: View {
         VStack(spacing: Theme.Spacing.lg) {
             // Check for updates button
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                     Text(L("applications.updates.title"))
                         .font(Theme.Typography.headline)
 
@@ -365,7 +365,7 @@ struct ApplicationsView: View {
                 Spacer()
 
                 if viewModel.isCheckingUpdates {
-                    HStack(spacing: 8) {
+                    HStack(spacing: Theme.Spacing.xs) {
                         ProgressView()
                             .controlSize(.small)
                         Text("\(Int(viewModel.updateCheckProgress * 100))%")
@@ -452,7 +452,7 @@ struct ApplicationsView: View {
             } else {
                 // Homebrew header with actions
                 HStack {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                         Text(L("applications.homebrew.casks"))
                             .font(Theme.Typography.headline)
 

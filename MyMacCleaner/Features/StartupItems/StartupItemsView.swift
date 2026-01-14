@@ -96,7 +96,7 @@ struct StartupItemsView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.startupItems"))
                     .font(Theme.Typography.size28Bold)
 
@@ -186,7 +186,7 @@ struct StartupItemsView: View {
                 }
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("startupItems.scan.title"))
                     .font(Theme.Typography.size20Semibold)
 
@@ -205,7 +205,7 @@ struct StartupItemsView: View {
                 viewModel.scanItems()
             }
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -429,7 +429,7 @@ struct StartupItemRow: View {
                         .lineLimit(1)
 
                     if let developer = item.developer {
-                        HStack(spacing: 4) {
+                        HStack(spacing: Theme.Spacing.xxs) {
                             Image(systemName: "building.2")
                                 .font(Theme.Typography.size9)
                             Text(developer)
@@ -451,7 +451,7 @@ struct StartupItemRow: View {
                     .clipShape(RoundedRectangle(cornerRadius: 4))
 
                 // Status indicator
-                HStack(spacing: 4) {
+                HStack(spacing: Theme.Spacing.xxs) {
                     Circle()
                         .fill(item.isEnabled ? Color.green : Color.orange)
                         .frame(width: 8, height: 8)

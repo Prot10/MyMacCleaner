@@ -149,7 +149,7 @@ struct DiskCleanerView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.diskCleaner"))
                     .font(Theme.Typography.size28Bold)
 
@@ -161,8 +161,8 @@ struct DiskCleanerView: View {
             Spacer()
 
             if viewModel.hasScanned && !viewModel.scanResults.isEmpty {
-                HStack(spacing: 16) {
-                    VStack(alignment: .trailing, spacing: 4) {
+                HStack(spacing: Theme.Spacing.md) {
+                    VStack(alignment: .trailing, spacing: Theme.Spacing.xxs) {
                         Text(viewModel.formattedTotalSize)
                             .font(Theme.Typography.size22Semibold)
                             .foregroundStyle(sectionColor)
@@ -244,7 +244,7 @@ struct DiskCleanerView: View {
                 }
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("diskCleaner.scan.title"))
                     .font(Theme.Typography.size20Semibold)
 
@@ -262,7 +262,7 @@ struct DiskCleanerView: View {
                 viewModel.startScan()
             }
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -270,12 +270,12 @@ struct DiskCleanerView: View {
     // MARK: - Empty State
 
     private var emptyStateSection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Theme.Spacing.lg) {
             Image(systemName: "checkmark.circle.fill")
                 .font(Theme.Typography.size48)
                 .foregroundStyle(.green)
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("diskCleaner.empty.title"))
                     .font(Theme.Typography.size20Semibold)
 
@@ -292,7 +292,7 @@ struct DiskCleanerView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -300,7 +300,7 @@ struct DiskCleanerView: View {
     // MARK: - Category List
 
     private var categoryListSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Theme.Spacing.sm) {
             // Selection controls
             HStack {
                 Text(L("diskCleaner.categories"))
@@ -326,7 +326,7 @@ struct DiskCleanerView: View {
                 .foregroundStyle(sectionColor)
 
                 Button(action: viewModel.startScan) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: Theme.Spacing.xxs) {
                         Image(systemName: "arrow.clockwise")
                         Text(L("diskCleaner.rescan"))
                     }
@@ -366,7 +366,7 @@ struct DiskCleanerView: View {
 
     private var cleanButtonSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(LFormat("diskCleaner.selected %@", viewModel.formattedSelectedSize))
                     .font(Theme.Typography.size15Semibold)
 
@@ -386,7 +386,7 @@ struct DiskCleanerView: View {
                 viewModel.prepareClean()
             }
         }
-        .padding(20)
+        .padding(Theme.Spacing.lg)
         .glassCard()
         .shadow(color: sectionColor.opacity(0.2), radius: 15, y: 5)
     }
@@ -407,7 +407,7 @@ struct DiskCleanerView: View {
             }
 
             // Info
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("diskCleaner.emptyTrash.title"))
                     .font(Theme.Typography.subheadline.weight(.semibold))
 
@@ -429,7 +429,7 @@ struct DiskCleanerView: View {
                 Button(action: {
                     PermissionsService.shared.openFullDiskAccessSettings()
                 }) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: Theme.Spacing.xxs) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(Theme.Typography.size10)
                         Text(L("diskCleaner.emptyTrash.needsFDA"))
@@ -486,7 +486,7 @@ struct ScanningOverlay: View {
     @State private var isAnimating = false
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Theme.Spacing.lg) {
             ZStack {
                 Circle()
                     .fill(accentColor.opacity(0.1))
@@ -513,7 +513,7 @@ struct ScanningOverlay: View {
                     .foregroundStyle(accentColor)
             }
 
-            VStack(spacing: 4) {
+            VStack(spacing: Theme.Spacing.xxs) {
                 Text(L("common.scanning"))
                     .font(Theme.Typography.size20Semibold)
 

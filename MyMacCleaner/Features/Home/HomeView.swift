@@ -108,7 +108,7 @@ struct HomeView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.home"))
                     .font(Theme.Typography.size28Bold)
 
@@ -165,7 +165,7 @@ struct HomeView: View {
                     }
                 }
 
-                VStack(spacing: 8) {
+                VStack(spacing: Theme.Spacing.xs) {
                     Text(viewModel.isScanning ? L("home.scanning") : L("home.smartScan"))
                         .font(Theme.Typography.size20Semibold)
 
@@ -177,7 +177,7 @@ struct HomeView: View {
                 }
 
                 if viewModel.isScanning {
-                    VStack(spacing: 8) {
+                    VStack(spacing: Theme.Spacing.xs) {
                         ProgressView(value: viewModel.scanProgress)
                             .progressViewStyle(.linear)
                             .tint(sectionColor)
@@ -199,13 +199,13 @@ struct HomeView: View {
                     }
                 }
             }
-            .padding(32)
+            .padding(Theme.Spacing.xxl)
             .frame(maxWidth: .infinity)
             .glassCard()
 
             // Error display
             if let error = viewModel.scanError {
-                HStack(spacing: 8) {
+                HStack(spacing: Theme.Spacing.xs) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
 
@@ -375,7 +375,7 @@ struct SmartScanButton: View {
                 }
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(isScanning ? L("home.scanning") : L("home.smartScan"))
                     .font(Theme.Typography.size20Semibold)
 
@@ -396,7 +396,7 @@ struct SmartScanButton: View {
                 }
             }
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -429,7 +429,7 @@ struct StatCard: View {
             Spacer()
 
             // Value and subtitle
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(value)
                     .font(Theme.Typography.size24Bold)
                     .foregroundStyle(.primary)
@@ -449,7 +449,7 @@ struct StatCard: View {
                 .font(Theme.Typography.size14Medium)
                 .foregroundStyle(.secondary)
         }
-        .padding(16)
+        .padding(Theme.Spacing.md)
         .frame(height: 160)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
@@ -475,7 +475,7 @@ struct QuickActionButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 12) {
+            VStack(spacing: Theme.Spacing.sm) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(color.opacity(0.2))
