@@ -41,24 +41,24 @@ struct MenuBarView: View {
             headerSection
 
             Divider()
-                .padding(.horizontal, 12)
+                .padding(.horizontal, Theme.Spacing.sm)
 
             // Stats sections
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 cpuSection
                 memorySection
                 diskSection
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, Theme.Spacing.xs)
 
             Divider()
-                .padding(.horizontal, 12)
+                .padding(.horizontal, Theme.Spacing.sm)
 
             // Display mode section
             displayModeSection
 
             Divider()
-                .padding(.horizontal, 12)
+                .padding(.horizontal, Theme.Spacing.sm)
 
             // Actions
             actionsSection
@@ -70,7 +70,7 @@ struct MenuBarView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.Spacing.xs) {
             Image("MenuBarIcon")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
@@ -81,8 +81,8 @@ struct MenuBarView: View {
 
             Spacer()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.sm)
     }
 
     // MARK: - CPU Section
@@ -121,7 +121,7 @@ struct MenuBarView: View {
             )
 
             // Memory pressure indicator
-            HStack(spacing: 6) {
+            HStack(spacing: Theme.Spacing.xxxs) {
                 Circle()
                     .fill(memoryColor)
                     .frame(width: 8, height: 8)
@@ -129,8 +129,8 @@ struct MenuBarView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 8)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.bottom, Theme.Spacing.xs)
         }
     }
 
@@ -197,12 +197,12 @@ struct MenuBarView: View {
     // MARK: - Display Mode Section
 
     private var displayModeSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
             Text(L("menuBar.displayMode"))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.primary)
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
+                .padding(.horizontal, Theme.Spacing.md)
+                .padding(.top, Theme.Spacing.xs)
 
             ForEach(MenuBarController.DisplayMode.allCases, id: \.rawValue) { mode in
                 MenuBarButton(
@@ -214,7 +214,7 @@ struct MenuBarView: View {
                 }
             }
         }
-        .padding(.bottom, 8)
+        .padding(.bottom, Theme.Spacing.xs)
     }
 
     private func iconForMode(_ mode: MenuBarController.DisplayMode) -> String {
@@ -240,13 +240,13 @@ struct MenuBarView: View {
             }
 
             Divider()
-                .padding(.horizontal, 12)
+                .padding(.horizontal, Theme.Spacing.sm)
 
             MenuBarButton(title: L("menuBar.quit"), icon: "power") {
                 NSApp.terminate(nil)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Theme.Spacing.xxs)
     }
 
     private func openMainApp() {
@@ -281,7 +281,7 @@ struct MenuBarRow: View {
     let progressColor: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.xxxs) {
             HStack {
                 Image(systemName: icon)
                     .font(.subheadline)
@@ -312,8 +312,8 @@ struct MenuBarRow: View {
             }
             .frame(height: 4)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.xs)
     }
 }
 
@@ -347,8 +347,8 @@ struct MenuBarButton: View {
                         .foregroundStyle(.blue)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.xs)
             .background(isHovering ? Color.primary.opacity(0.1) : Color.clear)
             .contentShape(Rectangle())
         }
