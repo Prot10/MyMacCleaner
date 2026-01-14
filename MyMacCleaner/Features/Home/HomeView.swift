@@ -110,10 +110,10 @@ struct HomeView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(L("navigation.home"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("home.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -159,7 +159,7 @@ struct HomeView: View {
                                 .tint(sectionColor)
                         } else {
                             Image(systemName: "magnifyingglass")
-                                .font(.system(size: 32, weight: .medium))
+                                .font(Theme.Typography.size32Medium)
                                 .foregroundStyle(sectionColor.gradient)
                         }
                     }
@@ -167,10 +167,10 @@ struct HomeView: View {
 
                 VStack(spacing: 8) {
                     Text(viewModel.isScanning ? L("home.scanning") : L("home.smartScan"))
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(Theme.Typography.size20Semibold)
 
                     Text(viewModel.isScanning ? L("home.scan.analyzing") : L("home.scan.description"))
-                        .font(.system(size: 14))
+                        .font(Theme.Typography.size14)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: 400)
@@ -369,7 +369,7 @@ struct SmartScanButton: View {
                             .tint(color)
                     } else {
                         Image(systemName: "magnifyingglass")
-                            .font(.system(size: 32, weight: .medium))
+                            .font(Theme.Typography.size32Medium)
                             .foregroundStyle(color.gradient)
                     }
                 }
@@ -377,10 +377,10 @@ struct SmartScanButton: View {
 
             VStack(spacing: 8) {
                 Text(isScanning ? L("home.scanning") : L("home.smartScan"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(isScanning ? L("home.scan.analyzing") : L("home.scan.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
@@ -422,7 +422,7 @@ struct StatCard: View {
                     .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(Theme.Typography.size18Semibold)
                     .foregroundStyle(color)
             }
 
@@ -431,13 +431,13 @@ struct StatCard: View {
             // Value and subtitle
             VStack(alignment: .leading, spacing: 4) {
                 Text(value)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(Theme.Typography.size24Bold)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
 
                 Text(subtitle)
-                    .font(.system(size: 12))
+                    .font(Theme.Typography.size12)
                     .foregroundStyle(.tertiary)
             }
 
@@ -446,7 +446,7 @@ struct StatCard: View {
 
             // Title
             Text(title)
-                .font(.system(size: 14, weight: .medium))
+                .font(Theme.Typography.size14Medium)
                 .foregroundStyle(.secondary)
         }
         .padding(16)
@@ -482,13 +482,13 @@ struct QuickActionButton: View {
                         .frame(width: 44, height: 44)
 
                     Image(systemName: icon)
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(Theme.Typography.size20Semibold)
                         .foregroundStyle(color)
                 }
                 .shadow(color: color.opacity(isHovered ? 0.4 : 0.2), radius: 8)
 
                 Text(title)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.size13Medium)
                     .foregroundStyle(.secondary)
             }
             .frame(width: 120, height: 100)
