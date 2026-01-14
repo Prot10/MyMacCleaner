@@ -546,10 +546,10 @@ struct ScanningOverlay: View {
                     Text(L("common.cancel"))
                         .font(Theme.Typography.size14Medium)
                         .foregroundStyle(.secondary)
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, Theme.Spacing.lg)
                         .padding(.vertical, Theme.Spacing.xs)
                         .background(Color.white.opacity(0.1))
-                        .cornerRadius(8)
+                        .cornerRadius(Theme.CornerRadius.small)
                 }
                 .buttonStyle(.plain)
                 .padding(.top, Theme.Spacing.xs)
