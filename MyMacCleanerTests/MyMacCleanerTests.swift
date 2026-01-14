@@ -224,6 +224,9 @@ struct ThemeTests {
         #expect(Theme.Spacing.md < Theme.Spacing.lg)
         #expect(Theme.Spacing.lg < Theme.Spacing.xl)
         #expect(Theme.Spacing.xl < Theme.Spacing.xxl)
+        #expect(Theme.Spacing.xxl < Theme.Spacing.xxxl)
+        #expect(Theme.Spacing.xxxl < Theme.Spacing.huge)
+        #expect(Theme.Spacing.huge < Theme.Spacing.massive)
     }
 
     @Test("Corner radius values are positive")

@@ -20,12 +20,16 @@ MyMacCleaner is a free, open-source alternative to commercial Mac cleaning apps 
 |---------|-------------|
 | **Smart Scan** | One-click scan of all cleanup categories |
 | **Disk Cleaner** | Remove system junk, caches, logs, and temporary files |
+| **Browser Privacy** | Deep clean browser history, cookies, cache, and passwords |
 | **Space Lens** | Visual treemap of disk usage to find large files |
+| **Orphaned Files** | Find and remove leftover files from uninstalled apps |
+| **Duplicates** | Find exact duplicate files using SHA256 hashing |
 | **Performance** | RAM optimization and maintenance scripts |
 | **Applications** | Uninstall apps completely with leftover detection |
 | **Port Management** | View and kill processes using network ports |
 | **System Health** | Manage startup items and monitor system stats |
 | **Permissions** | Review and manage folder access permissions |
+| **Menu Bar** | Monitor CPU and RAM usage from the menu bar |
 
 ## Screenshots
 
@@ -89,12 +93,15 @@ See [Permissions Guide](docs/permissions.md) for detailed information.
 ## Documentation
 
 - [Home & Smart Scan](docs/home.md)
-- [Disk Cleaner](docs/disk-cleaner.md)
+- [Disk Cleaner & Browser Privacy](docs/disk-cleaner.md)
 - [Space Lens](docs/space-lens.md)
+- [Orphaned Files](docs/orphaned-files.md)
+- [Duplicate Finder](docs/duplicates.md)
 - [Performance](docs/performance.md)
 - [Applications](docs/applications.md)
 - [Port Management](docs/port-management.md)
 - [System Health](docs/system-health.md)
+- [Menu Bar Monitor](docs/menu-bar.md)
 - [Permissions Guide](docs/permissions.md)
 
 ## Tech Stack

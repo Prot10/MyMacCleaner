@@ -63,7 +63,7 @@ struct PermissionPromptView: View {
                     .frame(width: 80, height: 80)
 
                 Image(systemName: "lock.shield.fill")
-                    .font(.system(size: 32, weight: .medium))
+                    .font(Theme.Typography.size32Medium)
                     .foregroundStyle(.blue.gradient)
             }
         }
@@ -157,17 +157,17 @@ struct PermissionBanner: View {
         HStack(spacing: Theme.Spacing.md) {
             // Icon
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(Color.orange.opacity(0.15))
                     .frame(width: 44, height: 44)
 
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(Theme.Typography.size18Semibold)
                     .foregroundStyle(.orange)
             }
 
             // Text
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(L("permissions.banner.limited"))
                     .font(Theme.Typography.subheadline)
 

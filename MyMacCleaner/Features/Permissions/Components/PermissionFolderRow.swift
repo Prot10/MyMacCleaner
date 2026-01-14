@@ -14,7 +14,7 @@ struct PermissionFolderRow: View {
             statusIcon
 
             // Path info
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(folder.displayName)
                     .font(Theme.Typography.subheadline)
                     .fontWeight(.medium)
@@ -33,9 +33,9 @@ struct PermissionFolderRow: View {
                 // FDA badge
                 if folder.requiresFDA {
                     Text("FDA")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(Theme.Typography.size10Semibold)
                         .foregroundStyle(.orange)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, Theme.Spacing.xxxs)
                         .padding(.vertical, 3)
                         .background(Color.orange.opacity(0.15))
                         .clipShape(Capsule())
@@ -63,7 +63,7 @@ struct PermissionFolderRow: View {
         } else {
             Image(systemName: folder.status.icon)
                 .foregroundStyle(folder.status.color)
-                .font(.system(size: 14, weight: .semibold))
+                .font(Theme.Typography.size14Semibold)
                 .frame(width: 18, height: 18)
         }
     }
@@ -74,15 +74,15 @@ struct PermissionFolderRow: View {
         case .accessible:
             // Show revoke button when accessible
             Button(action: onRevokeAccess) {
-                HStack(spacing: 4) {
+                HStack(spacing: Theme.Spacing.xxs) {
                     Image(systemName: "minus.circle.fill")
-                        .font(.system(size: 10))
+                        .font(Theme.Typography.size10)
                     Text(L("permissions.folder.revoke"))
-                        .font(.system(size: 11, weight: .medium))
+                        .font(Theme.Typography.size11Medium)
                 }
                 .foregroundStyle(.white)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, Theme.Spacing.xs)
+                .padding(.vertical, Theme.Spacing.xxs)
                 .background(Color.red.opacity(0.8))
                 .clipShape(Capsule())
             }
@@ -93,15 +93,15 @@ struct PermissionFolderRow: View {
             if folder.canTriggerTCCDialog {
                 // TCC folders can trigger dialog directly
                 Button(action: onRequestAccess) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: Theme.Spacing.xxs) {
                         Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 10))
+                            .font(Theme.Typography.size10)
                         Text(L("permissions.folder.grant"))
-                            .font(.system(size: 11, weight: .medium))
+                            .font(Theme.Typography.size11Medium)
                     }
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, Theme.Spacing.xs)
+                    .padding(.vertical, Theme.Spacing.xxs)
                     .background(Color.green)
                     .clipShape(Capsule())
                 }
@@ -109,15 +109,15 @@ struct PermissionFolderRow: View {
             } else {
                 // FDA folders need System Settings
                 Button(action: onOpenSettings) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: Theme.Spacing.xxs) {
                         Image(systemName: "gear")
-                            .font(.system(size: 10))
+                            .font(Theme.Typography.size10)
                         Text(L("permissions.folder.grant"))
-                            .font(.system(size: 11, weight: .medium))
+                            .font(Theme.Typography.size11Medium)
                     }
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, Theme.Spacing.xs)
+                    .padding(.vertical, Theme.Spacing.xxs)
                     .background(Color.blue)
                     .clipShape(Capsule())
                 }

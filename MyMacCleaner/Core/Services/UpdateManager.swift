@@ -29,6 +29,12 @@ final class UpdateManager {
             userDriverDelegate: nil
         )
 
+        // Default to automatically checking for updates on first launch
+        if !UserDefaults.standard.bool(forKey: "SUHasLaunchedBefore") {
+            updaterController.updater.automaticallyChecksForUpdates = true
+            UserDefaults.standard.set(true, forKey: "SUHasLaunchedBefore")
+        }
+
         // Observe canCheckForUpdates
         updaterController.updater.publisher(for: \.canCheckForUpdates)
             .receive(on: DispatchQueue.main)
@@ -64,7 +70,7 @@ final class UpdateManager {
 final class UpdateManager {
     var canCheckForUpdates: Bool = false
     var lastUpdateCheck: Date? = nil
-    var automaticChecksEnabled: Bool = false
+    var automaticChecksEnabled: Bool = true
 
     init() {
         print("⚠️ Sparkle framework not available. Add via File > Add Package Dependencies")

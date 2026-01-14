@@ -44,6 +44,7 @@ actor FileScanner {
             "\(home)/Library/Developer/Xcode/DerivedData",
             "\(home)/Library/Developer/Xcode/Archives",
             "\(home)/Library/Developer/CoreSimulator/Caches",
+            "\(home)/Library/Developer/CoreSimulator/Devices",
 
             // Application support cleanup (be careful)
             "\(home)/Library/Application Support",
@@ -64,7 +65,20 @@ actor FileScanner {
             // Browser caches
             "\(home)/Library/Caches/com.apple.Safari",
             "\(home)/Library/Caches/Google",
-            "\(home)/Library/Caches/Firefox"
+            "\(home)/Library/Caches/Firefox",
+
+            // Package manager caches
+            "\(home)/.npm",
+            "\(home)/.yarn",
+            "\(home)/.cache/yarn",
+            "\(home)/Library/Caches/CocoaPods",
+            "\(home)/Library/Caches/Homebrew",
+
+            // Docker data
+            "\(home)/Library/Containers/com.docker.docker",
+
+            // iOS Backups (handle with care - user consent required)
+            "\(home)/Library/Application Support/MobileSync/Backup"
         ]
     }
 

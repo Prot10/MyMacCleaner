@@ -11,13 +11,13 @@ extension View {
     @ViewBuilder
     func glassCard() -> some View {
         if #available(macOS 26, *) {
-            self.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+            self.glassEffect(.regular, in: RoundedRectangle(cornerRadius: Theme.CornerRadius.large))
         } else {
             self
                 .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.large))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.large)
                         .strokeBorder(.white.opacity(0.15), lineWidth: 1)
                 )
         }
@@ -180,7 +180,7 @@ struct LiquidGlassButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(.horizontal, 16)
+            .padding(.horizontal, Theme.Spacing.md)
             .padding(.vertical, 10)
             .background {
                 switch variant {
@@ -265,7 +265,7 @@ struct FloatingActionButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 20, weight: .semibold))
+                .font(Theme.Typography.size20Semibold)
                 .foregroundStyle(.white)
                 .frame(width: 56, height: 56)
                 .background {
@@ -327,23 +327,23 @@ struct GlassActionButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: Theme.Spacing.xxxs) {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(Theme.Typography.size13Medium)
                 }
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(Theme.Typography.size13Semibold)
             }
             .foregroundStyle(isDisabled ? color.opacity(0.3) : color)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.xs)
             .background {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(color.opacity(isDisabled ? 0.05 : (isHovered ? 0.2 : 0.12)))
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .strokeBorder(
                         color.opacity(isDisabled ? 0.1 : (isHovered ? 0.5 : 0.3)),
                         lineWidth: 1
@@ -370,10 +370,10 @@ struct GlassToolbar<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.Spacing.xs) {
             content()
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Theme.Spacing.md)
         .padding(.vertical, 10)
         .modifier(GlassCapsuleModifier())
         .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
@@ -391,7 +391,7 @@ struct GlassSegmentedControl<T: Hashable>: View {
 
     var body: some View {
         glassContainerWrapper {
-            HStack(spacing: 4) {
+            HStack(spacing: Theme.Spacing.xxs) {
                 ForEach(options, id: \.self) { option in
                     Button {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -399,10 +399,10 @@ struct GlassSegmentedControl<T: Hashable>: View {
                         }
                     } label: {
                         Text(label(option))
-                            .font(.system(size: 13, weight: .medium))
+                            .font(Theme.Typography.size13Medium)
                             .foregroundStyle(selection == option ? .primary : .secondary)
                             .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
+                            .padding(.vertical, Theme.Spacing.xs)
                             .background {
                                 if selection == option {
                                     segmentBackground
@@ -413,7 +413,7 @@ struct GlassSegmentedControl<T: Hashable>: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(4)
+            .padding(Theme.Spacing.xxs)
             .background(Color.white.opacity(0.05))
             .clipShape(.capsule)
         }
@@ -471,7 +471,7 @@ struct GlassTabPicker<T: Hashable>: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Theme.Spacing.xxs) {
             ForEach(tabs, id: \.self) { tab in
                 GlassTabButton(
                     icon: icon(tab),
@@ -486,7 +486,7 @@ struct GlassTabPicker<T: Hashable>: View {
                 }
             }
         }
-        .padding(4)
+        .padding(Theme.Spacing.xxs)
         .modifier(GlassCapsuleModifier())
     }
 }
@@ -503,16 +503,16 @@ struct GlassTabButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: Theme.Spacing.xxxs) {
                 Image(systemName: icon)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(Theme.Typography.size12Medium)
 
                 Text(label)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.size13Medium)
             }
             .foregroundStyle(isSelected ? .white : (isHovered ? .primary : .secondary))
             .padding(.horizontal, 14)
-            .padding(.vertical, 8)
+            .padding(.vertical, Theme.Spacing.xs)
             .background {
                 if isSelected {
                     Capsule()
@@ -535,14 +535,14 @@ struct GlassSearchField: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: Theme.ControlSize.controlIconSize, weight: .medium))
                 .foregroundStyle(.secondary)
 
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
-                .font(.system(size: 14))
+                .font(Theme.ControlSize.controlFont)
                 .focused($isFocused)
 
             if !text.isEmpty {
@@ -550,14 +550,16 @@ struct GlassSearchField: View {
                     text = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
+                        .font(.system(size: Theme.ControlSize.controlIconSize))
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, Theme.ControlSize.horizontalPadding)
+        .padding(.vertical, Theme.ControlSize.verticalPadding)
+        .frame(height: Theme.ControlSize.toolbarHeight)
+        .frame(maxWidth: Theme.ControlSize.searchFieldMaxWidth)
         .modifier(SearchFieldGlassModifier(isFocused: isFocused))
         .scaleEffect(isFocused ? 1.01 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isFocused)
@@ -572,15 +574,144 @@ struct SearchFieldGlassModifier: ViewModifier {
         if #available(macOS 26, *) {
             content.glassEffect(
                 isFocused ? .regular : .clear,
-                in: RoundedRectangle(cornerRadius: 12)
+                in: RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
             )
         } else {
             content
                 .background(isFocused ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.clear))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
                         .strokeBorder(.white.opacity(isFocused ? 0.2 : 0.1), lineWidth: 1)
+                )
+        }
+    }
+}
+
+// MARK: - Glass Control Modifier (Shared styling for Pickers/Toggles)
+
+struct GlassControlModifier: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *) {
+            content
+                .padding(.horizontal, Theme.ControlSize.horizontalPadding)
+                .padding(.vertical, Theme.ControlSize.verticalPadding)
+                .frame(height: Theme.ControlSize.toolbarHeight)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
+        } else {
+            content
+                .padding(.horizontal, Theme.ControlSize.horizontalPadding)
+                .padding(.vertical, Theme.ControlSize.verticalPadding)
+                .frame(height: Theme.ControlSize.toolbarHeight)
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
+                        .strokeBorder(.white.opacity(0.1), lineWidth: 1)
+                )
+        }
+    }
+}
+
+extension View {
+    func glassControlStyle() -> some View {
+        self.modifier(GlassControlModifier())
+    }
+}
+
+// MARK: - Glass Picker (Native Picker with Glass Styling)
+
+struct GlassPicker<T: Hashable, Content: View>: View {
+    let icon: String
+    @Binding var selection: T
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        Picker(selection: $selection) {
+            content()
+        } label: {
+            Image(systemName: icon)
+                .font(.system(size: Theme.ControlSize.controlIconSize, weight: .medium))
+        }
+        .pickerStyle(.menu)
+        .labelsHidden()
+        .font(Theme.ControlSize.controlFont)
+        .foregroundStyle(.secondary)
+        .glassControlStyle()
+    }
+}
+
+// MARK: - Glass Toggle (Native Toggle with Glass Styling)
+
+struct GlassToggle: View {
+    let title: String
+    @Binding var isOn: Bool
+
+    var body: some View {
+        HStack(spacing: Theme.Spacing.xs) {
+            Text(title)
+                .font(Theme.ControlSize.controlFont)
+                .foregroundStyle(.secondary)
+
+            Toggle("", isOn: $isOn)
+                .toggleStyle(.switch)
+                .controlSize(.small)
+                .labelsHidden()
+        }
+        .glassControlStyle()
+    }
+}
+
+// MARK: - Glass Menu Button (Custom Menu with Glass Styling)
+
+struct GlassMenuButton<Content: View>: View {
+    let icon: String
+    let title: String
+    @ViewBuilder let content: () -> Content
+
+    @State private var isHovered = false
+
+    var body: some View {
+        Menu {
+            content()
+        } label: {
+            HStack(spacing: Theme.Spacing.xxxs) {
+                Image(systemName: icon)
+                    .font(.system(size: Theme.ControlSize.controlIconSize, weight: .medium))
+                Text(title)
+                Image(systemName: "chevron.down")
+                    .font(Theme.Typography.size10Medium)
+            }
+            .font(Theme.ControlSize.controlFont)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, Theme.ControlSize.horizontalPadding)
+            .padding(.vertical, Theme.ControlSize.verticalPadding)
+            .frame(height: Theme.ControlSize.toolbarHeight)
+            .modifier(GlassMenuModifier(isHovered: isHovered))
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+    }
+}
+
+struct GlassMenuModifier: ViewModifier {
+    let isHovered: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(macOS 26, *) {
+            content.glassEffect(
+                isHovered ? .regular : .clear,
+                in: RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
+            )
+        } else {
+            content
+                .background(isHovered ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.clear))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
+                        .strokeBorder(.white.opacity(isHovered ? 0.15 : 0.1), lineWidth: 1)
                 )
         }
     }
@@ -686,7 +817,7 @@ extension Color {
         )
         .ignoresSafeArea()
 
-        VStack(spacing: 24) {
+        VStack(spacing: Theme.Spacing.xl) {
             Text("Glass Card")
                 .padding()
                 .glassCard()
@@ -696,11 +827,11 @@ extension Color {
                 .glassCardProminent()
 
             Text("Glass Pill")
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, Theme.Spacing.md)
+                .padding(.vertical, Theme.Spacing.xs)
                 .glassPill()
 
-            HStack(spacing: 12) {
+            HStack(spacing: Theme.Spacing.sm) {
                 Button("Glass") {}
                     .buttonStyle(.liquidGlass)
 

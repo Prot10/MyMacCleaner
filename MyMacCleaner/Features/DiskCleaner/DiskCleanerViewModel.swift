@@ -30,6 +30,11 @@ class DiskCleanerViewModel: ObservableObject {
     @Published var toastMessage = ""
     @Published var toastType: ToastType = .success
 
+    // Trash
+    @Published var trashSize: Int64 = 0
+    @Published var isEmptyingTrash = false
+    @Published var showEmptyTrashConfirmation = false
+
     // Errors
     @Published var errorMessage: String?
 
@@ -61,6 +66,14 @@ class DiskCleanerViewModel: ObservableObject {
         ByteCountFormatter.string(fromByteCount: selectedSize, countStyle: .file)
     }
 
+    var formattedTrashSize: String {
+        ByteCountFormatter.string(fromByteCount: trashSize, countStyle: .file)
+    }
+
+    var hasFullDiskAccess: Bool {
+        permissionsService.hasFullDiskAccess
+    }
+
     // MARK: - Private Properties
 
     private let fileScanner = FileScanner.shared
@@ -87,7 +100,7 @@ class DiskCleanerViewModel: ObservableObject {
                 hasScanned = true
 
             } catch {
-                errorMessage = L("diskCleaner.toast.scanFailed \(error.localizedDescription)")
+                errorMessage = LFormat("diskCleaner.toast.scanFailed %@", error.localizedDescription)
             }
 
             isScanning = false
@@ -207,9 +220,9 @@ class DiskCleanerViewModel: ObservableObject {
             // Show result
             let freedFormatted = ByteCountFormatter.string(fromByteCount: totalFreed, countStyle: .file)
             if failedCount == 0 {
-                showToastMessage(L("diskCleaner.toast.cleanSuccess \(freedFormatted)"), type: .success)
+                showToastMessage(LFormat("diskCleaner.toast.cleanSuccess %@", freedFormatted), type: .success)
             } else if failedCount < totalItems {
-                showToastMessage(L("diskCleaner.toast.cleanPartial \(freedFormatted) \(failedCount)"), type: .info)
+                showToastMessage(LFormat("diskCleaner.toast.cleanPartial %@ %lld", freedFormatted, Int64(failedCount)), type: .info)
             } else {
                 showToastMessage(L("diskCleaner.toast.cleanFailed"), type: .error)
             }
@@ -229,6 +242,59 @@ class DiskCleanerViewModel: ObservableObject {
 
     func dismissToast() {
         showToast = false
+    }
+
+    // MARK: - Trash Methods
+
+    func refreshTrashSize() {
+        Task {
+            trashSize = await fileScanner.getTrashSize()
+        }
+    }
+
+    func prepareEmptyTrash() {
+        // Check FDA permission first
+        if !hasFullDiskAccess {
+            showToastMessage(L("diskCleaner.toast.needFDA"), type: .info)
+            permissionsService.openFullDiskAccessSettings()
+            return
+        }
+
+        if trashSize == 0 {
+            showToastMessage(L("diskCleaner.toast.trashEmpty"), type: .info)
+            return
+        }
+
+        showEmptyTrashConfirmation = true
+    }
+
+    func confirmEmptyTrash() {
+        showEmptyTrashConfirmation = false
+
+        Task {
+            isEmptyingTrash = true
+
+            let result = await fileScanner.emptyTrash()
+
+            isEmptyingTrash = false
+
+            // Refresh trash size
+            trashSize = await fileScanner.getTrashSize()
+
+            if result.errors.isEmpty {
+                let freedFormatted = ByteCountFormatter.string(fromByteCount: result.freedSpace, countStyle: .file)
+                showToastMessage(LFormat("diskCleaner.toast.trashSuccess %@", freedFormatted), type: .success)
+            } else if result.deletedCount > 0 {
+                let freedFormatted = ByteCountFormatter.string(fromByteCount: result.freedSpace, countStyle: .file)
+                showToastMessage(LFormat("diskCleaner.toast.trashPartial %@ %lld", freedFormatted, Int64(result.failedCount)), type: .info)
+            } else {
+                showToastMessage(L("diskCleaner.toast.trashFailed"), type: .error)
+            }
+        }
+    }
+
+    func cancelEmptyTrash() {
+        showEmptyTrashConfirmation = false
     }
 
     // MARK: - Helpers

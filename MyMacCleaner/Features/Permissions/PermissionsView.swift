@@ -26,6 +26,10 @@ struct PermissionsView: View {
             withAnimation(Theme.Animation.springSmooth) {
                 isVisible = true
             }
+            // Trigger full permission check when user visits the Permissions page
+            // This includes TCC-triggerable folders (Downloads, Documents, Desktop)
+            // that are skipped at app startup to avoid permission dialogs on launch
+            viewModel.refreshAllPermissions()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             viewModel.refreshAllPermissions()
@@ -58,7 +62,7 @@ struct PermissionsView: View {
             Button(action: {
                 viewModel.refreshAllPermissions()
             }) {
-                HStack(spacing: 6) {
+                HStack(spacing: Theme.Spacing.xxxs) {
                     if viewModel.isLoading {
                         ProgressView()
                             .scaleEffect(0.7)
@@ -67,10 +71,10 @@ struct PermissionsView: View {
                     }
                     Text(L("permissions.action.refresh"))
                 }
-                .font(.system(size: 13, weight: .medium))
+                .font(Theme.Typography.size13Medium)
                 .foregroundStyle(sectionColor)
                 .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .padding(.vertical, Theme.Spacing.xs)
                 .background(sectionColor.opacity(0.12))
                 .clipShape(Capsule())
             }
@@ -90,11 +94,11 @@ struct PermissionsView: View {
                     .frame(width: 60, height: 60)
 
                 Image(systemName: viewModel.overallStatus.icon)
-                    .font(.system(size: 28, weight: .semibold))
+                    .font(Theme.Typography.size28Semibold)
                     .foregroundStyle(viewModel.overallStatus.color)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("permissions.summary.title"))
                     .font(Theme.Typography.headline)
                     .foregroundStyle(.primary)
@@ -109,16 +113,16 @@ struct PermissionsView: View {
             Spacer()
 
             // Stats
-            VStack(alignment: .trailing, spacing: 4) {
-                HStack(spacing: 4) {
+            VStack(alignment: .trailing, spacing: Theme.Spacing.xxs) {
+                HStack(spacing: Theme.Spacing.xxs) {
                     Text("\(viewModel.totalAccessible)")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .font(Theme.Typography.size24BoldRounded)
                         .foregroundStyle(.green)
                     Text("/")
-                        .font(.system(size: 18, weight: .medium))
+                        .font(Theme.Typography.size18Medium)
                         .foregroundStyle(.secondary)
                     Text("\(viewModel.totalExisting)")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .font(Theme.Typography.size24BoldRounded)
                         .foregroundStyle(.primary)
                 }
 

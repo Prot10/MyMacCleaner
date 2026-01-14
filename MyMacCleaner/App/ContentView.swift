@@ -43,6 +43,8 @@ struct ContentView: View {
 enum NavigationSection: String, CaseIterable, Identifiable {
     case home
     case diskCleaner
+    case orphanedFiles
+    case duplicates
     case performance
     case applications
     case startupItems
@@ -56,6 +58,8 @@ enum NavigationSection: String, CaseIterable, Identifiable {
         switch self {
         case .home: return "house.fill"
         case .diskCleaner: return "internaldrive.fill"
+        case .orphanedFiles: return "doc.questionmark.fill"
+        case .duplicates: return "doc.on.doc.fill"
         case .performance: return "gauge.with.needle.fill"
         case .applications: return "square.grid.2x2.fill"
         case .startupItems: return "power.circle.fill"
@@ -77,6 +81,8 @@ enum NavigationSection: String, CaseIterable, Identifiable {
         switch self {
         case .home: return Theme.Colors.home              // Blue
         case .diskCleaner: return Theme.Colors.storage    // Orange
+        case .orphanedFiles: return Theme.Colors.orphans  // Pink
+        case .duplicates: return Theme.Colors.duplicates  // Teal
         case .performance: return Theme.Colors.memory     // Purple
         case .applications: return Theme.Colors.apps      // Green
         case .startupItems: return Theme.Colors.startup   // Yellow
@@ -101,18 +107,18 @@ struct SidebarView: View {
         VStack(spacing: 0) {
             // App header
             SidebarHeader()
-                .padding(.top, 8)
-                .padding(.bottom, 8)
+                .padding(.top, Theme.Spacing.xs)
+                .padding(.bottom, Theme.Spacing.xs)
 
             // Divider
             Rectangle()
                 .fill(Color.white.opacity(0.1))
                 .frame(height: 1)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Theme.Spacing.md)
 
             // Navigation items
             ScrollView {
-                VStack(spacing: 4) {
+                VStack(spacing: Theme.Spacing.xxs) {
                     ForEach(NavigationSection.allCases) { section in
                         SidebarRow(
                             section: section,
@@ -133,8 +139,8 @@ struct SidebarView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 12)
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, Theme.Spacing.sm)
             }
 
             Spacer()
@@ -159,26 +165,26 @@ struct SidebarRow: View {
         // Force SwiftUI to observe localization changes
         let _ = localization.languageCode
 
-        HStack(spacing: 12) {
+        HStack(spacing: Theme.Spacing.sm) {
             // Icon with background
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(isSelected ? section.color.opacity(0.2) : (isHovered ? Color.white.opacity(0.05) : Color.clear))
                     .frame(width: 36, height: 36)
 
                 Image(systemName: section.icon)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(Theme.Typography.size15Semibold)
                     .foregroundStyle(isSelected ? section.color : .secondary)
             }
 
             // Text
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(section.localizedName)
-                    .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
+                    .font(isSelected ? Theme.Typography.size13Semibold : Theme.Typography.size13Medium)
                     .foregroundStyle(isSelected ? .primary : .secondary)
 
                 Text(section.localizedDescription)
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.size11)
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
             }
@@ -193,18 +199,18 @@ struct SidebarRow: View {
                     .shadow(color: section.color.opacity(0.5), radius: 4)
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, Theme.Spacing.xs)
         .padding(.horizontal, 10)
         .background {
             if isSelected {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(section.color.opacity(0.1))
                     .overlay {
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                             .strokeBorder(section.color.opacity(0.2), lineWidth: 0.5)
                     }
             } else if isHovered {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(Color.white.opacity(0.05))
             }
         }
@@ -229,8 +235,8 @@ struct SidebarHeader: View {
                 .font(.headline)
         }
         .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.xs)
     }
 }
 
@@ -247,7 +253,7 @@ struct SystemStatusBadge: View {
         VStack(spacing: 0) {
             Divider()
 
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Spacing.xs) {
                 Circle()
                     .fill(.green)
                     .frame(width: 8, height: 8)
@@ -259,8 +265,8 @@ struct SystemStatusBadge: View {
 
                 Spacer()
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.sm)
             .background(isHovered ? Color.white.opacity(0.03) : Color.clear)
             .onHover { hovering in
                 withAnimation(.easeInOut(duration: 0.15)) {
@@ -358,6 +364,10 @@ struct DetailContentView: View {
                 viewModel: appState.diskCleanerViewModel,
                 spaceLensViewModel: appState.spaceLensViewModel
             )
+        case .orphanedFiles:
+            OrphanedFilesView(viewModel: appState.orphanedFilesViewModel)
+        case .duplicates:
+            DuplicatesView(viewModel: appState.duplicatesViewModel)
         case .performance:
             PerformanceView(viewModel: appState.performanceViewModel)
         case .applications:
@@ -383,7 +393,7 @@ struct ComingSoonView: View {
     @State private var isHovered = false
 
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: Theme.Spacing.xxl) {
             // Icon with animated background
             ZStack {
                 // Outer glow
@@ -411,7 +421,7 @@ struct ComingSoonView: View {
                         .frame(width: 120, height: 120)
 
                     Image(systemName: section.icon)
-                        .font(.system(size: 44, weight: .medium))
+                        .font(Theme.Typography.size44Medium)
                         .foregroundStyle(section.color.gradient)
                 }
                 .scaleEffect(isHovered ? 1.05 : 1.0)
@@ -423,7 +433,7 @@ struct ComingSoonView: View {
             }
 
             // Text content
-            VStack(spacing: 12) {
+            VStack(spacing: Theme.Spacing.sm) {
                 Text(section.localizedName)
                     .font(.largeTitle.bold())
 
@@ -434,19 +444,19 @@ struct ComingSoonView: View {
                 Text(L("comingSoon.description"))
                     .font(.body)
                     .foregroundStyle(.tertiary)
-                    .padding(.top, 4)
+                    .padding(.top, Theme.Spacing.xxs)
             }
 
             // Status badge
-            HStack(spacing: 8) {
+            HStack(spacing: Theme.Spacing.xs) {
                 Image(systemName: "hammer.fill")
                     .font(.caption)
 
                 Text(L("comingSoon.inDevelopment"))
                     .font(.caption.weight(.medium))
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.xs)
             .glassPill()
             .foregroundStyle(.secondary)
         }

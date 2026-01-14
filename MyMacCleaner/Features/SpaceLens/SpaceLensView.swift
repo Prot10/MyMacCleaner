@@ -13,7 +13,7 @@ struct SpaceLensView: View {
                     .glassCard()
             } else if let currentNode = viewModel.currentNode {
                 mainContent(currentNode)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.large))
                     .glassCard()
             }
 
@@ -33,7 +33,7 @@ struct SpaceLensView: View {
             Button(L("spaceLens.delete.moveToTrash"), role: .destructive) { viewModel.confirmDelete() }
         } message: {
             if let node = viewModel.nodeToDelete {
-                Text(L("spaceLens.delete.confirm \(node.name) \(node.formattedSize)"))
+                Text(LFormat("spaceLens.delete.confirm %@ %@", node.name, node.formattedSize))
             }
         }
         .onAppear {
@@ -61,7 +61,7 @@ struct SpaceLensView: View {
                 // Bubbles
                 GeometryReader { geometry in
                     BubblePackingView(
-                        nodes: currentNode.children,
+                        nodes: viewModel.currentChildren,
                         parentSize: currentNode.size,
                         size: geometry.size,
                         onSelect: { node in
@@ -74,6 +74,7 @@ struct SpaceLensView: View {
                     )
                 }
                 .padding(Theme.Spacing.md)
+                .id("\(viewModel.sizeFilter.rawValue)-\(viewModel.ageFilter.rawValue)") // Force rebuild on filter change
 
                 // Bottom bar
                 bottomBar
@@ -88,18 +89,18 @@ struct SpaceLensView: View {
             // Current folder info
             HStack(spacing: Theme.Spacing.md) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                         .fill(Color.blue.opacity(0.15))
                         .frame(width: 48, height: 48)
 
                     Image(systemName: "internaldrive.fill")
-                        .font(.system(size: 22))
+                        .font(Theme.Typography.size22)
                         .foregroundStyle(.blue)
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                     Text(currentNode.name)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(Theme.Typography.size15Semibold)
                         .lineLimit(1)
 
                     Text(LFormat("spaceLens.sizeItems %@ %lld", currentNode.formattedSize, currentNode.children.count))
@@ -114,7 +115,7 @@ struct SpaceLensView: View {
 
             // File list
             ScrollView {
-                LazyVStack(spacing: 2) {
+                LazyVStack(spacing: Theme.Spacing.tiny) {
                     ForEach(currentNode.children.sorted(by: { $0.size > $1.size })) { child in
                         SidebarFileRow(
                             node: child,
@@ -141,60 +142,132 @@ struct SpaceLensView: View {
     // MARK: - Header Bar
 
     private func headerBar(_ currentNode: FileNode) -> some View {
-        HStack {
-            // Navigation button
-            Button(action: viewModel.navigateUp) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(viewModel.navigationStack.count > 1 ? .primary : .tertiary)
-                    .frame(width: 32, height: 32)
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-            .buttonStyle(.plain)
-            .disabled(viewModel.navigationStack.count <= 1)
+        VStack(spacing: 0) {
+            // Navigation row
+            HStack {
+                // Navigation button
+                Button(action: viewModel.navigateUp) {
+                    Image(systemName: "chevron.left")
+                        .font(Theme.Typography.size14Semibold)
+                        .foregroundStyle(viewModel.navigationStack.count > 1 ? .primary : .tertiary)
+                        .frame(width: 32, height: 32)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+                }
+                .buttonStyle(.plain)
+                .disabled(viewModel.navigationStack.count <= 1)
 
-            Spacer()
+                Spacer()
 
-            // Breadcrumb
-            HStack(spacing: Theme.Spacing.xs) {
-                ForEach(Array(viewModel.breadcrumbs.enumerated()), id: \.element.id) { index, node in
-                    if index > 0 {
-                        Image(systemName: "chevron.right")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                    }
-
-                    Button(action: { viewModel.navigateTo(node) }) {
-                        HStack(spacing: 4) {
-                            if index == 0 {
-                                Image(systemName: "internaldrive.fill")
-                                    .font(.caption)
-                            }
-                            Text(node.name)
-                                .font(Theme.Typography.caption)
+                // Breadcrumb
+                HStack(spacing: Theme.Spacing.xs) {
+                    ForEach(Array(viewModel.breadcrumbs.enumerated()), id: \.element.id) { index, node in
+                        if index > 0 {
+                            Image(systemName: "chevron.right")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
                         }
-                        .foregroundStyle(index == viewModel.breadcrumbs.count - 1 ? .primary : .secondary)
+
+                        Button(action: { viewModel.navigateTo(node) }) {
+                            HStack(spacing: Theme.Spacing.xxs) {
+                                if index == 0 {
+                                    Image(systemName: "internaldrive.fill")
+                                        .font(.caption)
+                                }
+                                Text(node.name)
+                                    .font(Theme.Typography.caption)
+                            }
+                            .foregroundStyle(index == viewModel.breadcrumbs.count - 1 ? .primary : .secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                Spacer()
+
+                // Rescan button
+                Button(action: viewModel.scanHomeDirectory) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(Theme.Typography.size12)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, height: 32)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, Theme.Spacing.lg)
+            .padding(.vertical, Theme.Spacing.sm)
+
+            // Filter row
+            HStack(spacing: Theme.Spacing.md) {
+                // Size filter
+                HStack(spacing: Theme.Spacing.xs) {
+                    Image(systemName: "arrow.up.arrow.down")
+                        .font(Theme.Typography.size10)
+                        .foregroundStyle(.secondary)
+
+                    Picker("", selection: $viewModel.sizeFilter) {
+                        ForEach(SizeFilter.allCases, id: \.self) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .frame(width: 90)
+                }
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, Theme.Spacing.xxs)
+                .background(viewModel.sizeFilter != .all ? Color.blue.opacity(0.15) : Color.white.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+
+                // Age filter
+                HStack(spacing: Theme.Spacing.xs) {
+                    Image(systemName: "clock")
+                        .font(Theme.Typography.size10)
+                        .foregroundStyle(.secondary)
+
+                    Picker("", selection: $viewModel.ageFilter) {
+                        ForEach(AgeFilter.allCases, id: \.self) { filter in
+                            Text(filter.rawValue).tag(filter)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .frame(width: 90)
+                }
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, Theme.Spacing.xxs)
+                .background(viewModel.ageFilter != .all ? Color.orange.opacity(0.15) : Color.white.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+
+                // Clear filters button
+                if viewModel.hasActiveFilters {
+                    Button(action: viewModel.clearFilters) {
+                        HStack(spacing: Theme.Spacing.xxs) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(Theme.Typography.size10)
+                            Text(L("spaceLens.filter.clear"))
+                                .font(Theme.Typography.size11)
+                        }
+                        .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
                 }
-            }
 
-            Spacer()
+                Spacer()
 
-            // Rescan button
-            Button(action: viewModel.scanHomeDirectory) {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 32, height: 32)
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                // Filter stats
+                if viewModel.hasActiveFilters {
+                    Text(LFormat("spaceLens.filter.showing %lld %lld", Int64(viewModel.filteredCount), Int64(viewModel.totalCount)))
+                        .font(Theme.Typography.size11)
+                        .foregroundStyle(.secondary)
+                }
             }
-            .buttonStyle(.plain)
+            .padding(.horizontal, Theme.Spacing.lg)
+            .padding(.vertical, Theme.Spacing.xs)
+            .background(Color.white.opacity(0.02))
         }
-        .padding(.horizontal, Theme.Spacing.lg)
-        .padding(.vertical, Theme.Spacing.sm)
         .background(Color.white.opacity(0.03))
     }
 
@@ -223,6 +296,20 @@ struct SpaceLensView: View {
                             .font(Theme.Typography.caption)
                             .foregroundStyle(.tertiary)
                     }
+
+                    // Show last access date for files
+                    if !hovered.isDirectory, let accessStr = hovered.formattedLastAccess {
+                        Text("·")
+                            .foregroundStyle(.tertiary)
+
+                        HStack(spacing: Theme.Spacing.tiny) {
+                            Image(systemName: "clock")
+                                .font(Theme.Typography.size10)
+                            Text(accessStr)
+                        }
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.secondary)
+                    }
                 }
             } else {
                 Text(L("spaceLens.hoverHint"))
@@ -247,7 +334,7 @@ struct SpaceLensView: View {
     }
 
     private func legendItem(color: Color, label: String) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Theme.Spacing.xxs) {
             Circle()
                 .fill(color)
                 .frame(width: 8, height: 8)
@@ -276,7 +363,7 @@ struct SpaceLensView: View {
                         .frame(width: 80, height: 80)
 
                     Image(systemName: "circle.hexagongrid.fill")
-                        .font(.system(size: 32, weight: .medium))
+                        .font(Theme.Typography.size32Medium)
                         .foregroundStyle(.blue.gradient)
                 }
             }
@@ -320,39 +407,39 @@ struct SidebarFileRow: View {
             // Info button
             Button(action: onInfo) {
                 Image(systemName: "info.circle")
-                    .font(.system(size: 12))
+                    .font(Theme.Typography.size12)
                     .foregroundStyle(isHovered ? .secondary : .tertiary)
             }
             .buttonStyle(.plain)
 
             // Icon
             ZStack {
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.small)
                     .fill(node.color.opacity(0.15))
                     .frame(width: 30, height: 30)
 
                 Image(systemName: node.icon)
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(node.color)
             }
 
             // Name
             Text(node.name)
-                .font(.system(size: 13))
+                .font(Theme.Typography.size13)
                 .lineLimit(1)
 
             Spacer()
 
             // Size
             Text(node.formattedSize)
-                .font(.system(size: 12).monospacedDigit())
+                .font(Theme.Typography.size12.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
         .padding(.horizontal, Theme.Spacing.sm)
         .padding(.vertical, Theme.Spacing.xs)
         .background {
             if isHovered {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(Color.white.opacity(0.08))
             }
         }

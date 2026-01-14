@@ -26,10 +26,49 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - Table Mapping
+
+/// Maps key prefixes to their String Catalog table names
+private let keyPrefixToTable: [(prefix: String, table: String)] = [
+    // Feature-specific tables (check longer prefixes first)
+    ("applications.", "Applications"),
+    ("category.", "DiskCleaner"),
+    ("diskCleaner.", "DiskCleaner"),
+    ("duplicates.", "Duplicates"),
+    ("home.", "Home"),
+    ("menuBar.", "MenuBar"),
+    ("navigation.", "Common"),
+    ("orphans.", "OrphanedFiles"),
+    ("performance.", "Performance"),
+    ("permissions.", "Permissions"),
+    ("portManagement.", "PortManagement"),
+    ("privacy.", "DiskCleaner"),
+    ("scanResults.", "Home"),
+    ("settings.", "Settings"),
+    ("sidebar.", "Common"),
+    ("spaceLens.", "DiskCleaner"),
+    ("startupItems.", "StartupItems"),
+    ("systemHealth.", "SystemHealth"),
+    ("common.", "Common"),
+    ("comingSoon.", "Common"),
+]
+
+/// Determines the table name for a given key based on its prefix
+private func tableForKey(_ key: String) -> String {
+    for (prefix, table) in keyPrefixToTable {
+        if key.hasPrefix(prefix) {
+            return table
+        }
+    }
+    // Default to Common for unmatched keys (format strings, symbols, etc.)
+    return "Common"
+}
+
 // MARK: - Thread-Safe Localization Cache
 
 /// Thread-safe cache for loaded string dictionaries using a reader-writer pattern
 /// Uses a concurrent queue with barrier writes for optimal performance
+/// Cache key format: "languageCode:tableName"
 private final class LocalizationCache: @unchecked Sendable {
     private var cache: [String: [String: String]] = [:]
     private let queue = DispatchQueue(label: "com.mymaccleaner.localization", attributes: .concurrent)
@@ -37,19 +76,35 @@ private final class LocalizationCache: @unchecked Sendable {
     /// Perform a full lookup with fallback to English in a single atomic operation
     /// This prevents race conditions where the cache might change between lookups
     func lookup(key: String, languageCode: String) -> String {
+        let table = tableForKey(key)
+
         // Perform the entire lookup atomically using a sync read
         return queue.sync {
-            // Try current language
-            let currentDict = getOrLoadStrings(for: languageCode)
+            // Try current language in the appropriate table
+            let currentDict = getOrLoadStrings(for: languageCode, table: table)
             if let value = currentDict?[key] {
                 return value
             }
 
             // Fallback to English (if not already English)
             if languageCode != "en" {
-                let englishDict = getOrLoadStrings(for: "en")
+                let englishDict = getOrLoadStrings(for: "en", table: table)
                 if let value = englishDict?[key] {
                     return value
+                }
+            }
+
+            // Try Common table as final fallback for shared strings
+            if table != "Common" {
+                let commonDict = getOrLoadStrings(for: languageCode, table: "Common")
+                if let value = commonDict?[key] {
+                    return value
+                }
+                if languageCode != "en" {
+                    let commonEnDict = getOrLoadStrings(for: "en", table: "Common")
+                    if let value = commonEnDict?[key] {
+                        return value
+                    }
                 }
             }
 
@@ -67,14 +122,16 @@ private final class LocalizationCache: @unchecked Sendable {
     }
 
     /// Get cached strings or load from disk (must be called within queue.sync)
-    private func getOrLoadStrings(for languageCode: String) -> [String: String]? {
+    private func getOrLoadStrings(for languageCode: String, table: String) -> [String: String]? {
+        let cacheKey = "\(languageCode):\(table)"
+
         // Check cache first
-        if let cached = cache[languageCode] {
+        if let cached = cache[cacheKey] {
             return cached
         }
 
         // Load from disk
-        guard let dict = loadFromDisk(languageCode: languageCode) else {
+        guard let dict = loadFromDisk(languageCode: languageCode, table: table) else {
             return nil
         }
 
@@ -84,34 +141,34 @@ private final class LocalizationCache: @unchecked Sendable {
         let dictCopy = dict
         queue.async(flags: .barrier) { [weak self] in
             // Double-check in case another thread loaded it
-            if self?.cache[languageCode] == nil {
-                self?.cache[languageCode] = dictCopy
+            if self?.cache[cacheKey] == nil {
+                self?.cache[cacheKey] = dictCopy
             }
         }
 
         return dict
     }
 
-    /// Load strings dictionary from disk for a given language
-    private func loadFromDisk(languageCode: String) -> [String: String]? {
+    /// Load strings dictionary from disk for a given language and table
+    private func loadFromDisk(languageCode: String, table: String) -> [String: String]? {
         // Try to load from the lproj folder
         guard let lprojPath = Bundle.main.path(forResource: languageCode, ofType: "lproj") else {
             print("[Localization] No lproj found for: \(languageCode)")
             return nil
         }
 
-        let stringsPath = (lprojPath as NSString).appendingPathComponent("Localizable.strings")
+        let stringsPath = (lprojPath as NSString).appendingPathComponent("\(table).strings")
         let stringsURL = URL(fileURLWithPath: stringsPath)
 
         // Load the plist using PropertyListSerialization for better UTF-16 handling
         guard let data = try? Data(contentsOf: stringsURL),
               let plist = try? PropertyListSerialization.propertyList(from: data, format: nil),
               let dict = plist as? [String: String] else {
-            print("[Localization] Failed to load strings from: \(stringsPath)")
+            // Silent fail for missing tables - not all tables exist for all languages
             return nil
         }
 
-        print("[Localization] Loaded \(dict.count) strings for: \(languageCode)")
+        print("[Localization] Loaded \(dict.count) strings from \(table).strings for: \(languageCode)")
         return dict
     }
 }
