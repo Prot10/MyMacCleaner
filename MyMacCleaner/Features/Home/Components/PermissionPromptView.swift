@@ -157,7 +157,7 @@ struct PermissionBanner: View {
         HStack(spacing: Theme.Spacing.md) {
             // Icon
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(Color.orange.opacity(0.15))
                     .frame(width: 44, height: 44)
 
@@ -167,7 +167,7 @@ struct PermissionBanner: View {
             }
 
             // Text
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(L("permissions.banner.limited"))
                     .font(Theme.Typography.subheadline)
 

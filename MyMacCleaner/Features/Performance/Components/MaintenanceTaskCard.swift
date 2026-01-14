@@ -17,7 +17,7 @@ struct MaintenanceTaskCard: View {
             HStack(spacing: Theme.Spacing.sm) {
                 // Icon
                 ZStack {
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.small)
                         .fill(iconBackgroundColor.opacity(0.15))
                         .frame(width: 32, height: 32)
 
@@ -52,7 +52,7 @@ struct MaintenanceTaskCard: View {
                     statusBadge(for: result)
                 } else {
                     Button(action: onRun) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: Theme.Spacing.xxs) {
                             if isRunning {
                                 ProgressView()
                                     .controlSize(.mini)
@@ -67,7 +67,7 @@ struct MaintenanceTaskCard: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(task.color.opacity(isHovered && !isRunning ? 0.2 : 0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.xs))
                     }
                     .buttonStyle(.plain)
                     .disabled(isRunning)
@@ -150,7 +150,7 @@ struct MaintenanceTaskCard: View {
 
     @ViewBuilder
     private func statusBadge(for result: PerformanceViewModel.TaskResult) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Theme.Spacing.xxs) {
             switch result {
             case .success:
                 Image(systemName: "checkmark")
@@ -173,7 +173,7 @@ struct MaintenanceTaskCard: View {
         .padding(.horizontal, 6)
         .padding(.vertical, 2)
         .background(badgeColor(for: result).opacity(0.15))
-        .clipShape(RoundedRectangle(cornerRadius: 4))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
     }
 
     private func badgeColor(for result: PerformanceViewModel.TaskResult) -> Color {

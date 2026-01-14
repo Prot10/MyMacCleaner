@@ -44,7 +44,7 @@ struct PermissionCategoryCard: View {
                     HStack {
                         Spacer()
                         Button(action: onOpenSettings) {
-                            HStack(spacing: 6) {
+                            HStack(spacing: Theme.Spacing.xxxs) {
                                 Image(systemName: "gear")
                                     .font(Theme.Typography.size12)
                                 Text(L("permissions.action.openSettings"))
@@ -81,7 +81,7 @@ struct PermissionCategoryCard: View {
             }
 
             // Category info
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(category.type.localizedName)
                     .font(Theme.Typography.headline)
                     .foregroundStyle(.primary)
@@ -112,7 +112,7 @@ struct PermissionCategoryCard: View {
     private var statusBadge: some View {
         let status = category.overallStatus
 
-        HStack(spacing: 4) {
+        HStack(spacing: Theme.Spacing.xxs) {
             if status == .checking {
                 ProgressView()
                     .scaleEffect(0.5)

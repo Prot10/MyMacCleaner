@@ -140,7 +140,7 @@ struct ApplicationsView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .glassCard(cornerRadius: 12)
+                .glassCard(cornerRadius: Theme.CornerRadius.medium)
             }
         }
     }
@@ -231,7 +231,7 @@ struct ApplicationsView: View {
                 }
             } else {
                 // Start Analysis button
-                VStack(spacing: 28) {
+                VStack(spacing: Theme.Spacing.section) {
                     // Icon
                     ZStack {
                         Circle()
@@ -303,7 +303,7 @@ struct ApplicationsView: View {
                         Spacer()
 
                         if viewModel.discoveryState == .discovering {
-                            HStack(spacing: 6) {
+                            HStack(spacing: Theme.Spacing.xxxs) {
                                 ProgressView()
                                     .controlSize(.mini)
                                     .frame(width: 10, height: 10)

@@ -14,7 +14,7 @@ struct HomebrewCaskRow: View {
         HStack(spacing: Theme.Spacing.md) {
             // Icon
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(Color.purple.opacity(0.15))
                     .frame(width: 44, height: 44)
 
@@ -23,7 +23,7 @@ struct HomebrewCaskRow: View {
                     .foregroundStyle(.purple)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 HStack(spacing: Theme.Spacing.xs) {
                     Text(cask.displayName)
                         .font(Theme.Typography.subheadline.weight(.semibold))
@@ -80,7 +80,7 @@ struct HomebrewCaskRow: View {
 
                 if let onUpgrade = onUpgrade {
                     Button(action: onUpgrade) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: Theme.Spacing.xxs) {
                             Image(systemName: "arrow.up.circle")
                             Text(L("applications.homebrew.upgrade"))
                         }
@@ -89,7 +89,7 @@ struct HomebrewCaskRow: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(Color.orange)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
                     }
                     .buttonStyle(.plain)
                 }
@@ -100,14 +100,14 @@ struct HomebrewCaskRow: View {
                         .foregroundStyle(.red)
                         .padding(6)
                         .background(Color.red.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.xs))
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(Theme.Spacing.sm)
         .background(Color.white.opacity(isHovered ? 0.05 : 0))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium))
         .onHover { isHovered = $0 }
     }
 }

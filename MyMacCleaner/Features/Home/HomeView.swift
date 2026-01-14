@@ -135,7 +135,7 @@ struct HomeView: View {
 
     private var smartScanSection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            VStack(spacing: 28) {
+            VStack(spacing: Theme.Spacing.section) {
                 // Icon
                 ZStack {
                     Circle()
@@ -214,7 +214,7 @@ struct HomeView: View {
                         .foregroundStyle(.secondary)
                 }
                 .padding(Theme.Spacing.sm)
-                .glassCard(tint: .orange, cornerRadius: 12)
+                .glassCard(tint: .orange, cornerRadius: Theme.CornerRadius.medium)
             }
         }
         .animation(Theme.Animation.spring, value: viewModel.isScanning)
@@ -345,7 +345,7 @@ struct SmartScanButton: View {
     let action: () -> Void
 
     var body: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: Theme.Spacing.section) {
             // Icon
             ZStack {
                 Circle()
@@ -417,7 +417,7 @@ struct StatCard: View {
         VStack(alignment: .leading, spacing: 0) {
             // Icon
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(color.opacity(0.15))
                     .frame(width: 44, height: 44)
 
@@ -477,7 +477,7 @@ struct QuickActionButton: View {
         Button(action: action) {
             VStack(spacing: Theme.Spacing.sm) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                         .fill(color.opacity(0.2))
                         .frame(width: 44, height: 44)
 

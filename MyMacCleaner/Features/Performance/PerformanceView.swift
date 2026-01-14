@@ -134,7 +134,7 @@ struct PerformanceView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
-            .glassCard(cornerRadius: 12)
+            .glassCard(cornerRadius: Theme.CornerRadius.medium)
         }
     }
 
@@ -312,7 +312,7 @@ struct PerformanceView: View {
                 Spacer()
 
                 // Auto-refresh indicator
-                HStack(spacing: 6) {
+                HStack(spacing: Theme.Spacing.xxxs) {
                     Circle()
                         .fill(.green)
                         .frame(width: 6, height: 6)
@@ -323,7 +323,7 @@ struct PerformanceView: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(Color.green.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 4))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
             }
 
             if viewModel.isLoadingProcesses && viewModel.topProcesses.isEmpty {
@@ -479,7 +479,7 @@ struct PerformanceView: View {
     private var swapCard: some View {
         HStack(spacing: Theme.Spacing.md) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(Color.red.opacity(0.15))
                     .frame(width: 44, height: 44)
 
@@ -488,7 +488,7 @@ struct PerformanceView: View {
                     .foregroundStyle(.red)
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(L("performance.memory.swapUsed"))
                     .font(Theme.Typography.subheadline.weight(.medium))
 
@@ -527,7 +527,7 @@ struct PerformanceView: View {
     private func memoryBreakdownCard(title: String, value: String, icon: String, color: Color, description: String) -> some View {
         VStack(spacing: Theme.Spacing.sm) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(color.opacity(0.15))
                     .frame(width: 44, height: 44)
 
@@ -581,7 +581,7 @@ struct PerformanceView: View {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
                             .background(Color.red.opacity(0.15))
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.xs))
                         }
                         .buttonStyle(.plain)
                     }

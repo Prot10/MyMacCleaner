@@ -62,7 +62,7 @@ struct PermissionsView: View {
             Button(action: {
                 viewModel.refreshAllPermissions()
             }) {
-                HStack(spacing: 6) {
+                HStack(spacing: Theme.Spacing.xxxs) {
                     if viewModel.isLoading {
                         ProgressView()
                             .scaleEffect(0.7)

@@ -50,7 +50,7 @@ struct ScanResultsCard: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("scanResults.title"))
                     .font(Theme.Typography.title2)
 
@@ -62,7 +62,7 @@ struct ScanResultsCard: View {
             Spacer()
 
             // Total size badge
-            VStack(alignment: .trailing, spacing: 4) {
+            VStack(alignment: .trailing, spacing: Theme.Spacing.xxs) {
                 Text(ByteCountFormatter.string(fromByteCount: selectedSize, countStyle: .file))
                     .font(Theme.Typography.title)
                     .foregroundStyle(.orange)
@@ -194,12 +194,12 @@ struct ScanResultRow: View {
                     }
                 }) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 6)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.xs)
                             .stroke(result.isSelected ? result.category.color : Color.secondary.opacity(0.5), lineWidth: 2)
                             .frame(width: 22, height: 22)
 
                         if result.isSelected {
-                            RoundedRectangle(cornerRadius: 6)
+                            RoundedRectangle(cornerRadius: Theme.CornerRadius.xs)
                                 .fill(result.category.color)
                                 .frame(width: 22, height: 22)
 
@@ -219,7 +219,7 @@ struct ScanResultRow: View {
                 HStack(spacing: Theme.Spacing.md) {
                     // Category icon
                     ZStack {
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.small)
                             .fill(result.category.color.opacity(result.isSelected ? 0.15 : 0.08))
                             .frame(width: 36, height: 36)
 
@@ -229,7 +229,7 @@ struct ScanResultRow: View {
                     }
 
                     // Category info
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                         Text(result.category.localizedName)
                             .font(Theme.Typography.body)
                             .foregroundStyle(result.isSelected ? .primary : .secondary)
@@ -387,7 +387,7 @@ struct CompactScanSummary: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.lg) {
             // Total cleanable
-            VStack(spacing: 4) {
+            VStack(spacing: Theme.Spacing.xxs) {
                 Text(summary.formattedTotalSize)
                     .font(Theme.Typography.title2)
                     .foregroundStyle(.orange)
@@ -401,7 +401,7 @@ struct CompactScanSummary: View {
                 .frame(height: 40)
 
             // Item count
-            VStack(spacing: 4) {
+            VStack(spacing: Theme.Spacing.xxs) {
                 Text("\(summary.itemCount)")
                     .font(Theme.Typography.title2)
 
@@ -415,8 +415,8 @@ struct CompactScanSummary: View {
 
             // Largest category
             if let largest = summary.largestCategory {
-                VStack(spacing: 4) {
-                    HStack(spacing: 4) {
+                VStack(spacing: Theme.Spacing.xxs) {
+                    HStack(spacing: Theme.Spacing.xxs) {
                         Image(systemName: largest.icon)
                             .foregroundStyle(largest.color)
                         Text(largest.localizedName)

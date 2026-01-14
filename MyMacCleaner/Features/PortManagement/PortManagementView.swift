@@ -233,7 +233,7 @@ struct PortStatCard: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(color.opacity(0.15))
                     .frame(width: 44, height: 44)
 
@@ -242,7 +242,7 @@ struct PortStatCard: View {
                     .foregroundStyle(color)
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(value)
                     .font(Theme.Typography.title2.monospacedDigit())
 
@@ -314,7 +314,7 @@ struct ConnectionRow: View {
                     .padding(.horizontal, Theme.Spacing.sm)
                     .padding(.vertical, 4)
                     .background(Color.red.opacity(0.15))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
             }
             .buttonStyle(.plain)
             .opacity(isHovered ? 1 : 0.6)
