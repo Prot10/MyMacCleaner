@@ -173,18 +173,18 @@ struct SidebarRow: View {
                     .frame(width: 36, height: 36)
 
                 Image(systemName: section.icon)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(Theme.Typography.size15Semibold)
                     .foregroundStyle(isSelected ? section.color : .secondary)
             }
 
             // Text
             VStack(alignment: .leading, spacing: 2) {
                 Text(section.localizedName)
-                    .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
+                    .font(isSelected ? Theme.Typography.size13Semibold : Theme.Typography.size13Medium)
                     .foregroundStyle(isSelected ? .primary : .secondary)
 
                 Text(section.localizedDescription)
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.size11)
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
             }
@@ -421,7 +421,7 @@ struct ComingSoonView: View {
                         .frame(width: 120, height: 120)
 
                     Image(systemName: section.icon)
-                        .font(.system(size: 44, weight: .medium))
+                        .font(Theme.Typography.size44Medium)
                         .foregroundStyle(section.color.gradient)
                 }
                 .scaleEffect(isHovered ? 1.05 : 1.0)

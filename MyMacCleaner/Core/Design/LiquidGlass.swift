@@ -265,7 +265,7 @@ struct FloatingActionButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 20, weight: .semibold))
+                .font(Theme.Typography.size20Semibold)
                 .foregroundStyle(.white)
                 .frame(width: 56, height: 56)
                 .background {
@@ -330,10 +330,10 @@ struct GlassActionButton: View {
             HStack(spacing: 6) {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(Theme.Typography.size13Medium)
                 }
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(Theme.Typography.size13Semibold)
             }
             .foregroundStyle(isDisabled ? color.opacity(0.3) : color)
             .padding(.horizontal, 16)
@@ -399,7 +399,7 @@ struct GlassSegmentedControl<T: Hashable>: View {
                         }
                     } label: {
                         Text(label(option))
-                            .font(.system(size: 13, weight: .medium))
+                            .font(Theme.Typography.size13Medium)
                             .foregroundStyle(selection == option ? .primary : .secondary)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
@@ -505,10 +505,10 @@ struct GlassTabButton: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(Theme.Typography.size12Medium)
 
                 Text(label)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.size13Medium)
             }
             .foregroundStyle(isSelected ? .white : (isHovered ? .primary : .secondary))
             .padding(.horizontal, 14)
@@ -681,7 +681,7 @@ struct GlassMenuButton<Content: View>: View {
                     .font(.system(size: Theme.ControlSize.controlIconSize, weight: .medium))
                 Text(title)
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 10, weight: .medium))
+                    .font(Theme.Typography.size10Medium)
             }
             .font(Theme.ControlSize.controlFont)
             .foregroundStyle(.secondary)

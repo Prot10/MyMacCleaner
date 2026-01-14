@@ -91,10 +91,10 @@ struct OrphanedFilesView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(L("navigation.orphanedFiles"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("navigation.orphanedFiles.description"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -104,11 +104,11 @@ struct OrphanedFilesView: View {
                 HStack(spacing: 16) {
                     VStack(alignment: .trailing, spacing: 4) {
                         Text(viewModel.formattedTotalSize)
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(Theme.Typography.size22Semibold)
                             .foregroundStyle(sectionColor)
 
                         Text(LFormat("orphans.filesFound %lld", Int64(viewModel.totalCount)))
-                            .font(.system(size: 11))
+                            .font(Theme.Typography.size11)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -139,17 +139,17 @@ struct OrphanedFilesView: View {
                         }
 
                     Image(systemName: "doc.questionmark.fill")
-                        .font(.system(size: 32, weight: .medium))
+                        .font(Theme.Typography.size32Medium)
                         .foregroundStyle(sectionColor.gradient)
                 }
             }
 
             VStack(spacing: 8) {
                 Text(L("orphans.scan.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("orphans.scan.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
@@ -165,12 +165,12 @@ struct OrphanedFilesView: View {
                 ], id: \.0) { icon, text in
                     HStack(spacing: 8) {
                         Image(systemName: icon)
-                            .font(.system(size: 12))
+                            .font(Theme.Typography.size12)
                             .foregroundStyle(sectionColor)
                             .frame(width: 20)
 
                         Text(text)
-                            .font(.system(size: 12))
+                            .font(Theme.Typography.size12)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -196,22 +196,22 @@ struct OrphanedFilesView: View {
     private var emptyStateSection: some View {
         VStack(spacing: 20) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 48))
+                .font(Theme.Typography.size48)
                 .foregroundStyle(.green)
 
             VStack(spacing: 8) {
                 Text(L("orphans.empty.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("orphans.empty.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
 
             Button(action: viewModel.startScan) {
                 Text(L("orphans.scanAgain"))
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.size13Medium)
                     .foregroundStyle(sectionColor)
             }
             .buttonStyle(.plain)
@@ -244,7 +244,7 @@ struct OrphanedFilesView: View {
                     Image(systemName: "arrow.up.arrow.down")
                     Text(viewModel.sortOrder.localizedName)
                 }
-                .font(.system(size: 12, weight: .medium))
+                .font(Theme.Typography.size12Medium)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
@@ -259,7 +259,7 @@ struct OrphanedFilesView: View {
                 viewModel.selectAll()
             }
             .buttonStyle(.plain)
-            .font(.system(size: 12, weight: .medium))
+            .font(Theme.Typography.size12Medium)
             .foregroundStyle(sectionColor)
 
             Text("·")
@@ -269,7 +269,7 @@ struct OrphanedFilesView: View {
                 viewModel.deselectAll()
             }
             .buttonStyle(.plain)
-            .font(.system(size: 12, weight: .medium))
+            .font(Theme.Typography.size12Medium)
             .foregroundStyle(sectionColor)
 
             // Rescan
@@ -278,7 +278,7 @@ struct OrphanedFilesView: View {
                     Image(systemName: "arrow.clockwise")
                     Text(L("diskCleaner.rescan"))
                 }
-                .font(.system(size: 12, weight: .medium))
+                .font(Theme.Typography.size12Medium)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
@@ -323,10 +323,10 @@ struct OrphanedFilesView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(LFormat("diskCleaner.selected %@", viewModel.formattedSelectedSize))
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(Theme.Typography.size15Semibold)
 
                 Text(LFormat("diskCleaner.itemCount %lld", Int64(viewModel.selectedCount)))
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.size11)
                     .foregroundStyle(.secondary)
             }
 
@@ -392,7 +392,7 @@ struct OrphanCategoryCard: View {
                                 .frame(width: 20, height: 20)
 
                             Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(Theme.Typography.size10Bold)
                                 .foregroundStyle(.white)
                         } else if someSelected {
                             RoundedRectangle(cornerRadius: 4)
@@ -400,7 +400,7 @@ struct OrphanCategoryCard: View {
                                 .frame(width: 20, height: 20)
 
                             Image(systemName: "minus")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(Theme.Typography.size10Bold)
                                 .foregroundStyle(.white)
                         }
                     }
@@ -420,17 +420,17 @@ struct OrphanCategoryCard: View {
                             .frame(width: 40, height: 40)
 
                         Image(systemName: category.icon)
-                            .font(.system(size: 18))
+                            .font(Theme.Typography.size18)
                             .foregroundStyle(category.color)
                     }
 
                     // Info
                     VStack(alignment: .leading, spacing: 2) {
                         Text(category.rawValue)
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(Theme.Typography.size15Semibold)
 
                         Text(LFormat("orphans.files %lld", Int64(files.count)))
-                            .font(.system(size: 12))
+                            .font(Theme.Typography.size12)
                             .foregroundStyle(.secondary)
                     }
 
@@ -439,19 +439,19 @@ struct OrphanCategoryCard: View {
                     // Size and selection
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file))
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(Theme.Typography.size14Semibold)
                             .foregroundStyle(accentColor)
 
                         if selectedCount > 0 {
                             Text(LFormat("orphans.selected %lld", Int64(selectedCount)))
-                                .font(.system(size: 11))
+                                .font(Theme.Typography.size11)
                                 .foregroundStyle(.secondary)
                         }
                     }
 
                     // Expand indicator
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(Theme.Typography.size12Semibold)
                         .foregroundStyle(.tertiary)
                 }
                 .padding(.trailing, Theme.Spacing.md)
@@ -508,7 +508,7 @@ struct OrphanFileRow: View {
                             .frame(width: 18, height: 18)
 
                         Image(systemName: "checkmark")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(Theme.Typography.size10Bold)
                             .foregroundStyle(.white)
                     }
                 }
@@ -519,19 +519,19 @@ struct OrphanFileRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(file.suspectedAppName)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(Theme.Typography.size13Medium)
                         .lineLimit(1)
 
                     if let bundleId = file.bundleIdPattern {
                         Text("(\(bundleId))")
-                            .font(.system(size: 11))
+                            .font(Theme.Typography.size11)
                             .foregroundStyle(.tertiary)
                             .lineLimit(1)
                     }
                 }
 
                 Text(file.url.path)
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.size11)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -542,13 +542,13 @@ struct OrphanFileRow: View {
             // Date
             if let days = file.daysSinceModified {
                 Text(LFormat("orphans.daysAgo %lld", Int64(days)))
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.size11)
                     .foregroundStyle(.tertiary)
             }
 
             // Size
             Text(file.formattedSize)
-                .font(.system(size: 12).monospacedDigit())
+                .font(Theme.Typography.size12.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .frame(minWidth: 60, alignment: .trailing)
 
@@ -556,7 +556,7 @@ struct OrphanFileRow: View {
             if isHovered {
                 Button(action: onReveal) {
                     Image(systemName: "folder")
-                        .font(.system(size: 12))
+                        .font(Theme.Typography.size12)
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)

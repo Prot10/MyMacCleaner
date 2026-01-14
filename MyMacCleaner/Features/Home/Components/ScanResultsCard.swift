@@ -204,7 +204,7 @@ struct ScanResultRow: View {
                                 .frame(width: 22, height: 22)
 
                             Image(systemName: "checkmark")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(Theme.Typography.size12Bold)
                                 .foregroundStyle(.white)
                         }
                     }
@@ -224,7 +224,7 @@ struct ScanResultRow: View {
                             .frame(width: 36, height: 36)
 
                         Image(systemName: result.category.icon)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(Theme.Typography.size14Semibold)
                             .foregroundStyle(result.isSelected ? result.category.color : result.category.color.opacity(0.5))
                     }
 
@@ -317,7 +317,7 @@ struct ScanFileItemRow: View {
         HStack(spacing: Theme.Spacing.sm) {
             // File type icon
             Image(systemName: fileIcon)
-                .font(.system(size: 12))
+                .font(Theme.Typography.size12)
                 .foregroundStyle(.tertiary)
                 .frame(width: 20)
 
@@ -348,7 +348,7 @@ struct ScanFileItemRow: View {
                 NSWorkspace.shared.selectFile(item.path.path, inFileViewerRootedAtPath: item.path.deletingLastPathComponent().path)
             }) {
                 Image(systemName: "folder")
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.size11)
                     .foregroundStyle(.tertiary)
             }
             .buttonStyle(.plain)

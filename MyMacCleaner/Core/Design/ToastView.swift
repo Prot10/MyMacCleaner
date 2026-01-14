@@ -115,7 +115,7 @@ struct CleaningProgressOverlay: View {
 
                 // Icon
                 Image(systemName: "trash.fill")
-                    .font(.system(size: 28, weight: .medium))
+                    .font(Theme.Typography.size28Medium)
                     .foregroundStyle(.orange)
             }
 

@@ -54,7 +54,7 @@ struct CleanupCategoryCard: View {
                             .frame(width: 20, height: 20)
 
                         Image(systemName: "checkmark")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(Theme.Typography.size10Bold)
                             .foregroundStyle(.white)
                     } else if someSelected {
                         RoundedRectangle(cornerRadius: 4)
@@ -62,7 +62,7 @@ struct CleanupCategoryCard: View {
                             .frame(width: 20, height: 20)
 
                         Image(systemName: "minus")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(Theme.Typography.size10Bold)
                             .foregroundStyle(.white)
                     }
                 }
@@ -82,7 +82,7 @@ struct CleanupCategoryCard: View {
                         .frame(width: 44, height: 44)
 
                     Image(systemName: result.category.icon)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(Theme.Typography.size18Semibold)
                         .foregroundStyle(result.category.color)
                 }
 
@@ -111,7 +111,7 @@ struct CleanupCategoryCard: View {
 
                 // Expand chevron
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(Theme.Typography.size12Semibold)
                     .foregroundStyle(.secondary)
                     .rotationEffect(.degrees(isExpanded ? 90 : 0))
             }
@@ -192,7 +192,7 @@ struct CleanableItemRow: View {
                             .frame(width: 18, height: 18)
 
                         Image(systemName: "checkmark")
-                            .font(.system(size: 9, weight: .bold))
+                            .font(Theme.Typography.size9Bold)
                             .foregroundStyle(.white)
                     }
                 }
@@ -201,7 +201,7 @@ struct CleanableItemRow: View {
 
             // File icon
             Image(systemName: fileIcon(for: item.name))
-                .font(.system(size: 14))
+                .font(Theme.Typography.size14)
                 .foregroundStyle(.secondary)
                 .frame(width: 20)
 
@@ -317,7 +317,7 @@ struct CategoryDetailSheet: View {
                         .frame(width: 44, height: 44)
 
                     Image(systemName: result.category.icon)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(Theme.Typography.size18Semibold)
                         .foregroundStyle(result.category.color)
                 }
 

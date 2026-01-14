@@ -100,11 +100,11 @@ struct DuplicatesView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(L("navigation.duplicates"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 HStack(spacing: 8) {
                     Text(L("navigation.duplicates.description"))
-                        .font(.system(size: 13))
+                        .font(Theme.Typography.size13)
                         .foregroundStyle(.secondary)
 
                     if viewModel.hasScanned {
@@ -114,13 +114,13 @@ struct DuplicatesView: View {
                         Button(action: viewModel.chooseScanLocation) {
                             HStack(spacing: 4) {
                                 Image(systemName: "folder.fill")
-                                    .font(.system(size: 10))
+                                    .font(Theme.Typography.size10)
                                 Text(viewModel.scanPath.lastPathComponent)
                                     .lineLimit(1)
                                 Image(systemName: "chevron.down")
-                                    .font(.system(size: 8))
+                                    .font(Theme.Typography.size8)
                             }
-                            .font(.system(size: 12))
+                            .font(Theme.Typography.size12)
                             .foregroundStyle(sectionColor)
                         }
                         .buttonStyle(.plain)
@@ -135,7 +135,7 @@ struct DuplicatesView: View {
                     // Rescan button
                     Button(action: viewModel.startScan) {
                         Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 14))
+                            .font(Theme.Typography.size14)
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
@@ -143,11 +143,11 @@ struct DuplicatesView: View {
 
                     VStack(alignment: .trailing, spacing: 4) {
                         Text(viewModel.formattedTotalWastedSize)
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(Theme.Typography.size22Semibold)
                             .foregroundStyle(sectionColor)
 
                         Text(LFormat("duplicates.wastedSpace %lld", Int64(viewModel.totalGroupCount)))
-                            .font(.system(size: 11))
+                            .font(Theme.Typography.size11)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -178,17 +178,17 @@ struct DuplicatesView: View {
                         }
 
                     Image(systemName: "doc.on.doc.fill")
-                        .font(.system(size: 32, weight: .medium))
+                        .font(Theme.Typography.size32Medium)
                         .foregroundStyle(sectionColor.gradient)
                 }
             }
 
             VStack(spacing: 8) {
                 Text(L("duplicates.scan.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("duplicates.scan.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
@@ -201,7 +201,7 @@ struct DuplicatesView: View {
                         .foregroundStyle(sectionColor)
 
                     Text(viewModel.scanPath.path)
-                        .font(.system(size: 13))
+                        .font(Theme.Typography.size13)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -212,7 +212,7 @@ struct DuplicatesView: View {
                         viewModel.chooseScanLocation()
                     }
                     .buttonStyle(.plain)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(Theme.Typography.size12Medium)
                     .foregroundStyle(sectionColor)
                 }
                 .padding(12)
@@ -237,15 +237,15 @@ struct DuplicatesView: View {
     private var emptyStateSection: some View {
         VStack(spacing: 20) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 48))
+                .font(Theme.Typography.size48)
                 .foregroundStyle(.green)
 
             VStack(spacing: 8) {
                 Text(L("duplicates.empty.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("duplicates.empty.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -253,11 +253,11 @@ struct DuplicatesView: View {
             // Current scan location
             HStack(spacing: 8) {
                 Image(systemName: "folder.fill")
-                    .font(.system(size: 12))
+                    .font(Theme.Typography.size12)
                     .foregroundStyle(.secondary)
 
                 Text(viewModel.scanPath.lastPathComponent)
-                    .font(.system(size: 12))
+                    .font(Theme.Typography.size12)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
@@ -272,7 +272,7 @@ struct DuplicatesView: View {
                         Image(systemName: "folder.badge.gearshape")
                         Text(L("duplicates.changeFolder"))
                     }
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.size13Medium)
                     .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
@@ -282,7 +282,7 @@ struct DuplicatesView: View {
                         Image(systemName: "arrow.clockwise")
                         Text(L("duplicates.scanAgain"))
                     }
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.size13Medium)
                     .foregroundStyle(sectionColor)
                 }
                 .buttonStyle(.plain)
@@ -305,20 +305,20 @@ struct DuplicatesView: View {
                             .frame(width: 40, height: 40)
 
                         Image(systemName: type.icon)
-                            .font(.system(size: 16))
+                            .font(Theme.Typography.size16)
                             .foregroundStyle(type.color)
                     }
 
                     VStack(spacing: 2) {
                         Text("\(count)")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(Theme.Typography.size16Semibold)
 
                         Text(type.rawValue)
-                            .font(.system(size: 11))
+                            .font(Theme.Typography.size11)
                             .foregroundStyle(.secondary)
 
                         Text(ByteCountFormatter.string(fromByteCount: size, countStyle: .file))
-                            .font(.system(size: 10))
+                            .font(Theme.Typography.size10)
                             .foregroundStyle(.tertiary)
                     }
                 }
@@ -449,10 +449,10 @@ struct DuplicatesView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(LFormat("diskCleaner.selected %@", viewModel.formattedSelectedSize))
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(Theme.Typography.size15Semibold)
 
                 Text(LFormat("diskCleaner.itemCount %lld", Int64(viewModel.selectedCount)))
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.size11)
                     .foregroundStyle(.secondary)
             }
 
@@ -519,7 +519,7 @@ struct DuplicateGroupCard: View {
                                 .frame(width: 20, height: 20)
 
                             Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(Theme.Typography.size10Bold)
                                 .foregroundStyle(.white)
                         } else if someSelected {
                             RoundedRectangle(cornerRadius: 4)
@@ -527,7 +527,7 @@ struct DuplicateGroupCard: View {
                                 .frame(width: 20, height: 20)
 
                             Image(systemName: "minus")
-                                .font(.system(size: 10, weight: .bold))
+                                .font(Theme.Typography.size10Bold)
                                 .foregroundStyle(.white)
                         }
                     }
@@ -547,26 +547,26 @@ struct DuplicateGroupCard: View {
                             .frame(width: 40, height: 40)
 
                         Image(systemName: group.fileType.icon)
-                            .font(.system(size: 18))
+                            .font(Theme.Typography.size18)
                             .foregroundStyle(group.fileType.color)
                     }
 
                     // Info
                     VStack(alignment: .leading, spacing: 2) {
                         Text(group.files.first?.name ?? "Unknown")
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(Theme.Typography.size15Semibold)
                             .lineLimit(1)
 
                         HStack(spacing: 8) {
                             Text(LFormat("duplicates.copies %lld", Int64(group.files.count)))
-                                .font(.system(size: 12))
+                                .font(Theme.Typography.size12)
                                 .foregroundStyle(.secondary)
 
                             Text("·")
                                 .foregroundStyle(.tertiary)
 
                             Text(group.formattedSize)
-                                .font(.system(size: 12))
+                                .font(Theme.Typography.size12)
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -576,23 +576,23 @@ struct DuplicateGroupCard: View {
                     // Wasted size
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(group.formattedWastedSize)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(Theme.Typography.size14Semibold)
                             .foregroundStyle(accentColor)
 
                         if selectedCount > 0 {
                             Text(LFormat("duplicates.selectedCount %lld", Int64(selectedCount)))
-                                .font(.system(size: 11))
+                                .font(Theme.Typography.size11)
                                 .foregroundStyle(.secondary)
                         } else {
                             Text(L("duplicates.wasted"))
-                                .font(.system(size: 11))
+                                .font(Theme.Typography.size11)
                                 .foregroundStyle(.tertiary)
                         }
                     }
 
                     // Expand indicator
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(Theme.Typography.size12Semibold)
                         .foregroundStyle(.tertiary)
                 }
                 .padding(.trailing, Theme.Spacing.md)
@@ -679,7 +679,7 @@ struct DuplicateFileRow: View {
                                 .frame(width: 18, height: 18)
 
                             Image(systemName: "trash.fill")
-                                .font(.system(size: 9, weight: .bold))
+                                .font(Theme.Typography.size9Bold)
                                 .foregroundStyle(.white)
                         }
                     }
@@ -692,12 +692,12 @@ struct DuplicateFileRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(file.parentFolder)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(Theme.Typography.size13Medium)
                         .foregroundStyle(file.isKept ? .green : (file.isSelected ? accentColor : .primary))
 
                     if file.isKept {
                         Text(L("duplicates.keeping"))
-                            .font(.system(size: 10, weight: .medium))
+                            .font(Theme.Typography.size10Medium)
                             .foregroundStyle(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -705,7 +705,7 @@ struct DuplicateFileRow: View {
                             .cornerRadius(4)
                     } else if file.isSelected {
                         Text(L("duplicates.willBeDeleted"))
-                            .font(.system(size: 10, weight: .medium))
+                            .font(Theme.Typography.size10Medium)
                             .foregroundStyle(.white)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
@@ -715,7 +715,7 @@ struct DuplicateFileRow: View {
                 }
 
                 Text(file.url.path)
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.size11)
                     .foregroundStyle(.secondary)
                     .opacity(file.isSelected && !file.isKept ? 0.6 : 1.0)
                     .lineLimit(1)
@@ -727,19 +727,19 @@ struct DuplicateFileRow: View {
 
             // Date
             Text(file.formattedDate)
-                .font(.system(size: 11))
+                .font(Theme.Typography.size11)
                 .foregroundStyle(.tertiary)
 
             // Size
             Text(ByteCountFormatter.string(fromByteCount: file.size, countStyle: .file))
-                .font(.system(size: 11).monospacedDigit())
+                .font(Theme.Typography.size11.monospacedDigit())
                 .foregroundStyle(file.isSelected && !file.isKept ? accentColor : .secondary)
                 .frame(minWidth: 60, alignment: .trailing)
 
             // Reveal in Finder - always visible
             Button(action: onReveal) {
                 Image(systemName: "folder")
-                    .font(.system(size: 12))
+                    .font(Theme.Typography.size12)
                     .foregroundStyle(isHovered ? .secondary : .tertiary)
             }
             .buttonStyle(.plain)

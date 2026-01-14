@@ -245,7 +245,7 @@ struct AboutSettingsView: View {
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "sparkles")
-                .font(.system(size: 60))
+                .font(Theme.Typography.size48)
                 .foregroundStyle(.blue.gradient)
 
             Text("MyMacCleaner")
