@@ -413,15 +413,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
       - name: Validate appcast.xml
         run: |
           if [ -f "appcast.xml" ]; then
             # Check if it's valid XML
-            if ! xmllint --noout appcast.xml 2>/dev/null; then
+            if ! xmllint --noout appcast.xml; then
               echo "::error::appcast.xml is not valid XML"
               exit 1
             fi
-            echo "appcast.xml is valid XML"
+            echo "✅ appcast.xml is valid XML"
           else
             echo "No appcast.xml found (OK for PRs)"
           fi
