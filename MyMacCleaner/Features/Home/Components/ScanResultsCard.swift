@@ -356,7 +356,7 @@ struct ScanFileItemRow: View {
             .help(L("common.showInFinder"))
         }
         .padding(.horizontal, Theme.Spacing.md)
-        .padding(.vertical, 6)
+        .padding(.vertical, Theme.Spacing.xxxs)
         .background(isHovered ? Color.white.opacity(0.03) : Color.clear)
         .onHover { hovering in
             withAnimation(Theme.Animation.fast) {

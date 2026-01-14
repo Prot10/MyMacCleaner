@@ -170,8 +170,8 @@ struct MaintenanceTaskCard: View {
         }
         .font(Theme.Typography.size10Medium)
         .foregroundStyle(badgeColor(for: result))
-        .padding(.horizontal, 6)
-        .padding(.vertical, 2)
+        .padding(.horizontal, Theme.Spacing.xxxs)
+        .padding(.vertical, Theme.Spacing.tiny)
         .background(badgeColor(for: result).opacity(0.15))
         .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
     }

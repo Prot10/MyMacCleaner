@@ -58,7 +58,7 @@ struct UpdateRow: View {
                     .font(Theme.Typography.size12Medium)
                     .foregroundStyle(.white)
                     .padding(.horizontal, Theme.Spacing.sm)
-                    .padding(.vertical, 6)
+                    .padding(.vertical, Theme.Spacing.xxxs)
                     .background(Color.orange)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
                 }

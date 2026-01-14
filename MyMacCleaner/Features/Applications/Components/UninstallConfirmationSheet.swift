@@ -137,6 +137,6 @@ struct FileRow: View {
                     .foregroundStyle(.tertiary)
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, Theme.Spacing.tiny)
     }
 }

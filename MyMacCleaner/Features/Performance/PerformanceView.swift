@@ -132,7 +132,7 @@ struct PerformanceView: View {
                         .frame(width: 100)
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, Theme.Spacing.md)
             .padding(.vertical, 10)
             .glassCard(cornerRadius: Theme.CornerRadius.medium)
         }
@@ -320,8 +320,8 @@ struct PerformanceView: View {
                         .font(Theme.Typography.caption)
                         .foregroundStyle(.secondary)
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, Theme.Spacing.xs)
+                .padding(.vertical, Theme.Spacing.xxs)
                 .background(Color.green.opacity(0.1))
                 .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
             }
@@ -579,7 +579,7 @@ struct PerformanceView: View {
                             .font(Theme.Typography.size11Medium)
                             .foregroundStyle(.red)
                             .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
+                            .padding(.vertical, Theme.Spacing.xxs)
                             .background(Color.red.opacity(0.15))
                             .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.xs))
                         }

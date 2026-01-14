@@ -262,7 +262,7 @@ struct DuplicatesView: View {
                     .lineLimit(1)
             }
             .padding(.horizontal, Theme.Spacing.sm)
-            .padding(.vertical, 6)
+            .padding(.vertical, Theme.Spacing.xxxs)
             .background(Color.white.opacity(0.05))
             .cornerRadius(Theme.CornerRadius.xs)
 
@@ -699,16 +699,16 @@ struct DuplicateFileRow: View {
                         Text(L("duplicates.keeping"))
                             .font(Theme.Typography.size10Medium)
                             .foregroundStyle(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
+                            .padding(.horizontal, Theme.Spacing.xxxs)
+                            .padding(.vertical, Theme.Spacing.tiny)
                             .background(Color.green)
                             .cornerRadius(Theme.CornerRadius.tiny)
                     } else if file.isSelected {
                         Text(L("duplicates.willBeDeleted"))
                             .font(Theme.Typography.size10Medium)
                             .foregroundStyle(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
+                            .padding(.horizontal, Theme.Spacing.xxxs)
+                            .padding(.vertical, Theme.Spacing.tiny)
                             .background(accentColor.opacity(0.8))
                             .cornerRadius(Theme.CornerRadius.tiny)
                     }

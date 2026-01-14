@@ -74,7 +74,7 @@ struct PermissionsView: View {
                 .font(Theme.Typography.size13Medium)
                 .foregroundStyle(sectionColor)
                 .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .padding(.vertical, Theme.Spacing.xs)
                 .background(sectionColor.opacity(0.12))
                 .clipShape(Capsule())
             }
