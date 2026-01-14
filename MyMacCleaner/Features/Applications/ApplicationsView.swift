@@ -117,10 +117,10 @@ struct ApplicationsView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(L("navigation.applications"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("applications.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -130,11 +130,11 @@ struct ApplicationsView: View {
                 HStack(spacing: 16) {
                     VStack(alignment: .trailing, spacing: 4) {
                         Text(viewModel.formattedTotalSize)
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(Theme.Typography.size22Semibold)
                             .foregroundStyle(sectionColor)
 
                         Text(LFormat("applications.appsInstalled %lld", viewModel.applications.count))
-                            .font(.system(size: 11))
+                            .font(Theme.Typography.size11)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -249,17 +249,17 @@ struct ApplicationsView: View {
                                 }
 
                             Image(systemName: "square.grid.2x2")
-                                .font(.system(size: 32, weight: .medium))
+                                .font(Theme.Typography.size32Medium)
                                 .foregroundStyle(sectionColor.gradient)
                         }
                     }
 
                     VStack(spacing: 8) {
                         Text(L("applications.analyze.title"))
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(Theme.Typography.size20Semibold)
 
                         Text(L("applications.analyze.description"))
-                            .font(.system(size: 14))
+                            .font(Theme.Typography.size14)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: 400)
@@ -283,7 +283,7 @@ struct ApplicationsView: View {
                                 .frame(width: 16, height: 16)
 
                             Text(L("applications.discovering"))
-                                .font(.system(size: 11))
+                                .font(Theme.Typography.size11)
                                 .foregroundStyle(.tertiary)
                         }
                     }
@@ -389,7 +389,7 @@ struct ApplicationsView: View {
             if viewModel.appUpdates.isEmpty {
                 VStack(spacing: Theme.Spacing.md) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 48))
+                        .font(Theme.Typography.size48)
                         .foregroundStyle(.green)
 
                     Text(L("applications.updates.upToDate"))
@@ -425,7 +425,7 @@ struct ApplicationsView: View {
                 // Homebrew not installed
                 VStack(spacing: Theme.Spacing.lg) {
                     Image(systemName: "shippingbox")
-                        .font(.system(size: 48))
+                        .font(Theme.Typography.size48)
                         .foregroundStyle(.tertiary)
 
                     Text(L("applications.homebrew.notInstalled"))
@@ -442,7 +442,7 @@ struct ApplicationsView: View {
                             Image(systemName: "globe")
                             Text(L("applications.homebrew.visit"))
                         }
-                        .font(.system(size: 13, weight: .medium))
+                        .font(Theme.Typography.size13Medium)
                         .foregroundStyle(.blue)
                     }
                 }
@@ -526,7 +526,7 @@ struct ApplicationsView: View {
                 if viewModel.homebrewCasks.isEmpty {
                     VStack(spacing: Theme.Spacing.md) {
                         Image(systemName: "shippingbox")
-                            .font(.system(size: 48))
+                            .font(Theme.Typography.size48)
                             .foregroundStyle(.tertiary)
 
                         Text(L("applications.homebrew.noCasks"))
@@ -605,7 +605,7 @@ struct ApplicationsView: View {
     private var emptySection: some View {
         VStack(spacing: Theme.Spacing.md) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 48))
+                .font(Theme.Typography.size48)
                 .foregroundStyle(.tertiary)
 
             Text(L("applications.empty.title"))
@@ -632,508 +632,6 @@ struct ApplicationsView: View {
                 )
             }
         }
-    }
-}
-
-// MARK: - Info Card
-
-struct InfoCard: View {
-    let icon: String
-    let iconColor: Color
-    let title: String
-    let subtitle: String
-    var isLoading: Bool = false
-
-    @State private var isHovered = false
-
-    var body: some View {
-        HStack(spacing: Theme.Spacing.md) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(iconColor.opacity(0.15))
-                    .frame(width: 44, height: 44)
-
-                if isLoading {
-                    ProgressView()
-                        .controlSize(.small)
-                } else {
-                    Image(systemName: icon)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(iconColor)
-                }
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(Theme.Typography.title2.monospacedDigit())
-
-                Text(subtitle)
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-        }
-        .padding(Theme.Spacing.md)
-        .frame(maxWidth: .infinity)
-        .glassCard()
-        .hoverEffect(isHovered: isHovered)
-        .onHover { isHovered = $0 }
-    }
-}
-
-// MARK: - App Preview Card (small, no actions)
-
-struct AppPreviewCard: View {
-    let app: AppInfo
-
-    var body: some View {
-        VStack(spacing: Theme.Spacing.xs) {
-            Image(nsImage: app.icon)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 40, height: 40)
-
-            Text(app.name)
-                .font(Theme.Typography.caption)
-                .lineLimit(1)
-                .truncationMode(.middle)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(Theme.Spacing.sm)
-        .background(Color.white.opacity(0.03))
-        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
-    }
-}
-
-// MARK: - More Apps Card
-
-struct MoreAppsCard: View {
-    let count: Int
-
-    var body: some View {
-        VStack(spacing: Theme.Spacing.xs) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.white.opacity(0.1))
-                    .frame(width: 44, height: 44)
-
-                Text("+\(count)")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.secondary)
-            }
-
-            Text(L("applications.more"))
-                .font(Theme.Typography.caption)
-                .foregroundStyle(.tertiary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(Theme.Spacing.sm)
-        .background(Color.white.opacity(0.03))
-        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
-    }
-}
-
-// MARK: - App Card
-
-struct AppCard: View {
-    let app: AppInfo
-    let onOpen: () -> Void
-    let onReveal: () -> Void
-    let onUninstall: () -> Void
-
-    @State private var isHovered = false
-
-    var body: some View {
-        VStack(spacing: Theme.Spacing.sm) {
-            // Icon
-            Image(nsImage: app.icon)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 64, height: 64)
-                .shadow(color: .black.opacity(0.2), radius: 4, y: 2)
-
-            // Name
-            Text(app.name)
-                .font(Theme.Typography.subheadline.weight(.semibold))
-                .lineLimit(1)
-
-            // Size and version
-            HStack(spacing: Theme.Spacing.xs) {
-                Text(app.formattedSize)
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(app.sizeCalculated ? .secondary : .tertiary)
-
-                if let version = app.version {
-                    Text("•")
-                        .foregroundStyle(.tertiary)
-                    Text("v\(version)")
-                        .font(Theme.Typography.caption)
-                        .foregroundStyle(.tertiary)
-                }
-            }
-
-            // Action buttons
-            HStack(spacing: Theme.Spacing.sm) {
-                Button(action: onOpen) {
-                    Text(L("applications.open"))
-                        .font(Theme.Typography.caption)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, Theme.Spacing.sm)
-                        .padding(.vertical, 4)
-                        .background(Color.blue)
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
-                }
-                .buttonStyle(.plain)
-
-                Button(action: onUninstall) {
-                    Text(L("applications.uninstall"))
-                        .font(Theme.Typography.caption)
-                        .foregroundStyle(.red)
-                        .padding(.horizontal, Theme.Spacing.sm)
-                        .padding(.vertical, 4)
-                        .background(Color.red.opacity(0.15))
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
-                }
-                .buttonStyle(.plain)
-            }
-            .opacity(isHovered ? 1 : 0.6)
-        }
-        .padding(Theme.Spacing.md)
-        .frame(maxWidth: .infinity)
-        .glassCard()
-        .hoverEffect(isHovered: isHovered)
-        .onHover { isHovered = $0 }
-        .contextMenu {
-            Button(L("applications.open"), action: onOpen)
-            Button(L("common.revealInFinder"), action: onReveal)
-            Divider()
-            Button(L("applications.uninstall"), role: .destructive, action: onUninstall)
-        }
-    }
-}
-
-// MARK: - Uninstall Confirmation Sheet
-
-struct UninstallConfirmationSheet: View {
-    let app: AppInfo
-    let relatedFiles: [URL]
-    let isScanning: Bool
-    let onConfirm: () -> Void
-    let onCancel: () -> Void
-
-    private var totalSize: Int64 {
-        var size = app.size
-        for file in relatedFiles {
-            if let attrs = try? FileManager.default.attributesOfItem(atPath: file.path),
-               let fileSize = attrs[.size] as? Int64 {
-                size += fileSize
-            }
-        }
-        return size
-    }
-
-    var body: some View {
-        VStack(spacing: Theme.Spacing.lg) {
-            // Header
-            HStack {
-                Image(nsImage: app.icon)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 64, height: 64)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(LFormat("applications.uninstall.title %@", app.name))
-                        .font(Theme.Typography.title2)
-
-                    Text(L("applications.uninstall.description"))
-                        .font(Theme.Typography.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-            }
-
-            Divider()
-
-            // Files to remove
-            if isScanning {
-                HStack {
-                    ProgressView()
-                        .controlSize(.small)
-                        .frame(width: 16, height: 16)
-                    Text(L("applications.uninstall.scanning"))
-                        .font(Theme.Typography.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(Theme.Spacing.lg)
-            } else {
-                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                    Text(L("applications.uninstall.files"))
-                        .font(Theme.Typography.headline)
-
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                            // App itself
-                            FileRow(url: app.url, size: app.size, isApp: true)
-
-                            // Related files
-                            ForEach(relatedFiles, id: \.self) { file in
-                                FileRow(url: file, size: nil, isApp: false)
-                            }
-                        }
-                    }
-                    .frame(maxHeight: 200)
-
-                    HStack {
-                        Text(L("applications.uninstall.totalSpace"))
-                            .font(Theme.Typography.subheadline)
-                            .foregroundStyle(.secondary)
-
-                        Spacer()
-
-                        Text(ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file))
-                            .font(Theme.Typography.headline)
-                            .foregroundStyle(.green)
-                    }
-                    .padding(.top, Theme.Spacing.sm)
-                }
-            }
-
-            Divider()
-
-            // Buttons
-            HStack {
-                Button(L("common.cancel"), action: onCancel)
-                    .keyboardShortcut(.cancelAction)
-
-                Spacer()
-
-                Button(L("applications.uninstall.moveToTrash"), action: onConfirm)
-                    .keyboardShortcut(.defaultAction)
-                    .buttonStyle(.borderedProminent)
-                    .tint(.red)
-                    .disabled(isScanning)
-            }
-        }
-        .padding(Theme.Spacing.lg)
-        .frame(width: 500)
-    }
-}
-
-// MARK: - File Row
-
-struct FileRow: View {
-    let url: URL
-    let size: Int64?
-    let isApp: Bool
-
-    var body: some View {
-        HStack {
-            Image(systemName: isApp ? "app" : "doc")
-                .font(.caption)
-                .foregroundStyle(isApp ? .blue : .secondary)
-                .frame(width: 20)
-
-            Text(url.path)
-                .font(Theme.Typography.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .truncationMode(.middle)
-
-            Spacer()
-
-            if let size = size {
-                Text(ByteCountFormatter.string(fromByteCount: size, countStyle: .file))
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(.tertiary)
-            }
-        }
-        .padding(.vertical, 2)
-    }
-}
-
-// MARK: - Update Row
-
-struct UpdateRow: View {
-    let update: AppUpdate
-
-    @State private var isHovered = false
-
-    var body: some View {
-        HStack(spacing: Theme.Spacing.md) {
-            // Icon placeholder (we don't have app icon here)
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.orange.opacity(0.15))
-                    .frame(width: 44, height: 44)
-
-                Image(systemName: "arrow.down.circle.fill")
-                    .font(.system(size: 20))
-                    .foregroundStyle(.orange)
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(update.appName)
-                    .font(Theme.Typography.subheadline.weight(.semibold))
-
-                HStack(spacing: Theme.Spacing.xs) {
-                    Text(update.currentVersion)
-                        .foregroundStyle(.secondary)
-
-                    Image(systemName: "arrow.right")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-
-                    Text(update.latestVersion)
-                        .foregroundStyle(.orange)
-                }
-                .font(Theme.Typography.caption)
-            }
-
-            Spacer()
-
-            // Source badge
-            Text(update.source.rawValue)
-                .font(.caption2)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.white.opacity(0.1))
-                .clipShape(Capsule())
-
-            // Download button
-            if let downloadURL = update.downloadURL {
-                Link(destination: downloadURL) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.down.circle")
-                        Text(L("applications.updates.download"))
-                    }
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.orange)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                }
-            }
-        }
-        .padding(Theme.Spacing.sm)
-        .background(Color.white.opacity(isHovered ? 0.05 : 0))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .onHover { isHovered = $0 }
-    }
-}
-
-// MARK: - Homebrew Cask Row
-
-struct HomebrewCaskRow: View {
-    let cask: HomebrewCask
-    let showUpdateBadge: Bool
-    let onUpgrade: (() -> Void)?
-    let onUninstall: () -> Void
-
-    @State private var isHovered = false
-
-    var body: some View {
-        HStack(spacing: Theme.Spacing.md) {
-            // Icon
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.purple.opacity(0.15))
-                    .frame(width: 44, height: 44)
-
-                Image(systemName: "shippingbox.fill")
-                    .font(.system(size: 18))
-                    .foregroundStyle(.purple)
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: Theme.Spacing.xs) {
-                    Text(cask.displayName)
-                        .font(Theme.Typography.subheadline.weight(.semibold))
-
-                    if showUpdateBadge {
-                        Text(L("applications.homebrew.updateBadge"))
-                            .font(.caption2)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.orange)
-                            .clipShape(Capsule())
-                    }
-                }
-
-                HStack(spacing: Theme.Spacing.xs) {
-                    if let installedVersion = cask.installedVersion {
-                        Text("v\(installedVersion)")
-                            .foregroundStyle(.secondary)
-
-                        if cask.hasUpdate {
-                            Image(systemName: "arrow.right")
-                                .font(.caption2)
-                                .foregroundStyle(.tertiary)
-
-                            Text("v\(cask.version)")
-                                .foregroundStyle(.orange)
-                        }
-                    } else {
-                        Text("v\(cask.version)")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .font(Theme.Typography.caption)
-
-                if let description = cask.description {
-                    Text(description)
-                        .font(Theme.Typography.caption)
-                        .foregroundStyle(.tertiary)
-                        .lineLimit(1)
-                }
-            }
-
-            Spacer()
-
-            // Actions
-            HStack(spacing: Theme.Spacing.sm) {
-                if let homepage = cask.homepage {
-                    Link(destination: homepage) {
-                        Image(systemName: "globe")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                if let onUpgrade = onUpgrade {
-                    Button(action: onUpgrade) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "arrow.up.circle")
-                            Text(L("applications.homebrew.upgrade"))
-                        }
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Color.orange)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                Button(action: onUninstall) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 14))
-                        .foregroundStyle(.red)
-                        .padding(6)
-                        .background(Color.red.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(Theme.Spacing.sm)
-        .background(Color.white.opacity(isHovered ? 0.05 : 0))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .onHover { isHovered = $0 }
     }
 }
 
