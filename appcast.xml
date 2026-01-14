@@ -18,6 +18,42 @@
         -->
 
         <item>
+            <title>Version 1.1.0</title>
+            <pubDate>Wed, 15 Jan 2026 12:00:00 +0000</pubDate>
+            <sparkle:version>2</sparkle:version>
+            <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <h2>What's New in Version 1.1.0</h2>
+                <h3>New Features</h3>
+                <ul>
+                    <li>Browser Privacy Cleaner - Clear data from Safari, Chrome, Firefox, and Edge</li>
+                    <li>Orphaned Files Scanner - Detect leftover files from uninstalled applications</li>
+                    <li>Duplicate File Finder - Find duplicate files with SHA256 hashing and cancellation support</li>
+                    <li>Menu Bar Monitor - Real-time CPU/RAM/Disk stats with 4 display modes</li>
+                    <li>Permissions Management - Manage FDA and folder access permissions</li>
+                    <li>Empty Trash functionality with confirmation dialog</li>
+                    <li>Select All/Deselect All in cleanup categories</li>
+                </ul>
+                <h3>Improvements</h3>
+                <ul>
+                    <li>Complete Theme system with consistent typography, spacing, and corner radius</li>
+                    <li>Enhanced UI with standardized glass styling across all views</li>
+                    <li>Improved app initialization to avoid unnecessary TCC permission prompts</li>
+                    <li>Better localization support with runtime language switching</li>
+                    <li>Refactored Performance and Applications views with reusable components</li>
+                </ul>
+                <h3>Bug Fixes</h3>
+                <ul>
+                    <li>Fixed FDA detection with multiple fallback methods</li>
+                    <li>Improved async update checking and command escaping</li>
+                    <li>Enhanced thread safety in file scanning operations</li>
+                </ul>
+            ]]></description>
+            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.0/MyMacCleaner-v1.1.0.zip" sparkle:edSignature="SIGNATURE_PLACEHOLDER" length="0" type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.0.0</title>
             <pubDate>Mon, 06 Jan 2026 12:00:00 +0000</pubDate>
             <sparkle:version>1</sparkle:version>
