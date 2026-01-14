@@ -50,7 +50,7 @@
                     <li>Enhanced thread safety in file scanning operations</li>
                 </ul>
             ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.0/MyMacCleaner-v1.1.0.zip" sparkle:edSignature="SIGNATURE_PLACEHOLDER" length="0" type="application/octet-stream"/>
+            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.0/MyMacCleaner-v1.1.0.zip" sparkle:edSignature="SIGN_WITH_SPARKLE" length="4817693" type="application/octet-stream"/>
         </item>
 
         <item>
