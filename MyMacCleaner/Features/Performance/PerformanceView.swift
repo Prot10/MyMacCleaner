@@ -104,10 +104,10 @@ struct PerformanceView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(L("navigation.performance"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("performance.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -118,11 +118,11 @@ struct PerformanceView: View {
                 VStack(alignment: .trailing, spacing: 4) {
                     HStack(spacing: 8) {
                         Text(L("performance.cpu"))
-                            .font(.system(size: 11))
+                            .font(Theme.Typography.size11)
                             .foregroundStyle(.secondary)
 
                         Text("\(Int(viewModel.cpuUsage))%")
-                            .font(.system(size: 22, weight: .semibold).monospacedDigit())
+                            .font(Theme.Typography.size22Semibold.monospacedDigit())
                             .foregroundStyle(cpuColor)
                     }
 
@@ -257,7 +257,7 @@ struct PerformanceView: View {
             // Center content
             VStack(spacing: 4) {
                 Text("\(Int(viewModel.memoryUsage.usagePercentage))%")
-                    .font(.system(size: 36, weight: .bold, design: .rounded).monospacedDigit())
+                    .font(Theme.Typography.size36BoldRounded.monospacedDigit())
                     .foregroundStyle(memoryColor)
 
                 Text(L("performance.memory.memoryUsed"))
@@ -344,7 +344,7 @@ struct PerformanceView: View {
                 // Empty state
                 VStack(spacing: Theme.Spacing.md) {
                     Image(systemName: "list.bullet.rectangle")
-                        .font(.system(size: 48))
+                        .font(Theme.Typography.size48)
                         .foregroundStyle(.tertiary)
 
                     Text(L("performance.processes.noData"))
@@ -484,7 +484,7 @@ struct PerformanceView: View {
                     .frame(width: 44, height: 44)
 
                 Image(systemName: "arrow.left.arrow.right")
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(Theme.Typography.size18Semibold)
                     .foregroundStyle(.red)
             }
 
@@ -532,7 +532,7 @@ struct PerformanceView: View {
                     .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(Theme.Typography.size18Semibold)
                     .foregroundStyle(color)
             }
 
@@ -568,7 +568,7 @@ struct PerformanceView: View {
                     // Progress indicator during run all
                     HStack(spacing: 8) {
                         Text(LFormat("performance.maintenance.taskOf %lld %lld", viewModel.runAllCurrentIndex, viewModel.runAllTotalCount))
-                            .font(.system(size: 11))
+                            .font(Theme.Typography.size11)
                             .foregroundStyle(.secondary)
 
                         Button(action: viewModel.cancelRunAll) {
@@ -576,7 +576,7 @@ struct PerformanceView: View {
                                 Image(systemName: "xmark")
                                 Text(L("common.stop"))
                             }
-                            .font(.system(size: 11, weight: .medium))
+                            .font(Theme.Typography.size11Medium)
                             .foregroundStyle(.red)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
@@ -620,425 +620,6 @@ struct PerformanceView: View {
                     .disabled((viewModel.runningTaskId != nil || viewModel.isRunningAll) && viewModel.runningTaskId != task.id)
                 }
             }
-        }
-    }
-}
-
-// MARK: - Maintenance Task Card
-
-struct MaintenanceTaskCard: View {
-    let task: MaintenanceTask
-    let isRunning: Bool
-    let progress: Double
-    let result: PerformanceViewModel.TaskResult?
-    let onRun: () -> Void
-
-    @State private var isHovered = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            // Header row: Icon + Name on left, Run button on right
-            HStack(spacing: Theme.Spacing.sm) {
-                // Icon
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(iconBackgroundColor.opacity(0.15))
-                        .frame(width: 32, height: 32)
-
-                    if isRunning {
-                        ProgressView()
-                            .controlSize(.small)
-                    } else if let result = result, result != .pending {
-                        resultIcon(for: result)
-                    } else {
-                        Image(systemName: task.icon)
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(task.color)
-                    }
-                }
-
-                // Task name
-                Text(task.localizedName)
-                    .font(Theme.Typography.subheadline.weight(.semibold))
-                    .foregroundStyle(.primary)
-
-                // Admin badge
-                if task.requiresAdmin {
-                    Image(systemName: "lock.shield")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.tertiary)
-                }
-
-                Spacer()
-
-                // Run button or status
-                if let result = result, result != .pending && result != .running {
-                    statusBadge(for: result)
-                } else {
-                    Button(action: onRun) {
-                        HStack(spacing: 4) {
-                            if isRunning {
-                                ProgressView()
-                                    .controlSize(.mini)
-                            } else {
-                                Image(systemName: "play.fill")
-                                    .font(.system(size: 10))
-                            }
-                            Text(isRunning ? L("performance.maintenance.running") : L("performance.maintenance.run"))
-                        }
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(isRunning ? .secondary : task.color)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(task.color.opacity(isHovered && !isRunning ? 0.2 : 0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(isRunning)
-                }
-            }
-
-            // Description
-            Text(task.localizedDescription)
-                .font(Theme.Typography.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-
-            // Progress bar when running
-            if isRunning {
-                ProgressView(value: progress)
-                    .progressViewStyle(.linear)
-                    .tint(task.color)
-            }
-        }
-        .padding(Theme.Spacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard()
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
-                .stroke(borderColor, lineWidth: borderColor == .clear ? 0 : 2)
-        )
-        .onHover { isHovered = $0 }
-        .animation(Theme.Animation.spring, value: result)
-        .animation(Theme.Animation.spring, value: isRunning)
-    }
-
-    private var iconBackgroundColor: Color {
-        guard let result = result else { return task.color }
-        switch result {
-        case .success: return .green
-        case .failed: return .red
-        case .skipped: return .orange
-        default: return task.color
-        }
-    }
-
-    private var borderColor: Color {
-        guard let result = result else { return .clear }
-        switch result {
-        case .running: return task.color.opacity(0.5)
-        case .success: return .green.opacity(0.5)
-        case .failed: return .red.opacity(0.5)
-        default: return .clear
-        }
-    }
-
-    @ViewBuilder
-    private func resultIcon(for result: PerformanceViewModel.TaskResult) -> some View {
-        switch result {
-        case .success:
-            Image(systemName: "checkmark")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(.green)
-        case .failed:
-            Image(systemName: "xmark")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(.red)
-        case .skipped:
-            Image(systemName: "forward.fill")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.orange)
-        case .pending:
-            Image(systemName: task.icon)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(task.color.opacity(0.5))
-        case .running:
-            ProgressView()
-                .controlSize(.small)
-        }
-    }
-
-    @ViewBuilder
-    private func statusBadge(for result: PerformanceViewModel.TaskResult) -> some View {
-        HStack(spacing: 4) {
-            switch result {
-            case .success:
-                Image(systemName: "checkmark")
-                    .font(.system(size: 8, weight: .bold))
-                Text(L("common.done"))
-            case .failed:
-                Image(systemName: "xmark")
-                    .font(.system(size: 8, weight: .bold))
-                Text(L("common.failed"))
-            case .skipped:
-                Image(systemName: "forward.fill")
-                    .font(.system(size: 8, weight: .bold))
-                Text(L("common.skipped"))
-            default:
-                EmptyView()
-            }
-        }
-        .font(.system(size: 10, weight: .medium))
-        .foregroundStyle(badgeColor(for: result))
-        .padding(.horizontal, 6)
-        .padding(.vertical, 2)
-        .background(badgeColor(for: result).opacity(0.15))
-        .clipShape(RoundedRectangle(cornerRadius: 4))
-    }
-
-    private func badgeColor(for result: PerformanceViewModel.TaskResult) -> Color {
-        switch result {
-        case .success: return .green
-        case .failed: return .red
-        case .skipped: return .orange
-        default: return .gray
-        }
-    }
-}
-
-// MARK: - Process Row
-
-struct ProcessRow: View {
-    let rank: Int
-    let process: RunningProcess
-    let onKill: () -> Void
-
-    @State private var isHovered = false
-    @State private var showKillConfirm = false
-
-    var body: some View {
-        HStack(spacing: Theme.Spacing.md) {
-            // Rank
-            Text("\(rank)")
-                .font(Theme.Typography.caption.weight(.medium))
-                .foregroundStyle(rankColor)
-                .frame(width: 24, alignment: .leading)
-
-            // Process name and user
-            VStack(alignment: .leading, spacing: 2) {
-                Text(process.name)
-                    .font(Theme.Typography.subheadline.weight(.medium))
-                    .lineLimit(1)
-
-                Text(process.user)
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(.tertiary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            // PID - use String() to avoid locale-based thousand separators
-            Text(String(process.pid))
-                .font(Theme.Typography.caption.monospacedDigit())
-                .foregroundStyle(.secondary)
-                .frame(width: 60, alignment: .trailing)
-
-            // Memory
-            Text(process.formattedMemory)
-                .font(Theme.Typography.subheadline.monospacedDigit().weight(.medium))
-                .foregroundStyle(memoryColor)
-                .frame(width: 80, alignment: .trailing)
-
-            // CPU
-            Text(String(format: "%.1f%%", process.cpuPercent))
-                .font(Theme.Typography.caption.monospacedDigit())
-                .foregroundStyle(.secondary)
-                .frame(width: 50, alignment: .trailing)
-
-            // Kill button
-            Button(action: { showKillConfirm = true }) {
-                HStack(spacing: 4) {
-                    Image(systemName: "xmark.circle.fill")
-                    Text(L("performance.processes.kill"))
-                }
-                .font(Theme.Typography.caption.weight(.medium))
-                .foregroundStyle(.red)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.red.opacity(isHovered ? 0.2 : 0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 4))
-            }
-            .buttonStyle(.plain)
-            .frame(width: 70)
-            .opacity(isHovered ? 1 : 0.6)
-        }
-        .padding(.horizontal, Theme.Spacing.md)
-        .padding(.vertical, Theme.Spacing.sm)
-        .background(isHovered ? Color.white.opacity(0.03) : Color.clear)
-        .onHover { isHovered = $0 }
-        .confirmationDialog(
-            LFormat("performance.processes.killConfirm %@", process.name),
-            isPresented: $showKillConfirm,
-            titleVisibility: .visible
-        ) {
-            Button(L("performance.processes.killProcess"), role: .destructive, action: onKill)
-            Button(L("common.cancel"), role: .cancel) {}
-        } message: {
-            Text(LFormat("performance.processes.killMessage %@", String(process.pid)))
-        }
-    }
-
-    private var rankColor: Color {
-        switch rank {
-        case 1: return .red
-        case 2: return .orange
-        case 3: return .yellow
-        default: return .secondary
-        }
-    }
-
-    private var memoryColor: Color {
-        if process.memoryMB > 1000 {
-            return .red
-        } else if process.memoryMB > 500 {
-            return .orange
-        }
-        return .primary
-    }
-}
-
-// MARK: - Run All Progress View
-
-struct RunAllProgressView: View {
-    let currentIndex: Int
-    let totalCount: Int
-    let currentTaskName: String
-    let taskProgress: Double
-
-    var body: some View {
-        VStack(spacing: Theme.Spacing.sm) {
-            // Overall progress
-            HStack(spacing: Theme.Spacing.md) {
-                // Progress ring
-                ZStack {
-                    Circle()
-                        .stroke(Color.white.opacity(0.1), lineWidth: 6)
-                        .frame(width: 50, height: 50)
-
-                    Circle()
-                        .trim(from: 0, to: overallProgress)
-                        .stroke(
-                            LinearGradient(
-                                colors: [.purple, .blue],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            style: StrokeStyle(lineWidth: 6, lineCap: .round)
-                        )
-                        .frame(width: 50, height: 50)
-                        .rotationEffect(.degrees(-90))
-
-                    Text("\(currentIndex)/\(totalCount)")
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(.secondary)
-                }
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(L("performance.maintenance.running"))
-                        .font(Theme.Typography.subheadline.weight(.semibold))
-
-                    if !currentTaskName.isEmpty {
-                        HStack(spacing: 6) {
-                            ProgressView()
-                                .controlSize(.mini)
-                                .frame(width: 10, height: 10)
-
-                            Text(currentTaskName)
-                                .font(Theme.Typography.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-
-                Spacer()
-
-                // Current task progress
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(Int(taskProgress * 100))%")
-                        .font(.system(size: 20, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(.purple)
-
-                    Text(L("performance.maintenance.currentTask"))
-                        .font(Theme.Typography.caption)
-                        .foregroundStyle(.tertiary)
-                }
-            }
-
-            // Progress bar
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    // Background
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.white.opacity(0.1))
-                        .frame(height: 8)
-
-                    // Completed tasks progress
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(
-                            LinearGradient(
-                                colors: [.purple, .blue],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(width: geometry.size.width * overallProgress, height: 8)
-
-                    // Current task progress (lighter overlay)
-                    if currentIndex > 0 {
-                        let segmentWidth = geometry.size.width / CGFloat(totalCount)
-                        let startX = segmentWidth * CGFloat(currentIndex - 1)
-
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.white.opacity(0.3))
-                            .frame(width: segmentWidth * taskProgress, height: 8)
-                            .offset(x: startX)
-                    }
-                }
-            }
-            .frame(height: 8)
-        }
-        .padding(Theme.Spacing.md)
-        .glassCard()
-        .animation(Theme.Animation.spring, value: currentIndex)
-        .animation(Theme.Animation.spring, value: taskProgress)
-    }
-
-    private var overallProgress: CGFloat {
-        guard totalCount > 0 else { return 0 }
-        let completedTasks = CGFloat(currentIndex - 1)
-        let currentTaskContribution = CGFloat(taskProgress) / CGFloat(totalCount)
-        return (completedTasks / CGFloat(totalCount)) + currentTaskContribution
-    }
-}
-
-// MARK: - Circular Progress View
-
-struct CircularProgressView: View {
-    let progress: Double
-    let color: Color
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(Color.white.opacity(0.1), lineWidth: 4)
-
-            Circle()
-                .trim(from: 0, to: min(progress, 1.0))
-                .stroke(color, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-
-            Text("\(Int(progress * 100))%")
-                .font(.system(size: 9, weight: .medium, design: .rounded))
-                .foregroundStyle(.secondary)
         }
     }
 }
