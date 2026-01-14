@@ -136,7 +136,7 @@ struct LanguageSettingsView: View {
     @Environment(LocalizationManager.self) var localization
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             Text(L("settings.language"))
                 .font(.headline)
 
@@ -166,7 +166,7 @@ struct UpdateSettingsView: View {
     @Environment(LocalizationManager.self) var localization
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             Text(L("settings.updates"))
                 .font(.headline)
 
@@ -204,7 +204,7 @@ struct PermissionsSettingsView: View {
     @Environment(LocalizationManager.self) var localization
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             Text(L("settings.permissions"))
                 .font(.headline)
 
@@ -243,7 +243,7 @@ struct AboutSettingsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Theme.Spacing.md) {
             Image(systemName: "sparkles")
                 .font(Theme.Typography.size48)
                 .foregroundStyle(.blue.gradient)
