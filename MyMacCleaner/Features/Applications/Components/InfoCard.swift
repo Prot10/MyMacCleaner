@@ -14,7 +14,7 @@ struct InfoCard: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(iconColor.opacity(0.15))
                     .frame(width: 44, height: 44)
 
@@ -28,7 +28,7 @@ struct InfoCard: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(title)
                     .font(Theme.Typography.title2.monospacedDigit())
 

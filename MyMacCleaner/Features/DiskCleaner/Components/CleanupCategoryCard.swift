@@ -44,12 +44,12 @@ struct CleanupCategoryCard: View {
             // Selection checkbox - separate hit area
             Button(action: onToggleSelection) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .stroke(allSelected || someSelected ? result.category.color : Color.secondary.opacity(0.5), lineWidth: 1.5)
                         .frame(width: 20, height: 20)
 
                     if allSelected {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                             .fill(result.category.color)
                             .frame(width: 20, height: 20)
 
@@ -57,7 +57,7 @@ struct CleanupCategoryCard: View {
                             .font(Theme.Typography.size10Bold)
                             .foregroundStyle(.white)
                     } else if someSelected {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                             .fill(result.category.color.opacity(0.5))
                             .frame(width: 20, height: 20)
 
@@ -77,7 +77,7 @@ struct CleanupCategoryCard: View {
             HStack(spacing: Theme.Spacing.md) {
                 // Category icon
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                         .fill(result.category.color.opacity(0.15))
                         .frame(width: 44, height: 44)
 
@@ -87,7 +87,7 @@ struct CleanupCategoryCard: View {
                 }
 
                 // Category info
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                     Text(result.category.localizedName)
                         .font(Theme.Typography.body)
 
@@ -99,7 +99,7 @@ struct CleanupCategoryCard: View {
                 Spacer()
 
                 // Size and count
-                VStack(alignment: .trailing, spacing: 2) {
+                VStack(alignment: .trailing, spacing: Theme.Spacing.tiny) {
                     Text(ByteCountFormatter.string(fromByteCount: result.totalSize, countStyle: .file))
                         .font(Theme.Typography.subheadline.monospacedDigit())
                         .foregroundStyle(result.category.color)
@@ -182,12 +182,12 @@ struct CleanableItemRow: View {
             // Checkbox
             Button(action: onToggle) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .stroke(item.isSelected ? categoryColor : Color.secondary.opacity(0.5), lineWidth: 1.5)
                         .frame(width: 18, height: 18)
 
                     if item.isSelected {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                             .fill(categoryColor)
                             .frame(width: 18, height: 18)
 
@@ -206,7 +206,7 @@ struct CleanableItemRow: View {
                 .frame(width: 20)
 
             // File info
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(item.name)
                     .font(Theme.Typography.subheadline)
                     .lineLimit(1)
@@ -222,7 +222,7 @@ struct CleanableItemRow: View {
             Spacer()
 
             // Size and date
-            VStack(alignment: .trailing, spacing: 2) {
+            VStack(alignment: .trailing, spacing: Theme.Spacing.tiny) {
                 Text(item.formattedSize)
                     .font(Theme.Typography.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
@@ -312,7 +312,7 @@ struct CategoryDetailSheet: View {
             // Header
             HStack {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                         .fill(result.category.color.opacity(0.15))
                         .frame(width: 44, height: 44)
 
@@ -321,7 +321,7 @@ struct CategoryDetailSheet: View {
                         .foregroundStyle(result.category.color)
                 }
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                     Text(result.category.localizedName)
                         .font(Theme.Typography.title3)
 

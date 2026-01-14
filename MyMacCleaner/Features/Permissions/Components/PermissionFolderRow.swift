@@ -14,7 +14,7 @@ struct PermissionFolderRow: View {
             statusIcon
 
             // Path info
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(folder.displayName)
                     .font(Theme.Typography.subheadline)
                     .fontWeight(.medium)
@@ -74,7 +74,7 @@ struct PermissionFolderRow: View {
         case .accessible:
             // Show revoke button when accessible
             Button(action: onRevokeAccess) {
-                HStack(spacing: 4) {
+                HStack(spacing: Theme.Spacing.xxs) {
                     Image(systemName: "minus.circle.fill")
                         .font(Theme.Typography.size10)
                     Text(L("permissions.folder.revoke"))
@@ -93,7 +93,7 @@ struct PermissionFolderRow: View {
             if folder.canTriggerTCCDialog {
                 // TCC folders can trigger dialog directly
                 Button(action: onRequestAccess) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: Theme.Spacing.xxs) {
                         Image(systemName: "plus.circle.fill")
                             .font(Theme.Typography.size10)
                         Text(L("permissions.folder.grant"))
@@ -109,7 +109,7 @@ struct PermissionFolderRow: View {
             } else {
                 // FDA folders need System Settings
                 Button(action: onOpenSettings) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: Theme.Spacing.xxs) {
                         Image(systemName: "gear")
                             .font(Theme.Typography.size10)
                         Text(L("permissions.folder.grant"))

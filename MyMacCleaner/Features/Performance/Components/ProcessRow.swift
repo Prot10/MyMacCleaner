@@ -19,7 +19,7 @@ struct ProcessRow: View {
                 .frame(width: 24, alignment: .leading)
 
             // Process name and user
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(process.name)
                     .font(Theme.Typography.subheadline.weight(.medium))
                     .lineLimit(1)
@@ -50,7 +50,7 @@ struct ProcessRow: View {
 
             // Kill button
             Button(action: { showKillConfirm = true }) {
-                HStack(spacing: 4) {
+                HStack(spacing: Theme.Spacing.xxs) {
                     Image(systemName: "xmark.circle.fill")
                     Text(L("performance.processes.kill"))
                 }
@@ -59,7 +59,7 @@ struct ProcessRow: View {
                 .padding(.horizontal, Theme.Spacing.xs)
                 .padding(.vertical, Theme.Spacing.xxs)
                 .background(Color.red.opacity(isHovered ? 0.2 : 0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 4))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
             }
             .buttonStyle(.plain)
             .frame(width: 70)

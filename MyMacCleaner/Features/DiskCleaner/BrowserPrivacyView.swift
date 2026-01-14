@@ -201,7 +201,7 @@ struct BrowserPrivacyView: View {
     // MARK: - Scan Prompt
 
     private var scanPromptSection: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: Theme.Spacing.section) {
             ZStack {
                 Circle()
                     .fill(privacyColor.opacity(0.1))
@@ -236,7 +236,7 @@ struct BrowserPrivacyView: View {
             // Installed browsers
             HStack(spacing: Theme.Spacing.lg) {
                 ForEach(viewModel.installedBrowsers) { browser in
-                    HStack(spacing: 6) {
+                    HStack(spacing: Theme.Spacing.xxxs) {
                         Image(systemName: browser.icon)
                             .font(Theme.Typography.size14)
                         Text(browser.rawValue)
@@ -326,7 +326,7 @@ struct BrowserPrivacyView: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .glassCard(cornerRadius: 8)
+                    .glassCard(cornerRadius: Theme.CornerRadius.small)
                 }
                 .buttonStyle(.plain)
                 .padding(.leading, 12)
@@ -427,12 +427,12 @@ struct BrowserDataCard: View {
                 // Checkbox for selecting all - separate hit area
                 Button(action: onToggleAll) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                             .stroke(allSelected || someSelected ? accentColor : Color.secondary.opacity(0.5), lineWidth: 1.5)
                             .frame(width: 20, height: 20)
 
                         if allSelected {
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                                 .fill(accentColor)
                                 .frame(width: 20, height: 20)
 
@@ -440,7 +440,7 @@ struct BrowserDataCard: View {
                                 .font(Theme.Typography.size10Bold)
                                 .foregroundStyle(.white)
                         } else if someSelected {
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                                 .fill(accentColor.opacity(0.5))
                                 .frame(width: 20, height: 20)
 
@@ -460,7 +460,7 @@ struct BrowserDataCard: View {
                 HStack(spacing: Theme.Spacing.md) {
                     // Browser icon
                     ZStack {
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                             .fill(accentColor.opacity(0.15))
                             .frame(width: 40, height: 40)
 
@@ -470,7 +470,7 @@ struct BrowserDataCard: View {
                     }
 
                     // Info
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                         Text(browser.rawValue)
                             .font(Theme.Typography.size15Semibold)
 
@@ -482,7 +482,7 @@ struct BrowserDataCard: View {
                     Spacer()
 
                     // Size
-                    VStack(alignment: .trailing, spacing: 2) {
+                    VStack(alignment: .trailing, spacing: Theme.Spacing.tiny) {
                         Text(ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file))
                             .font(Theme.Typography.size14Semibold)
                             .foregroundStyle(accentColor)
@@ -538,12 +538,12 @@ struct BrowserDataItemRow: View {
             HStack(spacing: Theme.Spacing.sm) {
                 // Checkbox
                 ZStack {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .stroke(item.isSelected ? accentColor : Color.white.opacity(0.3), lineWidth: 1.5)
                         .frame(width: 18, height: 18)
 
                     if item.isSelected {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                             .fill(accentColor)
                             .frame(width: 18, height: 18)
 
@@ -560,8 +560,8 @@ struct BrowserDataItemRow: View {
                     .frame(width: 24)
 
                 // Info
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
+                    HStack(spacing: Theme.Spacing.xxxs) {
                         Text(item.dataType.rawValue)
                             .font(Theme.Typography.size13Medium)
 

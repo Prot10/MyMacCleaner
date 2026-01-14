@@ -114,7 +114,7 @@ struct OrphanedFilesView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .glassCard(cornerRadius: 12)
+                .glassCard(cornerRadius: Theme.CornerRadius.medium)
             }
         }
     }
@@ -122,7 +122,7 @@ struct OrphanedFilesView: View {
     // MARK: - Scan Prompt
 
     private var scanPromptSection: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: Theme.Spacing.section) {
             ZStack {
                 Circle()
                     .fill(sectionColor.opacity(0.1))
@@ -176,7 +176,7 @@ struct OrphanedFilesView: View {
                 }
             }
             .padding(Theme.Spacing.sm)
-            .glassCard(cornerRadius: 10)
+            .glassCard(cornerRadius: Theme.CornerRadius.medium)
 
             GlassActionButton(
                 L("orphans.scan.startButton"),
@@ -240,7 +240,7 @@ struct OrphanedFilesView: View {
                     }
                 }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: Theme.Spacing.xxxs) {
                     Image(systemName: "arrow.up.arrow.down")
                     Text(viewModel.sortOrder.localizedName)
                 }
@@ -248,7 +248,7 @@ struct OrphanedFilesView: View {
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .glassCard(cornerRadius: 8)
+                .glassCard(cornerRadius: Theme.CornerRadius.small)
             }
             .buttonStyle(.plain)
 
@@ -282,7 +282,7 @@ struct OrphanedFilesView: View {
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .glassCard(cornerRadius: 8)
+                .glassCard(cornerRadius: Theme.CornerRadius.small)
             }
             .buttonStyle(.plain)
         }
@@ -382,12 +382,12 @@ struct OrphanCategoryCard: View {
                 // Checkbox for selecting all - separate hit area
                 Button(action: onToggleAll) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                             .stroke(allSelected || someSelected ? accentColor : Color.secondary.opacity(0.5), lineWidth: 1.5)
                             .frame(width: 20, height: 20)
 
                         if allSelected {
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                                 .fill(accentColor)
                                 .frame(width: 20, height: 20)
 
@@ -395,7 +395,7 @@ struct OrphanCategoryCard: View {
                                 .font(Theme.Typography.size10Bold)
                                 .foregroundStyle(.white)
                         } else if someSelected {
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                                 .fill(accentColor.opacity(0.5))
                                 .frame(width: 20, height: 20)
 
@@ -415,7 +415,7 @@ struct OrphanCategoryCard: View {
                 HStack(spacing: Theme.Spacing.md) {
                     // Category icon
                     ZStack {
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                             .fill(category.color.opacity(0.15))
                             .frame(width: 40, height: 40)
 
@@ -425,7 +425,7 @@ struct OrphanCategoryCard: View {
                     }
 
                     // Info
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                         Text(category.rawValue)
                             .font(Theme.Typography.size15Semibold)
 
@@ -437,7 +437,7 @@ struct OrphanCategoryCard: View {
                     Spacer()
 
                     // Size and selection
-                    VStack(alignment: .trailing, spacing: 2) {
+                    VStack(alignment: .trailing, spacing: Theme.Spacing.tiny) {
                         Text(ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file))
                             .font(Theme.Typography.size14Semibold)
                             .foregroundStyle(accentColor)
@@ -498,12 +498,12 @@ struct OrphanFileRow: View {
             // Checkbox
             Button(action: onToggle) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .stroke(file.isSelected ? accentColor : Color.white.opacity(0.3), lineWidth: 1.5)
                         .frame(width: 18, height: 18)
 
                     if file.isSelected {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                             .fill(accentColor)
                             .frame(width: 18, height: 18)
 
@@ -516,8 +516,8 @@ struct OrphanFileRow: View {
             .buttonStyle(.plain)
 
             // File info
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
+                HStack(spacing: Theme.Spacing.xxxs) {
                     Text(file.suspectedAppName)
                         .font(Theme.Typography.size13Medium)
                         .lineLimit(1)

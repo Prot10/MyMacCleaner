@@ -11,7 +11,7 @@ struct UpdateRow: View {
         HStack(spacing: Theme.Spacing.md) {
             // Icon placeholder (we don't have app icon here)
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(Color.orange.opacity(0.15))
                     .frame(width: 44, height: 44)
 
@@ -20,7 +20,7 @@ struct UpdateRow: View {
                     .foregroundStyle(.orange)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(update.appName)
                     .font(Theme.Typography.subheadline.weight(.semibold))
 
@@ -51,7 +51,7 @@ struct UpdateRow: View {
             // Download button
             if let downloadURL = update.downloadURL {
                 Link(destination: downloadURL) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: Theme.Spacing.xxs) {
                         Image(systemName: "arrow.down.circle")
                         Text(L("applications.updates.download"))
                     }
@@ -60,13 +60,13 @@ struct UpdateRow: View {
                     .padding(.horizontal, Theme.Spacing.sm)
                     .padding(.vertical, 6)
                     .background(Color.orange)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
                 }
             }
         }
         .padding(Theme.Spacing.sm)
         .background(Color.white.opacity(isHovered ? 0.05 : 0))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium))
         .onHover { isHovered = $0 }
     }
 }

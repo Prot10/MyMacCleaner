@@ -133,12 +133,15 @@ enum Theme {
     // MARK: - Spacing
 
     enum Spacing {
+        static let tiny: CGFloat = 2
         static let xxs: CGFloat = 4
+        static let xxxs: CGFloat = 6
         static let xs: CGFloat = 8
         static let sm: CGFloat = 12
         static let md: CGFloat = 16
         static let lg: CGFloat = 20
         static let xl: CGFloat = 24
+        static let section: CGFloat = 28
         static let xxl: CGFloat = 32
         static let xxxl: CGFloat = 40
         static let huge: CGFloat = 48
@@ -148,6 +151,8 @@ enum Theme {
     // MARK: - Corner Radius
 
     enum CornerRadius {
+        static let tiny: CGFloat = 4
+        static let xs: CGFloat = 6
         static let small: CGFloat = 8
         static let medium: CGFloat = 12
         static let large: CGFloat = 16

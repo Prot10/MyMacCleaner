@@ -36,12 +36,12 @@ struct RunAllProgressView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                     Text(L("performance.maintenance.running"))
                         .font(Theme.Typography.subheadline.weight(.semibold))
 
                     if !currentTaskName.isEmpty {
-                        HStack(spacing: 6) {
+                        HStack(spacing: Theme.Spacing.xxxs) {
                             ProgressView()
                                 .controlSize(.mini)
                                 .frame(width: 10, height: 10)
@@ -56,7 +56,7 @@ struct RunAllProgressView: View {
                 Spacer()
 
                 // Current task progress
-                VStack(alignment: .trailing, spacing: 2) {
+                VStack(alignment: .trailing, spacing: Theme.Spacing.tiny) {
                     Text("\(Int(taskProgress * 100))%")
                         .font(Theme.Typography.size20Bold.monospacedDigit())
                         .foregroundStyle(.purple)
@@ -71,12 +71,12 @@ struct RunAllProgressView: View {
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     // Background
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .fill(Color.white.opacity(0.1))
                         .frame(height: 8)
 
                     // Completed tasks progress
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .fill(
                             LinearGradient(
                                 colors: [.purple, .blue],
@@ -91,7 +91,7 @@ struct RunAllProgressView: View {
                         let segmentWidth = geometry.size.width / CGFloat(totalCount)
                         let startX = segmentWidth * CGFloat(currentIndex - 1)
 
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                             .fill(Color.white.opacity(0.3))
                             .frame(width: segmentWidth * taskProgress, height: 8)
                             .offset(x: startX)

@@ -13,7 +13,7 @@ struct SpaceLensView: View {
                     .glassCard()
             } else if let currentNode = viewModel.currentNode {
                 mainContent(currentNode)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.large))
                     .glassCard()
             }
 
@@ -89,7 +89,7 @@ struct SpaceLensView: View {
             // Current folder info
             HStack(spacing: Theme.Spacing.md) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                         .fill(Color.blue.opacity(0.15))
                         .frame(width: 48, height: 48)
 
@@ -115,7 +115,7 @@ struct SpaceLensView: View {
 
             // File list
             ScrollView {
-                LazyVStack(spacing: 2) {
+                LazyVStack(spacing: Theme.Spacing.tiny) {
                     ForEach(currentNode.children.sorted(by: { $0.size > $1.size })) { child in
                         SidebarFileRow(
                             node: child,
@@ -152,7 +152,7 @@ struct SpaceLensView: View {
                         .foregroundStyle(viewModel.navigationStack.count > 1 ? .primary : .tertiary)
                         .frame(width: 32, height: 32)
                         .background(Color.white.opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
                 }
                 .buttonStyle(.plain)
                 .disabled(viewModel.navigationStack.count <= 1)
@@ -192,7 +192,7 @@ struct SpaceLensView: View {
                         .foregroundStyle(.secondary)
                         .frame(width: 32, height: 32)
                         .background(Color.white.opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
                 }
                 .buttonStyle(.plain)
             }
@@ -219,7 +219,7 @@ struct SpaceLensView: View {
                 .padding(.horizontal, Theme.Spacing.sm)
                 .padding(.vertical, 4)
                 .background(viewModel.sizeFilter != .all ? Color.blue.opacity(0.15) : Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
 
                 // Age filter
                 HStack(spacing: Theme.Spacing.xs) {
@@ -239,7 +239,7 @@ struct SpaceLensView: View {
                 .padding(.horizontal, Theme.Spacing.sm)
                 .padding(.vertical, 4)
                 .background(viewModel.ageFilter != .all ? Color.orange.opacity(0.15) : Color.white.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
 
                 // Clear filters button
                 if viewModel.hasActiveFilters {
@@ -302,7 +302,7 @@ struct SpaceLensView: View {
                         Text("·")
                             .foregroundStyle(.tertiary)
 
-                        HStack(spacing: 2) {
+                        HStack(spacing: Theme.Spacing.tiny) {
                             Image(systemName: "clock")
                                 .font(Theme.Typography.size10)
                             Text(accessStr)
@@ -414,7 +414,7 @@ struct SidebarFileRow: View {
 
             // Icon
             ZStack {
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.small)
                     .fill(node.color.opacity(0.15))
                     .frame(width: 30, height: 30)
 
@@ -439,7 +439,7 @@ struct SidebarFileRow: View {
         .padding(.vertical, Theme.Spacing.xs)
         .background {
             if isHovered {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(Color.white.opacity(0.08))
             }
         }

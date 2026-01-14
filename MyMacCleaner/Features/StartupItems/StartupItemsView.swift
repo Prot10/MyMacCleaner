@@ -163,7 +163,7 @@ struct StartupItemsView: View {
     // MARK: - Scan Prompt Section
 
     private var scanPromptSection: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: Theme.Spacing.section) {
             // Icon
             ZStack {
                 Circle()
@@ -339,7 +339,7 @@ struct StartupStatCard: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(color.opacity(0.15))
                     .frame(width: 44, height: 44)
 
@@ -348,7 +348,7 @@ struct StartupStatCard: View {
                     .foregroundStyle(color)
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(value)
                     .font(Theme.Typography.title2.monospacedDigit())
 
@@ -384,7 +384,7 @@ struct StartupItemRow: View {
             HStack(spacing: Theme.Spacing.md) {
                 // Type icon with status indicator
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                         .fill(item.typeColor.opacity(0.15))
                         .frame(width: 44, height: 44)
 
@@ -406,7 +406,7 @@ struct StartupItemRow: View {
                 }
 
                 // Info
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                     HStack(spacing: Theme.Spacing.sm) {
                         Text(item.displayName)
                             .font(Theme.Typography.subheadline.weight(.medium))
@@ -419,7 +419,7 @@ struct StartupItemRow: View {
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(Color.secondary.opacity(0.2))
-                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
                         }
                     }
 
@@ -448,7 +448,7 @@ struct StartupItemRow: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(item.typeColor.opacity(0.15))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
 
                 // Status indicator
                 HStack(spacing: Theme.Spacing.xxs) {

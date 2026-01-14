@@ -48,7 +48,7 @@ struct AppCard: View {
                         .padding(.horizontal, Theme.Spacing.sm)
                         .padding(.vertical, Theme.Spacing.xxs)
                         .background(Color.blue)
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
                 }
                 .buttonStyle(.plain)
 
@@ -59,7 +59,7 @@ struct AppCard: View {
                         .padding(.horizontal, Theme.Spacing.sm)
                         .padding(.vertical, Theme.Spacing.xxs)
                         .background(Color.red.opacity(0.15))
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
                 }
                 .buttonStyle(.plain)
             }
@@ -111,7 +111,7 @@ struct MoreAppsCard: View {
     var body: some View {
         VStack(spacing: Theme.Spacing.xs) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(Color.white.opacity(0.1))
                     .frame(width: 44, height: 44)
 

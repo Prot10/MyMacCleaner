@@ -174,7 +174,7 @@ struct DiskCleanerView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .glassCard(cornerRadius: 12)
+                .glassCard(cornerRadius: Theme.CornerRadius.medium)
             }
         }
     }
@@ -221,7 +221,7 @@ struct DiskCleanerView: View {
     // MARK: - Scan Prompt
 
     private var scanPromptSection: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: Theme.Spacing.section) {
             // Icon
             ZStack {
                 Circle()
@@ -334,7 +334,7 @@ struct DiskCleanerView: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .glassCard(cornerRadius: 8)
+                    .glassCard(cornerRadius: Theme.CornerRadius.small)
                 }
                 .buttonStyle(.plain)
                 .padding(.leading, 12)
@@ -439,7 +439,7 @@ struct DiskCleanerView: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color.orange.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
                 }
                 .buttonStyle(.plain)
                 .help(L("diskCleaner.emptyTrash.clickToGrant"))
@@ -447,7 +447,7 @@ struct DiskCleanerView: View {
 
             // Empty button
             Button(action: viewModel.prepareEmptyTrash) {
-                HStack(spacing: 6) {
+                HStack(spacing: Theme.Spacing.xxxs) {
                     if viewModel.isEmptyingTrash {
                         ProgressView()
                             .controlSize(.small)
@@ -462,7 +462,7 @@ struct DiskCleanerView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(Color.orange.opacity(viewModel.trashSize > 0 ? 0.15 : 0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
             }
             .buttonStyle(.plain)
             .disabled(viewModel.isEmptyingTrash || viewModel.trashSize == 0)
@@ -528,11 +528,11 @@ struct ScanningOverlay: View {
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .fill(Color.white.opacity(0.1))
                         .frame(height: 8)
 
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .fill(accentColor.gradient)
                         .frame(width: geometry.size.width * progress, height: 8)
                         .animation(Theme.Animation.spring, value: progress)

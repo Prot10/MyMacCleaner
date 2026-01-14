@@ -29,7 +29,7 @@ struct UninstallConfirmationSheet: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 64, height: 64)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                     Text(LFormat("applications.uninstall.title %@", app.name))
                         .font(Theme.Typography.title2)
 
