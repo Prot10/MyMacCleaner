@@ -98,7 +98,7 @@ struct SpaceLensView: View {
                         .foregroundStyle(.blue)
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                     Text(currentNode.name)
                         .font(Theme.Typography.size15Semibold)
                         .lineLimit(1)
@@ -169,7 +169,7 @@ struct SpaceLensView: View {
                         }
 
                         Button(action: { viewModel.navigateTo(node) }) {
-                            HStack(spacing: 4) {
+                            HStack(spacing: Theme.Spacing.xxs) {
                                 if index == 0 {
                                     Image(systemName: "internaldrive.fill")
                                         .font(.caption)
@@ -244,7 +244,7 @@ struct SpaceLensView: View {
                 // Clear filters button
                 if viewModel.hasActiveFilters {
                     Button(action: viewModel.clearFilters) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: Theme.Spacing.xxs) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(Theme.Typography.size10)
                             Text(L("spaceLens.filter.clear"))
@@ -334,7 +334,7 @@ struct SpaceLensView: View {
     }
 
     private func legendItem(color: Color, label: String) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Theme.Spacing.xxs) {
             Circle()
                 .fill(color)
                 .frame(width: 8, height: 8)

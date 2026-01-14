@@ -102,7 +102,7 @@ struct PerformanceView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.performance"))
                     .font(Theme.Typography.size28Bold)
 
@@ -114,9 +114,9 @@ struct PerformanceView: View {
             Spacer()
 
             // CPU indicator
-            HStack(spacing: 16) {
-                VStack(alignment: .trailing, spacing: 4) {
-                    HStack(spacing: 8) {
+            HStack(spacing: Theme.Spacing.md) {
+                VStack(alignment: .trailing, spacing: Theme.Spacing.xxs) {
+                    HStack(spacing: Theme.Spacing.xs) {
                         Text(L("performance.cpu"))
                             .font(Theme.Typography.size11)
                             .foregroundStyle(.secondary)
@@ -255,7 +255,7 @@ struct PerformanceView: View {
                 .animation(Theme.Animation.springSmooth, value: viewModel.memoryUsage.usagePercentage)
 
             // Center content
-            VStack(spacing: 4) {
+            VStack(spacing: Theme.Spacing.xxs) {
                 Text("\(Int(viewModel.memoryUsage.usagePercentage))%")
                     .font(Theme.Typography.size36BoldRounded.monospacedDigit())
                     .foregroundStyle(memoryColor)
@@ -556,7 +556,7 @@ struct PerformanceView: View {
     // MARK: - Maintenance Section
 
     private var maintenanceSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             // Header with Run All button
             HStack {
                 Text(L("performance.maintenance.title"))
@@ -566,13 +566,13 @@ struct PerformanceView: View {
 
                 if viewModel.isRunningAll {
                     // Progress indicator during run all
-                    HStack(spacing: 8) {
+                    HStack(spacing: Theme.Spacing.xs) {
                         Text(LFormat("performance.maintenance.taskOf %lld %lld", viewModel.runAllCurrentIndex, viewModel.runAllTotalCount))
                             .font(Theme.Typography.size11)
                             .foregroundStyle(.secondary)
 
                         Button(action: viewModel.cancelRunAll) {
-                            HStack(spacing: 4) {
+                            HStack(spacing: Theme.Spacing.xxs) {
                                 Image(systemName: "xmark")
                                 Text(L("common.stop"))
                             }

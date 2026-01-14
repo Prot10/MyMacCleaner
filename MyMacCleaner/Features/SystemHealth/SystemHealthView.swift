@@ -41,7 +41,7 @@ struct SystemHealthView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.systemHealth"))
                     .font(Theme.Typography.size28Bold)
 
@@ -103,7 +103,7 @@ struct SystemHealthView: View {
                     .animation(Theme.Animation.springSmooth, value: viewModel.healthScore)
 
                 // Score text
-                VStack(spacing: 4) {
+                VStack(spacing: Theme.Spacing.xxs) {
                     Text("\(viewModel.healthScore)")
                         .font(Theme.Typography.size44BoldRounded)
                         .foregroundStyle(viewModel.healthStatus.color)
@@ -227,7 +227,7 @@ struct HealthCheckCard: View {
             }
 
             // Info
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 HStack {
                     Image(systemName: check.icon)
                         .font(.caption)

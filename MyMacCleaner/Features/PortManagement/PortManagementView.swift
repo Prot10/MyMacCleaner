@@ -76,7 +76,7 @@ struct PortManagementView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.portManagement"))
                     .font(Theme.Typography.size28Bold)
 
@@ -295,7 +295,7 @@ struct ConnectionRow: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             // State
-            HStack(spacing: 4) {
+            HStack(spacing: Theme.Spacing.xxs) {
                 Circle()
                     .fill(connection.stateColor)
                     .frame(width: 8, height: 8)

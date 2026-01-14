@@ -223,7 +223,7 @@ struct BrowserPrivacyView: View {
                 }
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("privacy.title"))
                     .font(Theme.Typography.size20Semibold)
 
@@ -254,7 +254,7 @@ struct BrowserPrivacyView: View {
                 viewModel.scan()
             }
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -262,12 +262,12 @@ struct BrowserPrivacyView: View {
     // MARK: - Empty State
 
     private var emptyStateSection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Theme.Spacing.lg) {
             Image(systemName: "checkmark.circle.fill")
                 .font(Theme.Typography.size48)
                 .foregroundStyle(.green)
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("privacy.empty.title"))
                     .font(Theme.Typography.size20Semibold)
 
@@ -284,7 +284,7 @@ struct BrowserPrivacyView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -292,7 +292,7 @@ struct BrowserPrivacyView: View {
     // MARK: - Browser List
 
     private var browserListSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Theme.Spacing.sm) {
             // Header
             HStack {
                 Text(L("privacy.browserData"))
@@ -318,7 +318,7 @@ struct BrowserPrivacyView: View {
                 .foregroundStyle(privacyColor)
 
                 Button(action: viewModel.scan) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: Theme.Spacing.xxs) {
                         Image(systemName: "arrow.clockwise")
                         Text(L("diskCleaner.rescan"))
                     }
@@ -367,7 +367,7 @@ struct BrowserPrivacyView: View {
 
     private var cleanButtonSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(LFormat("diskCleaner.selected %@", viewModel.formattedSelectedSize))
                     .font(Theme.Typography.size15Semibold)
 
@@ -387,7 +387,7 @@ struct BrowserPrivacyView: View {
                 viewModel.prepareClean()
             }
         }
-        .padding(20)
+        .padding(Theme.Spacing.lg)
         .glassCard()
         .shadow(color: privacyColor.opacity(0.2), radius: 15, y: 5)
     }
