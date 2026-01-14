@@ -51,6 +51,7 @@ enum Theme {
     // MARK: - Typography
 
     enum Typography {
+        // Standard semantic fonts
         static let largeTitle = Font.largeTitle.bold()
         static let title = Font.title.bold()
         static let title2 = Font.title2.bold()
@@ -63,9 +64,68 @@ enum Theme {
         static let caption = Font.caption
         static let caption2 = Font.caption2
 
+        // Sized fonts for specific UI needs
+        static let size8 = Font.system(size: 8)
+        static let size9 = Font.system(size: 9)
+        static let size9Medium = Font.system(size: 9, weight: .medium)
+        static let size9Bold = Font.system(size: 9, weight: .bold)
+        static let size10 = Font.system(size: 10)
+        static let size10Medium = Font.system(size: 10, weight: .medium)
+        static let size10Semibold = Font.system(size: 10, weight: .semibold)
+        static let size10Bold = Font.system(size: 10, weight: .bold)
+        static let size11 = Font.system(size: 11)
+        static let size11Medium = Font.system(size: 11, weight: .medium)
+        static let size11Semibold = Font.system(size: 11, weight: .semibold)
+        static let size12 = Font.system(size: 12)
+        static let size12Medium = Font.system(size: 12, weight: .medium)
+        static let size12Semibold = Font.system(size: 12, weight: .semibold)
+        static let size12Bold = Font.system(size: 12, weight: .bold)
+        static let size13 = Font.system(size: 13)
+        static let size13Medium = Font.system(size: 13, weight: .medium)
+        static let size13Semibold = Font.system(size: 13, weight: .semibold)
+        static let size14 = Font.system(size: 14)
+        static let size14Medium = Font.system(size: 14, weight: .medium)
+        static let size14Semibold = Font.system(size: 14, weight: .semibold)
+        static let size15 = Font.system(size: 15)
+        static let size15Medium = Font.system(size: 15, weight: .medium)
+        static let size15Semibold = Font.system(size: 15, weight: .semibold)
+        static let size16 = Font.system(size: 16)
+        static let size16Medium = Font.system(size: 16, weight: .medium)
+        static let size16Semibold = Font.system(size: 16, weight: .semibold)
+        static let size18 = Font.system(size: 18)
+        static let size18Medium = Font.system(size: 18, weight: .medium)
+        static let size18Semibold = Font.system(size: 18, weight: .semibold)
+        static let size18Bold = Font.system(size: 18, weight: .bold)
+        static let size20 = Font.system(size: 20)
+        static let size20Medium = Font.system(size: 20, weight: .medium)
+        static let size20Semibold = Font.system(size: 20, weight: .semibold)
+        static let size20Bold = Font.system(size: 20, weight: .bold)
+        static let size22 = Font.system(size: 22)
+        static let size22Semibold = Font.system(size: 22, weight: .semibold)
+        static let size24Bold = Font.system(size: 24, weight: .bold)
+        static let size24BoldRounded = Font.system(size: 24, weight: .bold, design: .rounded)
+        static let size28Medium = Font.system(size: 28, weight: .medium)
+        static let size28Semibold = Font.system(size: 28, weight: .semibold)
+        static let size28Bold = Font.system(size: 28, weight: .bold)
+        static let size32Medium = Font.system(size: 32, weight: .medium)
+        static let size32Bold = Font.system(size: 32, weight: .bold)
+        static let size36Bold = Font.system(size: 36, weight: .bold)
+        static let size36BoldRounded = Font.system(size: 36, weight: .bold, design: .rounded)
+        static let size44BoldRounded = Font.system(size: 44, weight: .bold, design: .rounded)
+        static let size48 = Font.system(size: 48)
+        static let size48Bold = Font.system(size: 48, weight: .bold)
+
         // Monospace for numbers/code
         static let mono = Font.system(.body, design: .monospaced)
         static let monoSmall = Font.system(.caption, design: .monospaced)
+        static let monoSize11 = Font.system(size: 11, design: .monospaced)
+        static let monoSize12 = Font.system(size: 12, design: .monospaced)
+        static let monoSize13 = Font.system(size: 13, design: .monospaced)
+        static let monoSize14 = Font.system(size: 14, design: .monospaced)
+        static let monoSize20Bold = Font.system(size: 20, weight: .bold, design: .monospaced)
+        static let monoSize24Bold = Font.system(size: 24, weight: .bold, design: .monospaced)
+        static let monoSize28Bold = Font.system(size: 28, weight: .bold, design: .monospaced)
+        static let monoSize32Bold = Font.system(size: 32, weight: .bold, design: .monospaced)
     }
 
     // MARK: - Spacing
@@ -75,9 +135,12 @@ enum Theme {
         static let xs: CGFloat = 8
         static let sm: CGFloat = 12
         static let md: CGFloat = 16
-        static let lg: CGFloat = 40
-        static let xl: CGFloat = 48
-        static let xxl: CGFloat = 64
+        static let lg: CGFloat = 20
+        static let xl: CGFloat = 24
+        static let xxl: CGFloat = 32
+        static let xxxl: CGFloat = 40
+        static let huge: CGFloat = 48
+        static let massive: CGFloat = 64
     }
 
     // MARK: - Corner Radius
