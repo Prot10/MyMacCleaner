@@ -109,10 +109,10 @@ class HomeViewModel: ObservableObject {
                 showToastMessage(L("home.toast.trashSuccess"), type: .success)
             } else if result.deletedCount > 0 {
                 let freedFormatted = ByteCountFormatter.string(fromByteCount: result.freedSpace, countStyle: .file)
-                showToastMessage(L("home.toast.cleanPartial \(freedFormatted) \(result.failedCount)"), type: .info)
+                showToastMessage(LFormat("home.toast.cleanPartial %@ %lld", freedFormatted, Int64(result.failedCount)), type: .info)
             } else {
                 let errorMsg = result.errors.first?.localizedDescription ?? "Unknown error"
-                showToastMessage(L("home.toast.trashFailed \(errorMsg)"), type: .error)
+                showToastMessage(LFormat("home.toast.trashFailed %@", errorMsg), type: .error)
             }
         }
     }
@@ -137,7 +137,9 @@ class HomeViewModel: ObservableObject {
         Task {
             var totalFreed: Int64 = 0
             var failedCount = 0
-            let allItems = scanResults.flatMap { $0.items }
+            // Only include items from selected categories
+            let selectedCategories = scanResults.filter { $0.isSelected }
+            let allItems = selectedCategories.flatMap { $0.items }
             let selectedItems = allItems.filter { $0.isSelected }
             let totalItems = selectedItems.count
 
@@ -176,9 +178,9 @@ class HomeViewModel: ObservableObject {
             // Show result toast
             let freedFormatted = ByteCountFormatter.string(fromByteCount: totalFreed, countStyle: .file)
             if failedCount == 0 {
-                showToastMessage(L("home.toast.cleanSuccess \(freedFormatted)"), type: .success)
+                showToastMessage(LFormat("home.toast.cleanSuccess %@", freedFormatted), type: .success)
             } else if failedCount < totalItems {
-                showToastMessage(L("home.toast.cleanPartial \(freedFormatted) \(failedCount)"), type: .info)
+                showToastMessage(LFormat("home.toast.cleanPartial %@ %lld", freedFormatted, Int64(failedCount)), type: .info)
             } else {
                 showToastMessage(L("home.toast.cleanFailed"), type: .error)
             }

@@ -33,6 +33,15 @@ enum ScanCategory: String, CaseIterable, Identifiable {
     case trash
     case downloads
     case mailAttachments
+    // Developer tools
+    case npmCache
+    case yarnCache
+    case cocoapodsCache
+    case homebrewCache
+    // Containers & Simulators
+    case dockerData
+    case iosSimulators
+    case iosBackups
 
     var id: String { rawValue }
 
@@ -54,6 +63,13 @@ enum ScanCategory: String, CaseIterable, Identifiable {
         case .trash: return "trash.fill"
         case .downloads: return "arrow.down.circle.fill"
         case .mailAttachments: return "paperclip"
+        case .npmCache: return "shippingbox.fill"
+        case .yarnCache: return "link"
+        case .cocoapodsCache: return "cube.fill"
+        case .homebrewCache: return "mug.fill"
+        case .dockerData: return "tray.2.fill"
+        case .iosSimulators: return "iphone"
+        case .iosBackups: return "externaldrive.fill"
         }
     }
 
@@ -67,6 +83,13 @@ enum ScanCategory: String, CaseIterable, Identifiable {
         case .trash: return .red
         case .downloads: return .green
         case .mailAttachments: return .yellow
+        case .npmCache: return .mint
+        case .yarnCache: return .indigo
+        case .cocoapodsCache: return .brown
+        case .homebrewCache: return .teal
+        case .dockerData: return Color(red: 0.13, green: 0.59, blue: 0.95) // Docker blue
+        case .iosSimulators: return .gray
+        case .iosBackups: return Color(red: 0.6, green: 0.4, blue: 0.8) // Purple-ish
         }
     }
 
@@ -79,6 +102,9 @@ enum ScanCategory: String, CaseIterable, Identifiable {
         switch self {
         case .systemCache, .applicationLogs, .mailAttachments:
             return true
+        case .iosBackups:
+            // iOS backups in MobileSync may require FDA
+            return true
         default:
             return false
         }
@@ -89,6 +115,9 @@ enum ScanCategory: String, CaseIterable, Identifiable {
     var requiresUserConsent: Bool {
         switch self {
         case .downloads, .mailAttachments:
+            return true
+        case .iosBackups:
+            // iOS backups contain personal data
             return true
         default:
             return false
@@ -125,6 +154,26 @@ enum ScanCategory: String, CaseIterable, Identifiable {
             return ["\(home)/Downloads"]
         case .mailAttachments:
             return ["\(home)/Library/Containers/com.apple.mail/Data/Library/Mail Downloads"]
+        case .npmCache:
+            return ["\(home)/.npm"]
+        case .yarnCache:
+            return [
+                "\(home)/.yarn/cache",
+                "\(home)/.cache/yarn"
+            ]
+        case .cocoapodsCache:
+            return ["\(home)/Library/Caches/CocoaPods"]
+        case .homebrewCache:
+            return ["\(home)/Library/Caches/Homebrew"]
+        case .dockerData:
+            return ["\(home)/Library/Containers/com.docker.docker/Data"]
+        case .iosSimulators:
+            return [
+                "\(home)/Library/Developer/CoreSimulator/Devices",
+                "\(home)/Library/Developer/CoreSimulator/Caches"
+            ]
+        case .iosBackups:
+            return ["\(home)/Library/Application Support/MobileSync/Backup"]
         }
     }
 }

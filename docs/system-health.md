@@ -1,169 +1,131 @@
 # System Health
 
-Monitor system performance and manage startup items.
+Monitor your Mac's overall health with a comprehensive health score and detailed system information.
 
 ## Overview
 
-System Health provides real-time monitoring of your Mac's vital statistics and control over what runs at startup.
+System Health provides an at-a-glance view of your Mac's condition through a health score gauge, individual health checks, and detailed system information.
 
-## System Monitor
+## Health Score
 
-### CPU Usage
+### Score Gauge
 
-Real-time CPU utilization graph showing:
+A circular gauge displays your overall health score from 0-100:
 
-| Metric | Description |
-|--------|-------------|
-| **User** | Applications and processes |
-| **System** | macOS kernel operations |
-| **Idle** | Unused capacity |
+| Score Range | Status | Color |
+|-------------|--------|-------|
+| 80-100 | Excellent | Green |
+| 60-79 | Good | Yellow |
+| 40-59 | Fair | Orange |
+| 0-39 | Needs Attention | Red |
 
-### Memory Stats
+### Score Calculation
 
-| Metric | Description |
-|--------|-------------|
-| **Used** | Memory in active use |
-| **App Memory** | Memory used by apps |
-| **Wired** | Memory that can't be compressed |
-| **Compressed** | Memory compressed to save space |
-| **Cached** | Files cached for quick access |
-| **Free** | Available memory |
+The health score considers multiple factors:
 
-### Memory Pressure
+| Factor | Weight | Description |
+|--------|--------|-------------|
+| **Disk Space** | High | Available storage percentage |
+| **Memory Usage** | Medium | RAM utilization |
+| **Startup Items** | Medium | Number of login items |
+| **System Updates** | Low | Pending macOS updates |
 
-Color-coded indicator:
-- **Green** - Normal, plenty of memory available
-- **Yellow** - Warning, memory getting constrained
-- **Red** - Critical, system using swap heavily
+## Health Checks
 
-### Disk Health
+Individual cards show the status of each health component:
 
-- **Used/Available** space
-- **Read/Write** speeds
-- **S.M.A.R.T. status** (if supported)
+### Disk Space
 
-### Battery Health (MacBooks)
+| Status | Condition |
+|--------|-----------|
+| Healthy | More than 50GB free |
+| Warning | 20-50GB free |
+| Critical | Less than 20GB free |
 
-- **Cycle Count** - Total charge cycles
-- **Condition** - Normal, Service Recommended, etc.
-- **Capacity** - Current vs. original capacity
+**Tip:** Use Disk Cleaner to free up space.
 
-## Startup Manager
+### Memory
 
-### What Are Startup Items?
+| Status | Condition |
+|--------|-----------|
+| Healthy | Below 80% usage |
+| Warning | 80-90% usage |
+| Critical | Above 90% usage |
 
-Programs that launch automatically when you:
-- Turn on your Mac
-- Log into your account
+**Tip:** Use Performance > Free Memory to release inactive RAM.
 
-Too many startup items slow down boot time and use resources.
+### Startup Items
 
-### Types of Startup Items
+| Status | Condition |
+|--------|-----------|
+| Healthy | Fewer than 10 items |
+| Warning | 10-20 items |
+| Critical | More than 20 items |
 
-| Type | Location | Scope |
-|------|----------|-------|
-| **Login Items** | System Settings | Current user |
-| **User LaunchAgents** | `~/Library/LaunchAgents` | Current user |
-| **System LaunchAgents** | `/Library/LaunchAgents` | All users |
-| **LaunchDaemons** | `/Library/LaunchDaemons` | System-wide |
+**Tip:** Use Startup Items to disable unnecessary login items.
 
-### Managing Startup Items
+### System Updates
 
-#### View All Items
+| Status | Condition |
+|--------|-----------|
+| Healthy | System up to date |
+| Warning | Updates available |
 
-1. Open System Health
-2. Go to Startup Items tab
-3. See all items with status
+**Tip:** Keep your system updated for security and performance.
 
-#### Disable an Item
+## System Information
 
-1. Find item in list
-2. Toggle the switch to OFF
-3. Item won't run at next startup
+### Hardware Info
 
-#### Enable an Item
+| Property | Description |
+|----------|-------------|
+| **Mac Model** | Hardware model identifier |
+| **Processor** | CPU type and specs |
+| **Memory** | Installed RAM |
+| **Serial Number** | Hardware serial |
 
-1. Find disabled item
-2. Toggle the switch to ON
-3. Item will run at next startup
+### Storage Info
 
-#### Remove an Item
+| Property | Description |
+|----------|-------------|
+| **Total Capacity** | Drive size |
+| **Used Space** | Space in use |
+| **Available** | Free space |
+| **File System** | APFS or HFS+ |
 
-1. Select item
-2. Click Remove
-3. Confirm deletion
+### Battery Info (MacBooks)
 
-**Warning:** Only remove items you recognize. Some are required for apps to function.
+| Property | Description |
+|----------|-------------|
+| **Cycle Count** | Total charge cycles used |
+| **Condition** | Normal, Service Recommended, etc. |
+| **Capacity** | Current vs. design capacity |
+| **Charging** | Current charging state |
 
-### Item Information
+### macOS Info
 
-For each startup item, you can see:
+| Property | Description |
+|----------|-------------|
+| **Version** | macOS version number |
+| **Build** | System build number |
+| **Uptime** | Time since last restart |
 
-| Info | Description |
-|------|-------------|
-| **Name** | Display name or filename |
-| **Vendor** | Company that created it |
-| **Path** | File location |
-| **Type** | LaunchAgent, Daemon, etc. |
-| **Status** | Enabled or Disabled |
-| **Run At** | Login, Boot, or Both |
+## Usage Tips
 
-### Common Startup Items
-
-#### Safe to Disable
-
-- Cloud storage sync (Dropbox, Google Drive) - if not needed at login
-- Chat applications
-- Music services
-- Development tools
-
-#### Usually Required
-
-- Security software
-- Backup services (Time Machine helpers)
-- Display/audio drivers
-- Printer services
-
-#### Never Disable
-
-- Apple system items in `/System/Library/`
-- Items you don't recognize (research first)
-
-## Identifying Unknown Items
-
-### By Vendor
-
-Startup Manager shows vendor when detectable:
-- **Apple Inc.** - System components
-- **Known vendors** - Third-party software
-- **Unknown** - Investigate before removing
-
-### By Path
-
-Look at the file path:
-- `/Library/LaunchAgents/com.adobe.*` - Adobe software
-- `~/Library/LaunchAgents/com.spotify.*` - Spotify
-
-### Research Unknown Items
-
-1. Note the item name/path
-2. Search online for information
-3. Check if associated with installed app
-4. Remove only if confirmed unnecessary
-
-## Tips
-
-1. **Fewer is better** - Disable unnecessary startup items
-2. **Test changes** - Restart after disabling to verify
-3. **Keep security items** - Antivirus, firewall, etc.
-4. **Monitor memory pressure** - Yellow/red indicates issues
-5. **Check after installing apps** - New apps often add startup items
+1. **Check regularly** - Run a health check weekly
+2. **Address warnings** - Yellow items should be resolved soon
+3. **Critical issues** - Red items need immediate attention
+4. **Battery health** - MacBook users should monitor cycle count
+5. **Keep updated** - Install system updates promptly
 
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
-| `Cmd + R` | Refresh stats |
-| `Cmd + 1` | System Monitor tab |
-| `Cmd + 2` | Startup Items tab |
-| `Space` | Toggle selected item |
+| `Cmd + R` | Refresh health check |
+
+## Related Features
+
+- [Disk Cleaner](/MyMacCleaner/docs/disk-cleaner/) - Free up disk space
+- [Performance](/MyMacCleaner/docs/performance/) - Memory management and optimization
+- [Startup Items](/MyMacCleaner/docs/startup-items/) - Manage login items

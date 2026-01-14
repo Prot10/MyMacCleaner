@@ -197,15 +197,55 @@ class ApplicationsViewModel: ObservableObject {
         guard let app = appToUninstall else { return }
 
         Task {
-            do {
-                // Move app to trash
-                try FileManager.default.trashItem(at: app.url, resultingItemURL: nil)
+            var success = false
+            var errorMessage: String?
 
-                // Move related files to trash
+            // Check if app is in /Applications (requires admin privileges)
+            let requiresAdmin = app.url.path.hasPrefix("/Applications")
+
+            if requiresAdmin {
+                // Use admin privileges to delete
+                var commands: [(command: String, arguments: [String])] = []
+
+                // Add command to delete the app
+                commands.append((command: "/bin/rm", arguments: ["-rf", app.url.path]))
+
+                // Add commands for related files
                 for file in relatedFiles {
-                    try? FileManager.default.trashItem(at: file, resultingItemURL: nil)
+                    // Only use admin for files outside user directory
+                    if !file.path.hasPrefix(FileManager.default.homeDirectoryForCurrentUser.path) {
+                        commands.append((command: "/bin/rm", arguments: ["-rf", file.path]))
+                    }
                 }
 
+                let results = await AuthorizationService.shared.runBatchCommands(commands)
+                success = results.first ?? false
+
+                if success {
+                    // Delete remaining user-space files without admin
+                    for file in relatedFiles {
+                        if file.path.hasPrefix(FileManager.default.homeDirectoryForCurrentUser.path) {
+                            try? FileManager.default.trashItem(at: file, resultingItemURL: nil)
+                        }
+                    }
+                } else {
+                    errorMessage = L("applications.toast.adminDenied")
+                }
+            } else {
+                // Standard deletion for user-installed apps
+                do {
+                    try FileManager.default.trashItem(at: app.url, resultingItemURL: nil)
+
+                    for file in relatedFiles {
+                        try? FileManager.default.trashItem(at: file, resultingItemURL: nil)
+                    }
+                    success = true
+                } catch {
+                    errorMessage = error.localizedDescription
+                }
+            }
+
+            if success {
                 // Remove from list
                 applications.removeAll { $0.id == app.id }
 
@@ -213,10 +253,13 @@ class ApplicationsViewModel: ObservableObject {
                 appToUninstall = nil
                 relatedFiles = []
 
-                showToastMessage(L("applications.toast.uninstalled \(app.name)"), type: .success)
+                showToastMessage(LFormat("applications.toast.uninstalled %@", app.name), type: .success)
+            } else {
+                showUninstallConfirmation = false
+                appToUninstall = nil
+                relatedFiles = []
 
-            } catch {
-                showToastMessage(L("applications.toast.uninstallFailed \(error.localizedDescription)"), type: .error)
+                showToastMessage(LFormat("applications.toast.uninstallFailed %@", errorMessage ?? "Unknown error"), type: .error)
             }
         }
     }
@@ -262,7 +305,7 @@ class ApplicationsViewModel: ObservableObject {
                 if updates.isEmpty {
                     showToastMessage(L("applications.toast.allUpToDate"), type: .success)
                 } else {
-                    showToastMessage(L("applications.toast.updatesFound \(updates.count)"), type: .info)
+                    showToastMessage(LFormat("applications.toast.updatesFound %lld", Int64(updates.count)), type: .info)
                 }
             }
         }
@@ -313,13 +356,13 @@ class ApplicationsViewModel: ObservableObject {
                 await MainActor.run {
                     // Remove from outdated list
                     outdatedCasks.removeAll { $0.name == cask.name }
-                    showToastMessage(L("applications.toast.caskUpgraded \(cask.displayName)"), type: .success)
+                    showToastMessage(LFormat("applications.toast.caskUpgraded %@", cask.displayName), type: .success)
                 }
                 // Refresh cask list
                 loadHomebrewStatus()
             } catch {
                 await MainActor.run {
-                    showToastMessage(L("applications.toast.caskUpgradeFailed \(cask.displayName)"), type: .error)
+                    showToastMessage(LFormat("applications.toast.caskUpgradeFailed %@", cask.displayName), type: .error)
                 }
             }
         }
@@ -352,11 +395,11 @@ class ApplicationsViewModel: ObservableObject {
                 await MainActor.run {
                     homebrewCasks.removeAll { $0.name == cask.name }
                     outdatedCasks.removeAll { $0.name == cask.name }
-                    showToastMessage(L("applications.toast.caskUninstalled \(cask.displayName)"), type: .success)
+                    showToastMessage(LFormat("applications.toast.caskUninstalled %@", cask.displayName), type: .success)
                 }
             } catch {
                 await MainActor.run {
-                    showToastMessage(L("applications.toast.caskUninstallFailed \(cask.displayName)"), type: .error)
+                    showToastMessage(LFormat("applications.toast.caskUninstallFailed %@", cask.displayName), type: .error)
                 }
             }
         }
@@ -527,6 +570,7 @@ class ApplicationsViewModel: ObservableObject {
 
         // Common locations for app-related files
         let searchPaths: [(URL, String)] = [
+            // User Library paths
             (homeDir.appendingPathComponent("Library/Application Support"), bundleId),
             (homeDir.appendingPathComponent("Library/Application Support"), app.name),
             (homeDir.appendingPathComponent("Library/Preferences"), bundleId),
@@ -538,6 +582,10 @@ class ApplicationsViewModel: ObservableObject {
             (homeDir.appendingPathComponent("Library/Group Containers"), bundleId),
             (homeDir.appendingPathComponent("Library/Saved Application State"), "\(bundleId).savedState"),
             (homeDir.appendingPathComponent("Library/WebKit"), bundleId),
+            (homeDir.appendingPathComponent("Library/HTTPStorages"), bundleId),
+
+            // System Library paths (require admin/FDA)
+            (URL(fileURLWithPath: "/Library/Application Support"), app.name),
         ]
 
         for (basePath, searchTerm) in searchPaths {
@@ -552,6 +600,41 @@ class ApplicationsViewModel: ObservableObject {
                 let plistPath = basePath.appendingPathComponent("\(searchTerm).plist")
                 if FileManager.default.fileExists(atPath: plistPath.path) {
                     relatedFiles.append(plistPath)
+                }
+            }
+        }
+
+        // Check for Group Containers with partial bundle ID match (e.g., group.com.company.*)
+        let groupContainersPath = homeDir.appendingPathComponent("Library/Group Containers")
+        if let groupContents = try? FileManager.default.contentsOfDirectory(atPath: groupContainersPath.path) {
+            let bundleParts = bundleId.split(separator: ".").map(String.init)
+            for item in groupContents {
+                // Check if the group container matches the bundle ID pattern
+                for i in 1..<bundleParts.count {
+                    let partialMatch = bundleParts.suffix(from: i).joined(separator: ".")
+                    if item.contains(partialMatch) {
+                        let itemPath = groupContainersPath.appendingPathComponent(item)
+                        if !relatedFiles.contains(itemPath) {
+                            relatedFiles.append(itemPath)
+                        }
+                        break
+                    }
+                }
+            }
+        }
+
+        // Check for LaunchAgents with bundle ID in filename
+        let launchAgentPaths = [
+            homeDir.appendingPathComponent("Library/LaunchAgents"),
+            URL(fileURLWithPath: "/Library/LaunchAgents")
+        ]
+
+        for launchAgentPath in launchAgentPaths {
+            if let contents = try? FileManager.default.contentsOfDirectory(atPath: launchAgentPath.path) {
+                for item in contents {
+                    if item.contains(bundleId) || item.lowercased().contains(app.name.lowercased()) {
+                        relatedFiles.append(launchAgentPath.appendingPathComponent(item))
+                    }
                 }
             }
         }

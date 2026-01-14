@@ -62,7 +62,7 @@ struct PortManagementView: View {
             }
         } message: {
             if let connection = viewModel.connectionToKill {
-                Text(L("portManagement.kill.message \(connection.processName) \(String(connection.pid)) \(connection.localPort)"))
+                Text(LFormat("portManagement.kill.message %@ %@ %@", connection.processName, String(connection.pid), connection.localPort))
             }
         }
         .onAppear {
@@ -76,12 +76,12 @@ struct PortManagementView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.portManagement"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("portManagement.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -127,7 +127,7 @@ struct PortManagementView: View {
     // MARK: - Controls Section
 
     private var controlsSection: some View {
-        HStack(spacing: Theme.Spacing.md) {
+        HStack(spacing: Theme.ControlSize.controlSpacing) {
             // Search
             GlassSearchField(text: $viewModel.searchText, placeholder: L("portManagement.search"))
 
@@ -165,7 +165,7 @@ struct PortManagementView: View {
     private var emptySection: some View {
         VStack(spacing: Theme.Spacing.md) {
             Image(systemName: "network.slash")
-                .font(.system(size: 48))
+                .font(Theme.Typography.size48)
                 .foregroundStyle(.tertiary)
 
             Text(L("portManagement.empty.title"))
@@ -233,16 +233,16 @@ struct PortStatCard: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(color.opacity(0.15))
                     .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(Theme.Typography.size18Semibold)
                     .foregroundStyle(color)
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(value)
                     .font(Theme.Typography.title2.monospacedDigit())
 
@@ -295,7 +295,7 @@ struct ConnectionRow: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             // State
-            HStack(spacing: 4) {
+            HStack(spacing: Theme.Spacing.xxs) {
                 Circle()
                     .fill(connection.stateColor)
                     .frame(width: 8, height: 8)
@@ -312,9 +312,9 @@ struct ConnectionRow: View {
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.red)
                     .padding(.horizontal, Theme.Spacing.sm)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, Theme.Spacing.xxs)
                     .background(Color.red.opacity(0.15))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
             }
             .buttonStyle(.plain)
             .opacity(isHovered ? 1 : 0.6)

@@ -10,13 +10,13 @@ struct LanguageSwitcherButton: View {
         Button {
             showingPopover.toggle()
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: Theme.Spacing.xxxs) {
                 Image(systemName: "globe")
 
                 Text(localization.currentLanguage.shortCode)
 
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 10))
+                    .font(Theme.Typography.size10)
                     .opacity(0.7)
             }
         }
@@ -34,7 +34,7 @@ struct LanguagePickerView: View {
     @Binding var showingPopover: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
             ForEach(AppLanguage.allCases) { language in
                 LanguagePickerRow(
                     language: language,
@@ -47,7 +47,7 @@ struct LanguagePickerView: View {
                 }
             }
         }
-        .padding(6)
+        .padding(Theme.Spacing.xxxs)
         .frame(width: 140)
     }
 }
@@ -65,14 +65,14 @@ struct LanguagePickerRow: View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Text(language.nativeName)
-                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                    .font(isSelected ? Theme.Typography.size13Semibold : Theme.Typography.size13)
                     .foregroundStyle(isSelected ? .primary : .secondary)
 
                 Spacer()
 
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(Theme.Typography.size11Semibold)
                         .foregroundStyle(Theme.Colors.accent)
                 }
             }
@@ -80,7 +80,7 @@ struct LanguagePickerRow: View {
             .padding(.vertical, 8)
             .background {
                 if isHovered || isSelected {
-                    RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.small)
                         .fill(isSelected ? Theme.Colors.accent.opacity(0.15) : Color.white.opacity(0.08))
                 }
             }
@@ -102,7 +102,7 @@ struct LanguagePickerRow: View {
         )
         .ignoresSafeArea()
 
-        VStack(spacing: 24) {
+        VStack(spacing: Theme.Spacing.xl) {
             LanguageSwitcherButton()
                 .environment(LocalizationManager.shared)
         }

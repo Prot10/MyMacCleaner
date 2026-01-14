@@ -44,15 +44,15 @@ struct PermissionCategoryCard: View {
                     HStack {
                         Spacer()
                         Button(action: onOpenSettings) {
-                            HStack(spacing: 6) {
+                            HStack(spacing: Theme.Spacing.xxxs) {
                                 Image(systemName: "gear")
-                                    .font(.system(size: 12))
+                                    .font(Theme.Typography.size12)
                                 Text(L("permissions.action.openSettings"))
-                                    .font(.system(size: 12, weight: .medium))
+                                    .font(Theme.Typography.size12Medium)
                             }
                             .foregroundStyle(.blue)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, Theme.Spacing.sm)
+                            .padding(.vertical, Theme.Spacing.xxxs)
                             .background(Color.blue.opacity(0.1))
                             .clipShape(Capsule())
                         }
@@ -76,12 +76,12 @@ struct PermissionCategoryCard: View {
                     .frame(width: 40, height: 40)
 
                 Image(systemName: category.type.icon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(Theme.Typography.size18Semibold)
                     .foregroundStyle(category.type.color)
             }
 
             // Category info
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(category.type.localizedName)
                     .font(Theme.Typography.headline)
                     .foregroundStyle(.primary)
@@ -100,7 +100,7 @@ struct PermissionCategoryCard: View {
 
                 // Expand chevron
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(Theme.Typography.size12Semibold)
                     .foregroundStyle(.tertiary)
                     .rotationEffect(.degrees(category.isExpanded ? 90 : 0))
             }
@@ -112,21 +112,21 @@ struct PermissionCategoryCard: View {
     private var statusBadge: some View {
         let status = category.overallStatus
 
-        HStack(spacing: 4) {
+        HStack(spacing: Theme.Spacing.xxs) {
             if status == .checking {
                 ProgressView()
                     .scaleEffect(0.5)
             } else {
                 Image(systemName: status.icon)
-                    .font(.system(size: 10))
+                    .font(Theme.Typography.size10)
             }
 
             Text(category.statusSummary)
-                .font(.system(size: 11, weight: .semibold))
+                .font(Theme.Typography.size11Semibold)
         }
         .foregroundStyle(status.color)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.horizontal, Theme.Spacing.xs)
+        .padding(.vertical, Theme.Spacing.xxs)
         .background(status.color.opacity(0.12))
         .clipShape(Capsule())
     }

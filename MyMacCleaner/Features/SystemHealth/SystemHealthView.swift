@@ -41,12 +41,12 @@ struct SystemHealthView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.systemHealth"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("systemHealth.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -103,9 +103,9 @@ struct SystemHealthView: View {
                     .animation(Theme.Animation.springSmooth, value: viewModel.healthScore)
 
                 // Score text
-                VStack(spacing: 4) {
+                VStack(spacing: Theme.Spacing.xxs) {
                     Text("\(viewModel.healthScore)")
-                        .font(.system(size: 44, weight: .bold, design: .rounded))
+                        .font(Theme.Typography.size44BoldRounded)
                         .foregroundStyle(viewModel.healthStatus.color)
 
                     Text("/ 100")
@@ -212,7 +212,7 @@ struct HealthCheckCard: View {
         HStack(spacing: Theme.Spacing.md) {
             // Status icon
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(check.status.color.opacity(0.15))
                     .frame(width: 44, height: 44)
 
@@ -221,13 +221,13 @@ struct HealthCheckCard: View {
                         .controlSize(.small)
                 } else {
                     Image(systemName: check.status.icon)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(Theme.Typography.size18Semibold)
                         .foregroundStyle(check.status.color)
                 }
             }
 
             // Info
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 HStack {
                     Image(systemName: check.icon)
                         .font(.caption)
@@ -274,11 +274,11 @@ struct DiskInfoCard: View {
             // Progress bar
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .fill(Color.white.opacity(0.1))
                         .frame(height: 8)
 
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .fill(diskColor.gradient)
                         .frame(width: geometry.size.width * CGFloat(disk.usedPercent / 100), height: 8)
                 }
@@ -341,7 +341,7 @@ struct BatteryInfoCard: View {
             }
 
             HStack(spacing: Theme.Spacing.lg) {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                     Text("\(battery.percentage)%")
                         .font(Theme.Typography.title2)
                         .foregroundStyle(batteryColor)
@@ -352,7 +352,7 @@ struct BatteryInfoCard: View {
                 }
 
                 if let cycles = battery.cycleCount {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                         Text("\(cycles)")
                             .font(Theme.Typography.title2)
 
@@ -362,7 +362,7 @@ struct BatteryInfoCard: View {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                     Text(battery.health)
                         .font(Theme.Typography.subheadline)
                         .foregroundStyle(healthColor)

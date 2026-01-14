@@ -3,6 +3,7 @@ import SwiftUI
 struct DiskCleanerView: View {
     @ObservedObject var viewModel: DiskCleanerViewModel
     @ObservedObject var spaceLensViewModel: SpaceLensViewModel
+    @StateObject private var privacyViewModel = BrowserPrivacyViewModel()
     @State private var isVisible = false
     @State private var selectedTab: DiskCleanerTab = .cleaner
 
@@ -11,11 +12,13 @@ struct DiskCleanerView: View {
 
     enum DiskCleanerTab: String, CaseIterable {
         case cleaner
+        case privacy
         case spaceLens
 
         var icon: String {
             switch self {
             case .cleaner: return "trash"
+            case .privacy: return "hand.raised.fill"
             case .spaceLens: return "circle.hexagongrid.fill"
             }
         }
@@ -23,6 +26,7 @@ struct DiskCleanerView: View {
         var localizedName: String {
             switch self {
             case .cleaner: return L("diskCleaner.tab.cleaner")
+            case .privacy: return L("diskCleaner.tab.privacy")
             case .spaceLens: return L("diskCleaner.tab.spaceLens")
             }
         }
@@ -44,6 +48,9 @@ struct DiskCleanerView: View {
                     switch selectedTab {
                     case .cleaner:
                         cleanerContent
+                            .staggeredAnimation(index: 2, isActive: isVisible)
+                    case .privacy:
+                        BrowserPrivacyView(viewModel: privacyViewModel)
                             .staggeredAnimation(index: 2, isActive: isVisible)
                     case .spaceLens:
                         SpaceLensView(viewModel: spaceLensViewModel)
@@ -119,7 +126,17 @@ struct DiskCleanerView: View {
                 viewModel.confirmClean()
             }
         } message: {
-            Text(L("diskCleaner.clean.confirmMessage \(viewModel.selectedItemCount) \(viewModel.formattedSelectedSize)"))
+            Text(LFormat("diskCleaner.clean.confirmMessage %lld %@", Int64(viewModel.selectedItemCount), viewModel.formattedSelectedSize))
+        }
+        .alert(L("diskCleaner.emptyTrash.confirmTitle"), isPresented: $viewModel.showEmptyTrashConfirmation) {
+            Button(L("common.cancel"), role: .cancel) {
+                viewModel.cancelEmptyTrash()
+            }
+            Button(L("diskCleaner.emptyTrash.confirmButton"), role: .destructive) {
+                viewModel.confirmEmptyTrash()
+            }
+        } message: {
+            Text(LFormat("diskCleaner.emptyTrash.confirmMessage %@", viewModel.formattedTrashSize))
         }
         .onAppear {
             withAnimation(Theme.Animation.springSmooth) {
@@ -132,32 +149,32 @@ struct DiskCleanerView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.diskCleaner"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("diskCleaner.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
             if viewModel.hasScanned && !viewModel.scanResults.isEmpty {
-                HStack(spacing: 16) {
-                    VStack(alignment: .trailing, spacing: 4) {
+                HStack(spacing: Theme.Spacing.md) {
+                    VStack(alignment: .trailing, spacing: Theme.Spacing.xxs) {
                         Text(viewModel.formattedTotalSize)
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(Theme.Typography.size22Semibold)
                             .foregroundStyle(sectionColor)
 
                         Text(LFormat("diskCleaner.itemsFound %lld", viewModel.totalItemCount))
-                            .font(.system(size: 11))
+                            .font(Theme.Typography.size11)
                             .foregroundStyle(.secondary)
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Theme.Spacing.md)
                 .padding(.vertical, 10)
-                .glassCard(cornerRadius: 12)
+                .glassCard(cornerRadius: Theme.CornerRadius.medium)
             }
         }
     }
@@ -195,12 +212,16 @@ struct DiskCleanerView: View {
             // Clean button
             cleanButtonSection
         }
+
+        // Empty Trash card (always visible)
+        emptyTrashSection
+            .staggeredAnimation(index: 3, isActive: isVisible)
     }
 
     // MARK: - Scan Prompt
 
     private var scanPromptSection: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: Theme.Spacing.section) {
             // Icon
             ZStack {
                 Circle()
@@ -218,17 +239,17 @@ struct DiskCleanerView: View {
                         }
 
                     Image(systemName: "internaldrive.fill")
-                        .font(.system(size: 32, weight: .medium))
+                        .font(Theme.Typography.size32Medium)
                         .foregroundStyle(sectionColor.gradient)
                 }
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("diskCleaner.scan.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("diskCleaner.scan.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -241,7 +262,7 @@ struct DiskCleanerView: View {
                 viewModel.startScan()
             }
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -249,29 +270,29 @@ struct DiskCleanerView: View {
     // MARK: - Empty State
 
     private var emptyStateSection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Theme.Spacing.lg) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 48))
+                .font(Theme.Typography.size48)
                 .foregroundStyle(.green)
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("diskCleaner.empty.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("diskCleaner.empty.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
 
             Button(action: viewModel.startScan) {
                 Text(L("diskCleaner.scanAgain"))
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.size13Medium)
                     .foregroundStyle(sectionColor)
             }
             .buttonStyle(.plain)
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -279,7 +300,7 @@ struct DiskCleanerView: View {
     // MARK: - Category List
 
     private var categoryListSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Theme.Spacing.sm) {
             // Selection controls
             HStack {
                 Text(L("diskCleaner.categories"))
@@ -291,7 +312,7 @@ struct DiskCleanerView: View {
                     viewModel.selectAll()
                 }
                 .buttonStyle(.plain)
-                .font(.system(size: 12, weight: .medium))
+                .font(Theme.Typography.size12Medium)
                 .foregroundStyle(sectionColor)
 
                 Text("·")
@@ -301,19 +322,19 @@ struct DiskCleanerView: View {
                     viewModel.deselectAll()
                 }
                 .buttonStyle(.plain)
-                .font(.system(size: 12, weight: .medium))
+                .font(Theme.Typography.size12Medium)
                 .foregroundStyle(sectionColor)
 
                 Button(action: viewModel.startScan) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: Theme.Spacing.xxs) {
                         Image(systemName: "arrow.clockwise")
                         Text(L("diskCleaner.rescan"))
                     }
-                    .font(.system(size: 12, weight: .medium))
+                    .font(Theme.Typography.size12Medium)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .glassCard(cornerRadius: 8)
+                    .padding(.horizontal, Theme.Spacing.sm)
+                    .padding(.vertical, Theme.Spacing.xxxs)
+                    .glassCard(cornerRadius: Theme.CornerRadius.small)
                 }
                 .buttonStyle(.plain)
                 .padding(.leading, 12)
@@ -345,12 +366,12 @@ struct DiskCleanerView: View {
 
     private var cleanButtonSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(LFormat("diskCleaner.selected %@", viewModel.formattedSelectedSize))
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(Theme.Typography.size15Semibold)
 
                 Text(LFormat("diskCleaner.itemCount %lld", viewModel.selectedItemCount))
-                    .font(.system(size: 11))
+                    .font(Theme.Typography.size11)
                     .foregroundStyle(.secondary)
             }
 
@@ -365,9 +386,92 @@ struct DiskCleanerView: View {
                 viewModel.prepareClean()
             }
         }
-        .padding(20)
+        .padding(Theme.Spacing.lg)
         .glassCard()
         .shadow(color: sectionColor.opacity(0.2), radius: 15, y: 5)
+    }
+
+    // MARK: - Empty Trash Section
+
+    private var emptyTrashSection: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            // Trash icon
+            ZStack {
+                Circle()
+                    .fill(Color.orange.opacity(0.1))
+                    .frame(width: 48, height: 48)
+
+                Image(systemName: "trash.fill")
+                    .font(Theme.Typography.size20Medium)
+                    .foregroundStyle(Color.orange.gradient)
+            }
+
+            // Info
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
+                Text(L("diskCleaner.emptyTrash.title"))
+                    .font(Theme.Typography.subheadline.weight(.semibold))
+
+                if viewModel.trashSize > 0 {
+                    Text(LFormat("diskCleaner.emptyTrash.size %@", viewModel.formattedTrashSize))
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(L("diskCleaner.emptyTrash.empty"))
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Spacer()
+
+            // FDA warning if needed - clickable to open settings
+            if !viewModel.hasFullDiskAccess {
+                Button(action: {
+                    PermissionsService.shared.openFullDiskAccessSettings()
+                }) {
+                    HStack(spacing: Theme.Spacing.xxs) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(Theme.Typography.size10)
+                        Text(L("diskCleaner.emptyTrash.needsFDA"))
+                            .font(Theme.Typography.size10Medium)
+                    }
+                    .foregroundStyle(.orange)
+                    .padding(.horizontal, Theme.Spacing.xs)
+                    .padding(.vertical, Theme.Spacing.xxs)
+                    .background(Color.orange.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
+                }
+                .buttonStyle(.plain)
+                .help(L("diskCleaner.emptyTrash.clickToGrant"))
+            }
+
+            // Empty button
+            Button(action: viewModel.prepareEmptyTrash) {
+                HStack(spacing: Theme.Spacing.xxxs) {
+                    if viewModel.isEmptyingTrash {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "trash")
+                            .font(Theme.Typography.size12Medium)
+                    }
+                    Text(viewModel.isEmptyingTrash ? L("diskCleaner.emptyTrash.emptying") : L("diskCleaner.emptyTrash.button"))
+                        .font(Theme.Typography.size13Medium)
+                }
+                .foregroundStyle(viewModel.trashSize > 0 && !viewModel.isEmptyingTrash ? Color.orange : .secondary)
+                .padding(.horizontal, Theme.Spacing.md)
+                .padding(.vertical, Theme.Spacing.xs)
+                .background(Color.orange.opacity(viewModel.trashSize > 0 ? 0.15 : 0.05))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
+            }
+            .buttonStyle(.plain)
+            .disabled(viewModel.isEmptyingTrash || viewModel.trashSize == 0)
+        }
+        .padding(Theme.Spacing.md)
+        .glassCard()
+        .onAppear {
+            viewModel.refreshTrashSize()
+        }
     }
 }
 
@@ -377,11 +481,12 @@ struct ScanningOverlay: View {
     let progress: Double
     let category: String
     var accentColor: Color = .blue
+    var onCancel: (() -> Void)? = nil
 
     @State private var isAnimating = false
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Theme.Spacing.lg) {
             ZStack {
                 Circle()
                     .fill(accentColor.opacity(0.1))
@@ -404,38 +509,53 @@ struct ScanningOverlay: View {
                     .animation(Theme.Animation.spring, value: progress)
 
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 28, weight: .medium))
+                    .font(Theme.Typography.size28Medium)
                     .foregroundStyle(accentColor)
             }
 
-            VStack(spacing: 4) {
+            VStack(spacing: Theme.Spacing.xxs) {
                 Text(L("common.scanning"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(category)
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
 
                 Text("\(Int(progress * 100))%")
-                    .font(.system(size: 24, weight: .bold).monospacedDigit())
+                    .font(Theme.Typography.size24Bold.monospacedDigit())
                     .foregroundStyle(accentColor)
             }
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .fill(Color.white.opacity(0.1))
                         .frame(height: 8)
 
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .fill(accentColor.gradient)
                         .frame(width: geometry.size.width * progress, height: 8)
                         .animation(Theme.Animation.spring, value: progress)
                 }
             }
             .frame(width: 200, height: 8)
+
+            // Cancel button (optional)
+            if let onCancel = onCancel {
+                Button(action: onCancel) {
+                    Text(L("common.cancel"))
+                        .font(Theme.Typography.size14Medium)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, Theme.Spacing.lg)
+                        .padding(.vertical, Theme.Spacing.xs)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(Theme.CornerRadius.small)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, Theme.Spacing.xs)
+            }
         }
-        .padding(28)
+        .padding(Theme.Spacing.section)
         .frame(width: 280)
         .glassCardProminent()
         .onAppear {

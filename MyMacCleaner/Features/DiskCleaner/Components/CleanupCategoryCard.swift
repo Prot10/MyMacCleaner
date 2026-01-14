@@ -40,81 +40,86 @@ struct CleanupCategoryCard: View {
     // MARK: - Header Row
 
     private var headerRow: some View {
-        HStack(spacing: Theme.Spacing.md) {
-            // Selection checkbox
+        HStack(spacing: 0) {
+            // Selection checkbox - separate hit area
             Button(action: onToggleSelection) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .stroke(allSelected || someSelected ? result.category.color : Color.secondary.opacity(0.5), lineWidth: 1.5)
                         .frame(width: 20, height: 20)
 
                     if allSelected {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                             .fill(result.category.color)
                             .frame(width: 20, height: 20)
 
                         Image(systemName: "checkmark")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(Theme.Typography.size10Bold)
                             .foregroundStyle(.white)
                     } else if someSelected {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                             .fill(result.category.color.opacity(0.5))
                             .frame(width: 20, height: 20)
 
                         Image(systemName: "minus")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(Theme.Typography.size10Bold)
                             .foregroundStyle(.white)
                     }
                 }
+                .padding(.leading, Theme.Spacing.md)
+                .padding(.trailing, Theme.Spacing.md)
+                .padding(.vertical, Theme.Spacing.md)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            // Category icon
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(result.category.color.opacity(0.15))
-                    .frame(width: 44, height: 44)
+            // Expandable area - everything else
+            HStack(spacing: Theme.Spacing.md) {
+                // Category icon
+                ZStack {
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
+                        .fill(result.category.color.opacity(0.15))
+                        .frame(width: 44, height: 44)
 
-                Image(systemName: result.category.icon)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(result.category.color)
-            }
+                    Image(systemName: result.category.icon)
+                        .font(Theme.Typography.size18Semibold)
+                        .foregroundStyle(result.category.color)
+                }
 
-            // Category info
-            VStack(alignment: .leading, spacing: 2) {
-                Text(result.category.localizedName)
-                    .font(Theme.Typography.body)
+                // Category info
+                VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
+                    Text(result.category.localizedName)
+                        .font(Theme.Typography.body)
 
-                Text(result.category.localizedDescription)
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(.tertiary)
-            }
+                    Text(result.category.localizedDescription)
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.tertiary)
+                }
 
-            Spacer()
+                Spacer()
 
-            // Size and count
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(ByteCountFormatter.string(fromByteCount: result.totalSize, countStyle: .file))
-                    .font(Theme.Typography.subheadline.monospacedDigit())
-                    .foregroundStyle(result.category.color)
+                // Size and count
+                VStack(alignment: .trailing, spacing: Theme.Spacing.tiny) {
+                    Text(ByteCountFormatter.string(fromByteCount: result.totalSize, countStyle: .file))
+                        .font(Theme.Typography.subheadline.monospacedDigit())
+                        .foregroundStyle(result.category.color)
 
-                Text(LFormat("common.items %lld", result.itemCount))
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(.tertiary)
-            }
+                    Text(LFormat("common.items %lld", result.itemCount))
+                        .font(Theme.Typography.caption)
+                        .foregroundStyle(.tertiary)
+                }
 
-            // Expand button
-            Button(action: onToggleExpand) {
+                // Expand chevron
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(Theme.Typography.size12Semibold)
                     .foregroundStyle(.secondary)
                     .rotationEffect(.degrees(isExpanded ? 90 : 0))
             }
-            .buttonStyle(.plain)
+            .padding(.trailing, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.md)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: onToggleExpand)
         }
-        .padding(Theme.Spacing.md)
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onToggleExpand)
     }
 
     // MARK: - Expanded Content
@@ -177,17 +182,17 @@ struct CleanableItemRow: View {
             // Checkbox
             Button(action: onToggle) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .stroke(item.isSelected ? categoryColor : Color.secondary.opacity(0.5), lineWidth: 1.5)
                         .frame(width: 18, height: 18)
 
                     if item.isSelected {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                             .fill(categoryColor)
                             .frame(width: 18, height: 18)
 
                         Image(systemName: "checkmark")
-                            .font(.system(size: 9, weight: .bold))
+                            .font(Theme.Typography.size9Bold)
                             .foregroundStyle(.white)
                     }
                 }
@@ -196,12 +201,12 @@ struct CleanableItemRow: View {
 
             // File icon
             Image(systemName: fileIcon(for: item.name))
-                .font(.system(size: 14))
+                .font(Theme.Typography.size14)
                 .foregroundStyle(.secondary)
                 .frame(width: 20)
 
             // File info
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(item.name)
                     .font(Theme.Typography.subheadline)
                     .lineLimit(1)
@@ -217,7 +222,7 @@ struct CleanableItemRow: View {
             Spacer()
 
             // Size and date
-            VStack(alignment: .trailing, spacing: 2) {
+            VStack(alignment: .trailing, spacing: Theme.Spacing.tiny) {
                 Text(item.formattedSize)
                     .font(Theme.Typography.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
@@ -307,16 +312,16 @@ struct CategoryDetailSheet: View {
             // Header
             HStack {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                         .fill(result.category.color.opacity(0.15))
                         .frame(width: 44, height: 44)
 
                     Image(systemName: result.category.icon)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(Theme.Typography.size18Semibold)
                         .foregroundStyle(result.category.color)
                 }
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                     Text(result.category.localizedName)
                         .font(Theme.Typography.title3)
 

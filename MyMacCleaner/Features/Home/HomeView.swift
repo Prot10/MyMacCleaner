@@ -27,7 +27,7 @@ struct HomeView: View {
                     // Scan Results (if available)
                     if viewModel.showScanResults {
                         ScanResultsCard(
-                            results: viewModel.scanResults,
+                            results: $viewModel.scanResults,
                             onClean: viewModel.cleanSelectedItems,
                             onViewDetails: { result in
                                 print("View details for \(result.category.rawValue)")
@@ -108,12 +108,12 @@ struct HomeView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.home"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("home.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -135,7 +135,7 @@ struct HomeView: View {
 
     private var smartScanSection: some View {
         VStack(spacing: Theme.Spacing.md) {
-            VStack(spacing: 28) {
+            VStack(spacing: Theme.Spacing.section) {
                 // Icon
                 ZStack {
                     Circle()
@@ -159,25 +159,25 @@ struct HomeView: View {
                                 .tint(sectionColor)
                         } else {
                             Image(systemName: "magnifyingglass")
-                                .font(.system(size: 32, weight: .medium))
+                                .font(Theme.Typography.size32Medium)
                                 .foregroundStyle(sectionColor.gradient)
                         }
                     }
                 }
 
-                VStack(spacing: 8) {
+                VStack(spacing: Theme.Spacing.xs) {
                     Text(viewModel.isScanning ? L("home.scanning") : L("home.smartScan"))
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(Theme.Typography.size20Semibold)
 
                     Text(viewModel.isScanning ? L("home.scan.analyzing") : L("home.scan.description"))
-                        .font(.system(size: 14))
+                        .font(Theme.Typography.size14)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: 400)
                 }
 
                 if viewModel.isScanning {
-                    VStack(spacing: 8) {
+                    VStack(spacing: Theme.Spacing.xs) {
                         ProgressView(value: viewModel.scanProgress)
                             .progressViewStyle(.linear)
                             .tint(sectionColor)
@@ -199,13 +199,13 @@ struct HomeView: View {
                     }
                 }
             }
-            .padding(32)
+            .padding(Theme.Spacing.xxl)
             .frame(maxWidth: .infinity)
             .glassCard()
 
             // Error display
             if let error = viewModel.scanError {
-                HStack(spacing: 8) {
+                HStack(spacing: Theme.Spacing.xs) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
 
@@ -214,7 +214,7 @@ struct HomeView: View {
                         .foregroundStyle(.secondary)
                 }
                 .padding(Theme.Spacing.sm)
-                .glassCard(tint: .orange, cornerRadius: 12)
+                .glassCard(tint: .orange, cornerRadius: Theme.CornerRadius.medium)
             }
         }
         .animation(Theme.Animation.spring, value: viewModel.isScanning)
@@ -345,7 +345,7 @@ struct SmartScanButton: View {
     let action: () -> Void
 
     var body: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: Theme.Spacing.section) {
             // Icon
             ZStack {
                 Circle()
@@ -369,18 +369,18 @@ struct SmartScanButton: View {
                             .tint(color)
                     } else {
                         Image(systemName: "magnifyingglass")
-                            .font(.system(size: 32, weight: .medium))
+                            .font(Theme.Typography.size32Medium)
                             .foregroundStyle(color.gradient)
                     }
                 }
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(isScanning ? L("home.scanning") : L("home.smartScan"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(isScanning ? L("home.scan.analyzing") : L("home.scan.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
@@ -396,7 +396,7 @@ struct SmartScanButton: View {
                 }
             }
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -417,27 +417,27 @@ struct StatCard: View {
         VStack(alignment: .leading, spacing: 0) {
             // Icon
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(color.opacity(0.15))
                     .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(Theme.Typography.size18Semibold)
                     .foregroundStyle(color)
             }
 
             Spacer()
 
             // Value and subtitle
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(value)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(Theme.Typography.size24Bold)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
 
                 Text(subtitle)
-                    .font(.system(size: 12))
+                    .font(Theme.Typography.size12)
                     .foregroundStyle(.tertiary)
             }
 
@@ -446,10 +446,10 @@ struct StatCard: View {
 
             // Title
             Text(title)
-                .font(.system(size: 14, weight: .medium))
+                .font(Theme.Typography.size14Medium)
                 .foregroundStyle(.secondary)
         }
-        .padding(16)
+        .padding(Theme.Spacing.md)
         .frame(height: 160)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
@@ -475,20 +475,20 @@ struct QuickActionButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 12) {
+            VStack(spacing: Theme.Spacing.sm) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                         .fill(color.opacity(0.2))
                         .frame(width: 44, height: 44)
 
                     Image(systemName: icon)
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(Theme.Typography.size20Semibold)
                         .foregroundStyle(color)
                 }
                 .shadow(color: color.opacity(isHovered ? 0.4 : 0.2), radius: 8)
 
                 Text(title)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(Theme.Typography.size13Medium)
                     .foregroundStyle(.secondary)
             }
             .frame(width: 120, height: 100)

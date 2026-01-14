@@ -2,6 +2,40 @@ import SwiftUI
 
 // MARK: - Space Lens View Model
 
+// MARK: - Filter Enums
+
+enum SizeFilter: String, CaseIterable {
+    case all = "All"
+    case over100MB = ">100 MB"
+    case over500MB = ">500 MB"
+    case over1GB = ">1 GB"
+
+    var minSize: Int64 {
+        switch self {
+        case .all: return 0
+        case .over100MB: return 100 * 1024 * 1024
+        case .over500MB: return 500 * 1024 * 1024
+        case .over1GB: return 1024 * 1024 * 1024
+        }
+    }
+}
+
+enum AgeFilter: String, CaseIterable {
+    case all = "All"
+    case over30Days = ">30 days"
+    case over90Days = ">90 days"
+    case over1Year = ">1 year"
+
+    var minAge: TimeInterval {
+        switch self {
+        case .all: return 0
+        case .over30Days: return 30 * 24 * 60 * 60
+        case .over90Days: return 90 * 24 * 60 * 60
+        case .over1Year: return 365 * 24 * 60 * 60
+        }
+    }
+}
+
 @MainActor
 class SpaceLensViewModel: ObservableObject {
     // MARK: - Published Properties
@@ -22,6 +56,10 @@ class SpaceLensViewModel: ObservableObject {
 
     @Published var errorMessage: String?
 
+    // Filters
+    @Published var sizeFilter: SizeFilter = .all
+    @Published var ageFilter: AgeFilter = .all
+
     // MARK: - Computed Properties
 
     var breadcrumbs: [FileNode] {
@@ -29,12 +67,54 @@ class SpaceLensViewModel: ObservableObject {
     }
 
     var currentChildren: [FileNode] {
-        currentNode?.children ?? []
+        filteredChildren(of: currentNode)
     }
 
     var formattedCurrentSize: String {
         guard let node = currentNode else { return "0 bytes" }
         return ByteCountFormatter.string(fromByteCount: node.size, countStyle: .file)
+    }
+
+    var hasActiveFilters: Bool {
+        sizeFilter != .all || ageFilter != .all
+    }
+
+    var filteredCount: Int {
+        currentChildren.count
+    }
+
+    var totalCount: Int {
+        currentNode?.children.count ?? 0
+    }
+
+    // MARK: - Filter Methods
+
+    private func filteredChildren(of node: FileNode?) -> [FileNode] {
+        guard let node = node else { return [] }
+
+        return node.children.filter { child in
+            // Size filter
+            if sizeFilter != .all && child.size < sizeFilter.minSize {
+                return false
+            }
+
+            // Age filter (only applies to files, not directories)
+            if ageFilter != .all && !child.isDirectory {
+                if let accessDate = child.lastAccessDate {
+                    let age = Date().timeIntervalSince(accessDate)
+                    if age < ageFilter.minAge {
+                        return false
+                    }
+                }
+            }
+
+            return true
+        }
+    }
+
+    func clearFilters() {
+        sizeFilter = .all
+        ageFilter = .all
     }
 
     // MARK: - Public Methods
@@ -151,7 +231,9 @@ class SpaceLensViewModel: ObservableObject {
             .fileSizeKey,
             .totalFileAllocatedSizeKey,
             .isDirectoryKey,
-            .nameKey
+            .nameKey,
+            .contentAccessDateKey,
+            .contentModificationDateKey
         ]
 
         var node = FileNode(
@@ -191,12 +273,16 @@ class SpaceLensViewModel: ObservableObject {
 
             let isDirectory = resourceValues.isDirectory ?? false
             let size = Int64(resourceValues.totalFileAllocatedSize ?? resourceValues.fileSize ?? 0)
+            let accessDate = resourceValues.contentAccessDate
+            let modDate = resourceValues.contentModificationDate
 
             let childNode = FileNode(
                 name: resourceValues.name ?? fileURL.lastPathComponent,
                 url: fileURL,
                 size: size,
                 isDirectory: isDirectory,
+                lastAccessDate: accessDate,
+                modificationDate: modDate,
                 children: []
             )
 
@@ -262,18 +348,35 @@ class FileNode: Identifiable, ObservableObject {
     let url: URL
     @Published var size: Int64
     let isDirectory: Bool
+    let lastAccessDate: Date?
+    let modificationDate: Date?
     @Published var children: [FileNode]
 
-    init(name: String, url: URL, size: Int64, isDirectory: Bool, children: [FileNode]) {
+    init(name: String, url: URL, size: Int64, isDirectory: Bool, lastAccessDate: Date? = nil, modificationDate: Date? = nil, children: [FileNode]) {
         self.name = name
         self.url = url
         self.size = size
         self.isDirectory = isDirectory
+        self.lastAccessDate = lastAccessDate
+        self.modificationDate = modificationDate
         self.children = children
     }
 
     var formattedSize: String {
         ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+    }
+
+    var formattedLastAccess: String? {
+        guard let date = lastAccessDate else { return nil }
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
+    var daysSinceAccess: Int? {
+        guard let date = lastAccessDate else { return nil }
+        let interval = Date().timeIntervalSince(date)
+        return Int(interval / (24 * 60 * 60))
     }
 
     var fileExtension: String {

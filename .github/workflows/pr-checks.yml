@@ -253,6 +253,123 @@ jobs:
           fi
 
   # ============================================
+  # Code Quality Checks (based on CODE_REVIEW_GUIDELINES.md)
+  # ============================================
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for print() statements
+        run: |
+          echo "Checking for print() statements in production code..."
+          # Exclude test files and comments
+          PRINTS=$(grep -rn "print(" ${{ env.APP_NAME }}/ --include="*.swift" | grep -v "// " | grep -v "Test" | grep -v "#Preview" || true)
+          if [ -n "$PRINTS" ]; then
+            echo "::warning::Found print() statements in production code:"
+            echo "$PRINTS"
+            echo ""
+            echo "Consider removing print() statements before merging."
+          else
+            echo "✅ No print() statements found"
+          fi
+
+      - name: Check for force unwraps
+        run: |
+          echo "Checking for force unwraps (!)..."
+          # Look for force unwraps, excluding comments and common safe patterns
+          FORCE_UNWRAPS=$(grep -rn '\![^=]' ${{ env.APP_NAME }}/ --include="*.swift" | grep -v "//" | grep -v "!=" | grep -v "!important" | grep -v "@IBOutlet" | grep -v "canImport" || true)
+          COUNT=$(echo "$FORCE_UNWRAPS" | grep -c "!" || echo "0")
+          if [ "$COUNT" -gt "0" ] && [ -n "$FORCE_UNWRAPS" ]; then
+            echo "::warning::Found potential force unwraps:"
+            echo "$FORCE_UNWRAPS" | head -20
+            echo ""
+            echo "Review these for safety. Force unwraps should have justification."
+          else
+            echo "✅ No obvious force unwraps found"
+          fi
+
+      - name: Check macOS 26 availability patterns
+        run: |
+          echo "Checking macOS 26 compatibility patterns..."
+
+          # Check for #unavailable (should use #available instead)
+          UNAVAILABLE=$(grep -rn "#unavailable" ${{ env.APP_NAME }}/ --include="*.swift" || true)
+          if [ -n "$UNAVAILABLE" ]; then
+            echo "::error::Found #unavailable patterns (use #available with else instead):"
+            echo "$UNAVAILABLE"
+            exit 1
+          fi
+          echo "✅ No #unavailable patterns found"
+
+          # Check that glassEffect usage has availability checks
+          GLASS_NO_CHECK=$(grep -rn "\.glassEffect" ${{ env.APP_NAME }}/ --include="*.swift" | grep -v "#available" | grep -v "//" || true)
+          if [ -n "$GLASS_NO_CHECK" ]; then
+            echo "::warning::Found .glassEffect without #available check:"
+            echo "$GLASS_NO_CHECK"
+            echo ""
+            echo "Ensure all glassEffect calls are wrapped in #available(macOS 26, *)"
+          else
+            echo "✅ All glassEffect calls appear to have availability checks"
+          fi
+
+          # Verify macOS 26 patterns exist (sanity check)
+          MACOS26_COUNT=$(grep -rn "#available(macOS 26" ${{ env.APP_NAME }}/ --include="*.swift" | wc -l || echo "0")
+          echo "Found $MACOS26_COUNT macOS 26 availability checks"
+
+      - name: Check for large files
+        run: |
+          echo "Checking for oversized files..."
+          # Flag Swift files over 500 lines (per guidelines)
+          LARGE_FILES=$(find ${{ env.APP_NAME }} -name "*.swift" -exec wc -l {} + | awk '$1 > 500 {print}' | grep -v "total" || true)
+          if [ -n "$LARGE_FILES" ]; then
+            echo "::warning::Found files exceeding 500 lines:"
+            echo "$LARGE_FILES"
+            echo ""
+            echo "Consider splitting these files per CODE_REVIEW_GUIDELINES.md"
+          else
+            echo "✅ All files within size guidelines"
+          fi
+
+      - name: Check for TODO/FIXME comments
+        run: |
+          echo "Checking for TODO/FIXME comments..."
+          TODOS=$(grep -rn "TODO\|FIXME\|HACK\|XXX" ${{ env.APP_NAME }}/ --include="*.swift" | grep -v "// TODO: (template)" || true)
+          COUNT=$(echo "$TODOS" | grep -c "TODO\|FIXME\|HACK\|XXX" || echo "0")
+          if [ "$COUNT" -gt "0" ] && [ -n "$TODOS" ]; then
+            echo "::warning::Found $COUNT TODO/FIXME comments:"
+            echo "$TODOS"
+            echo ""
+            echo "Ensure these are tracked issues, not forgotten work."
+          else
+            echo "✅ No TODO/FIXME comments found"
+          fi
+
+      - name: Check Theme usage
+        run: |
+          echo "Checking for hardcoded values that should use Theme..."
+
+          # Check for hardcoded fonts
+          HARDCODED_FONTS=$(grep -rn "\.font(\.system(size:" ${{ env.APP_NAME }}/ --include="*.swift" | grep -v "Theme" || true)
+          if [ -n "$HARDCODED_FONTS" ]; then
+            echo "::warning::Found hardcoded font sizes (should use Theme.Typography):"
+            echo "$HARDCODED_FONTS" | head -10
+          fi
+
+          # Check for hardcoded cornerRadius with numbers
+          HARDCODED_RADIUS=$(grep -rn "cornerRadius: [0-9]" ${{ env.APP_NAME }}/ --include="*.swift" | grep -v "Theme" || true)
+          if [ -n "$HARDCODED_RADIUS" ]; then
+            echo "::warning::Found hardcoded cornerRadius (should use Theme.CornerRadius):"
+            echo "$HARDCODED_RADIUS" | head -10
+          fi
+
+          echo "✅ Theme usage check complete"
+
+  # ============================================
   # Documentation Check
   # ============================================
   docs:
@@ -296,15 +413,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
       - name: Validate appcast.xml
         run: |
           if [ -f "appcast.xml" ]; then
             # Check if it's valid XML
-            if ! xmllint --noout appcast.xml 2>/dev/null; then
+            if ! xmllint --noout appcast.xml; then
               echo "::error::appcast.xml is not valid XML"
               exit 1
             fi
-            echo "appcast.xml is valid XML"
+            echo "✅ appcast.xml is valid XML"
           else
             echo "No appcast.xml found (OK for PRs)"
           fi
@@ -315,7 +435,7 @@ jobs:
   pr-check-complete:
     name: PR Checks Complete
     runs-on: ubuntu-latest
-    needs: [build, test, archive, docs]
+    needs: [build, test, archive, docs, code-quality, validate-appcast]
     if: always()
 
     steps:
@@ -335,6 +455,14 @@ jobs:
           fi
           if [ "${{ needs.docs.result }}" != "success" ]; then
             echo "::error::Documentation check failed"
+            exit 1
+          fi
+          if [ "${{ needs.code-quality.result }}" != "success" ]; then
+            echo "::error::Code quality checks failed"
+            exit 1
+          fi
+          if [ "${{ needs.validate-appcast.result }}" != "success" ]; then
+            echo "::error::Appcast validation failed"
             exit 1
           fi
           echo "All required checks passed!"

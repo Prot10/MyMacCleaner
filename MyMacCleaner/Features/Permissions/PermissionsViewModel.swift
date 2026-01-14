@@ -12,8 +12,10 @@ class PermissionsViewModel: ObservableObject {
 
     init() {
         buildCategories()
+        // Only check permissions that don't trigger TCC dialogs at startup
+        // This prevents permission prompts from appearing when the app opens
         Task {
-            await checkAllPermissions()
+            await checkAllPermissions(skipTCCTriggerable: true)
         }
     }
 
@@ -181,12 +183,21 @@ class PermissionsViewModel: ObservableObject {
 
     // MARK: - Permission Checking
 
-    func checkAllPermissions() async {
+    /// Check all permissions
+    /// - Parameter skipTCCTriggerable: If true, skip folders that would trigger TCC permission dialogs.
+    ///   Use this at startup to avoid bombarding users with permission prompts.
+    func checkAllPermissions(skipTCCTriggerable: Bool = false) async {
         isLoading = true
 
         for categoryIndex in categories.indices {
             for folderIndex in categories[categoryIndex].folders.indices {
                 let folder = categories[categoryIndex].folders[folderIndex]
+
+                // Skip folders that would trigger TCC dialogs if requested
+                if skipTCCTriggerable && folder.canTriggerTCCDialog {
+                    continue
+                }
+
                 let status = await checkFolderAccess(folder.expandedPath)
 
                 await MainActor.run {

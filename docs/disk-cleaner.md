@@ -55,6 +55,54 @@ Web browser caches and data.
 | Firefox | `~/Library/Caches/Firefox` |
 | Edge | `~/Library/Caches/Microsoft Edge` |
 
+## Browser Privacy
+
+The Browser Privacy tab provides deep cleaning of browser data for enhanced privacy.
+
+### Supported Browsers
+
+| Browser | Supported |
+|---------|-----------|
+| Safari | Yes |
+| Google Chrome | Yes |
+| Mozilla Firefox | Yes |
+| Microsoft Edge | Yes |
+
+### Cleanable Data Types
+
+| Data Type | Description | Privacy Impact |
+|-----------|-------------|----------------|
+| **Browsing History** | Record of visited websites | High |
+| **Cookies** | Website tracking and session data | High |
+| **Cache** | Cached images, scripts, stylesheets | Medium |
+| **Downloads History** | Record of downloaded files | Medium |
+| **Form Data** | Autofill data for forms | High |
+| **Saved Passwords** | Stored login credentials | Critical |
+| **Local Storage** | Website data stored locally | Medium |
+
+### How to Use Browser Privacy
+
+1. Navigate to **Disk Cleaner** in the sidebar
+2. Click the **Browser Privacy** tab
+3. Select browsers you want to clean
+4. Choose data types to remove (checkboxes)
+5. Click **Clean Selected**
+6. Confirm the action
+
+### Warnings
+
+- **Close browsers first** - Browsers should be closed during cleaning
+- **Saved Passwords** - Will require re-entering passwords on websites
+- **Cookies** - Will log you out of websites
+- **Form Data** - Will clear autofill suggestions
+
+### Best Practices
+
+1. Keep browsers closed during cleaning
+2. Be cautious with password deletion
+3. Export important bookmarks first
+4. Consider which cookies you want to keep (banking sites, etc.)
+
 ### Mail Attachments
 
 Email attachments that take up space.
@@ -63,6 +111,33 @@ Email attachments that take up space.
 |------|----------|
 | Mail Downloads | `~/Library/Containers/com.apple.mail/Data/Library/Mail Downloads` |
 | Mail Attachments | `~/Library/Mail/V*/Mailboxes` |
+
+## Empty Trash
+
+A dedicated card at the bottom of the Cleaner tab provides quick access to empty your Trash.
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Size Display** | Shows current Trash size |
+| **One-Click Empty** | Empty Trash with a single click |
+| **Confirmation** | Asks for confirmation before permanently deleting |
+| **FDA Badge** | Shows if Full Disk Access is needed for complete cleanup |
+
+### Permission Requirements
+
+- **With Full Disk Access**: Empties all Trash contents including protected files
+- **Without Full Disk Access**: May not be able to remove some files
+
+The "Needs FDA" badge is clickable - click it to open System Settings and grant Full Disk Access.
+
+### How to Use
+
+1. Check the Trash size displayed on the card
+2. Click **Empty Trash** button
+3. Confirm the action in the dialog
+4. Wait for the operation to complete
 
 ## How to Use
 
@@ -105,4 +180,4 @@ Full Disk Access is required to scan:
 - Mail data
 - Some application containers
 
-See [Permissions Guide](permissions.md) for setup instructions.
+See [Permissions Guide](/MyMacCleaner/docs/permissions/) for setup instructions.

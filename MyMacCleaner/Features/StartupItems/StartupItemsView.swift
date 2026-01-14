@@ -67,9 +67,9 @@ struct StartupItemsView: View {
         } message: {
             if let item = viewModel.itemToToggle {
                 if item.isEnabled {
-                    Text(L("startupItems.toggle.disableMessage \(item.displayName)"))
+                    Text(LFormat("startupItems.toggle.disableMessage %@", item.displayName))
                 } else {
-                    Text(L("startupItems.toggle.enableMessage \(item.displayName)"))
+                    Text(LFormat("startupItems.toggle.enableMessage %@", item.displayName))
                 }
             }
         }
@@ -82,7 +82,7 @@ struct StartupItemsView: View {
             }
         } message: {
             if let item = viewModel.itemToRemove {
-                Text(L("startupItems.remove.message \(item.displayName)"))
+                Text(LFormat("startupItems.remove.message %@", item.displayName))
             }
         }
         .onAppear {
@@ -96,12 +96,12 @@ struct StartupItemsView: View {
 
     private var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("navigation.startupItems"))
-                    .font(.system(size: 28, weight: .bold))
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("startupItems.subtitle"))
-                    .font(.system(size: 13))
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
             }
 
@@ -163,7 +163,7 @@ struct StartupItemsView: View {
     // MARK: - Scan Prompt Section
 
     private var scanPromptSection: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: Theme.Spacing.section) {
             // Icon
             ZStack {
                 Circle()
@@ -181,17 +181,17 @@ struct StartupItemsView: View {
                         }
 
                     Image(systemName: "power")
-                        .font(.system(size: 32, weight: .medium))
+                        .font(Theme.Typography.size32Medium)
                         .foregroundStyle(sectionColor.gradient)
                 }
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: Theme.Spacing.xs) {
                 Text(L("startupItems.scan.title"))
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(Theme.Typography.size20Semibold)
 
                 Text(L("startupItems.scan.description"))
-                    .font(.system(size: 14))
+                    .font(Theme.Typography.size14)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
@@ -205,7 +205,7 @@ struct StartupItemsView: View {
                 viewModel.scanItems()
             }
         }
-        .padding(32)
+        .padding(Theme.Spacing.xxl)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
@@ -230,13 +230,15 @@ struct StartupItemsView: View {
     // MARK: - Controls Section
 
     private var controlsSection: some View {
-        HStack(spacing: Theme.Spacing.md) {
+        HStack(spacing: Theme.ControlSize.controlSpacing) {
             // Search
             GlassSearchField(text: $viewModel.searchText, placeholder: L("startupItems.search"))
-                .frame(maxWidth: 300)
 
             // Type filter
-            Menu {
+            GlassMenuButton(
+                icon: viewModel.selectedType?.icon ?? "line.3.horizontal.decrease.circle",
+                title: viewModel.selectedType?.localizedName ?? L("startupItems.filter.allTypes")
+            ) {
                 Button(action: { viewModel.selectedType = nil }) {
                     HStack {
                         Text(L("startupItems.filter.allTypes"))
@@ -259,22 +261,13 @@ struct StartupItemsView: View {
                         }
                     }
                 }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: viewModel.selectedType?.icon ?? "line.3.horizontal.decrease.circle")
-                    Text(viewModel.selectedType?.localizedName ?? L("startupItems.filter.allTypes"))
-                    Image(systemName: "chevron.down")
-                        .font(.caption2)
-                }
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .glassCard(cornerRadius: 12)
             }
 
             // Sort order
-            Menu {
+            GlassMenuButton(
+                icon: "arrow.up.arrow.down",
+                title: viewModel.sortOrder.localizedName
+            ) {
                 ForEach(StartupItemsViewModel.SortOrder.allCases, id: \.self) { order in
                     Button(action: { viewModel.sortOrder = order }) {
                         HStack {
@@ -286,35 +279,12 @@ struct StartupItemsView: View {
                         }
                     }
                 }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.up.arrow.down")
-                    Text(LFormat("startupItems.sort %@", viewModel.sortOrder.localizedName))
-                    Image(systemName: "chevron.down")
-                        .font(.caption2)
-                }
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .glassCard(cornerRadius: 12)
             }
 
             Spacer()
 
             // Show system items toggle
-            HStack(spacing: 8) {
-                Text(L("startupItems.systemItems"))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.secondary)
-
-                Toggle("", isOn: $viewModel.showSystemItems)
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .glassCard(cornerRadius: 12)
+            GlassToggle(title: L("startupItems.systemItems"), isOn: $viewModel.showSystemItems)
         }
     }
 
@@ -340,7 +310,7 @@ struct StartupItemsView: View {
     private var emptyFilterSection: some View {
         VStack(spacing: Theme.Spacing.md) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 48))
+                .font(Theme.Typography.size48)
                 .foregroundStyle(.tertiary)
 
             Text(L("startupItems.empty.title"))
@@ -369,16 +339,16 @@ struct StartupStatCard: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
             ZStack {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(color.opacity(0.15))
                     .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(Theme.Typography.size18Semibold)
                     .foregroundStyle(color)
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                 Text(value)
                     .font(Theme.Typography.title2.monospacedDigit())
 
@@ -414,12 +384,12 @@ struct StartupItemRow: View {
             HStack(spacing: Theme.Spacing.md) {
                 // Type icon with status indicator
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                         .fill(item.typeColor.opacity(0.15))
                         .frame(width: 44, height: 44)
 
                     Image(systemName: item.icon)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(Theme.Typography.size18Semibold)
                         .foregroundStyle(item.typeColor)
 
                     // Running indicator
@@ -436,7 +406,7 @@ struct StartupItemRow: View {
                 }
 
                 // Info
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
                     HStack(spacing: Theme.Spacing.sm) {
                         Text(item.displayName)
                             .font(Theme.Typography.subheadline.weight(.medium))
@@ -444,12 +414,12 @@ struct StartupItemRow: View {
 
                         if item.isSystemItem {
                             Text(L("startupItems.badge.system"))
-                                .font(.system(size: 9, weight: .medium))
+                                .font(Theme.Typography.size9Medium)
                                 .foregroundStyle(.secondary)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
+                                .padding(.horizontal, Theme.Spacing.xxxs)
+                                .padding(.vertical, Theme.Spacing.tiny)
                                 .background(Color.secondary.opacity(0.2))
-                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
                         }
                     }
 
@@ -459,9 +429,9 @@ struct StartupItemRow: View {
                         .lineLimit(1)
 
                     if let developer = item.developer {
-                        HStack(spacing: 4) {
+                        HStack(spacing: Theme.Spacing.xxs) {
                             Image(systemName: "building.2")
-                                .font(.system(size: 9))
+                                .font(Theme.Typography.size9)
                             Text(developer)
                                 .font(Theme.Typography.caption)
                         }
@@ -473,15 +443,15 @@ struct StartupItemRow: View {
 
                 // Type badge
                 Text(item.type.localizedName)
-                    .font(.system(size: 10, weight: .medium))
+                    .font(Theme.Typography.size10Medium)
                     .foregroundStyle(item.typeColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, Theme.Spacing.xs)
+                    .padding(.vertical, Theme.Spacing.xxs)
                     .background(item.typeColor.opacity(0.15))
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
 
                 // Status indicator
-                HStack(spacing: 4) {
+                HStack(spacing: Theme.Spacing.xxs) {
                     Circle()
                         .fill(item.isEnabled ? Color.green : Color.orange)
                         .frame(width: 8, height: 8)
@@ -498,7 +468,7 @@ struct StartupItemRow: View {
                         // Toggle button
                         Button(action: onToggle) {
                             Image(systemName: item.isEnabled ? "pause.circle" : "play.circle")
-                                .font(.system(size: 18))
+                                .font(Theme.Typography.size18)
                                 .foregroundStyle(item.isEnabled ? .orange : .green)
                         }
                         .buttonStyle(.plain)
@@ -517,7 +487,7 @@ struct StartupItemRow: View {
                             }
                         } label: {
                             Image(systemName: "ellipsis.circle")
-                                .font(.system(size: 18))
+                                .font(Theme.Typography.size18)
                                 .foregroundStyle(.secondary)
                         }
                         .menuStyle(.borderlessButton)
@@ -528,7 +498,7 @@ struct StartupItemRow: View {
                     // System items can only be revealed
                     Button(action: onReveal) {
                         Image(systemName: "folder")
-                            .font(.system(size: 16))
+                            .font(Theme.Typography.size16)
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
