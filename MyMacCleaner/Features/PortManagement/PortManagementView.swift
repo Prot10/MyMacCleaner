@@ -312,7 +312,7 @@ struct ConnectionRow: View {
                     .font(Theme.Typography.caption)
                     .foregroundStyle(.red)
                     .padding(.horizontal, Theme.Spacing.sm)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, Theme.Spacing.xxs)
                     .background(Color.red.opacity(0.15))
                     .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
             }

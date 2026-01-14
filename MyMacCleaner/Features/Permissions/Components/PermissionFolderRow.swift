@@ -35,7 +35,7 @@ struct PermissionFolderRow: View {
                     Text("FDA")
                         .font(Theme.Typography.size10Semibold)
                         .foregroundStyle(.orange)
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, Theme.Spacing.xxxs)
                         .padding(.vertical, 3)
                         .background(Color.orange.opacity(0.15))
                         .clipShape(Capsule())
@@ -81,8 +81,8 @@ struct PermissionFolderRow: View {
                         .font(Theme.Typography.size11Medium)
                 }
                 .foregroundStyle(.white)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, Theme.Spacing.xs)
+                .padding(.vertical, Theme.Spacing.xxs)
                 .background(Color.red.opacity(0.8))
                 .clipShape(Capsule())
             }
@@ -100,8 +100,8 @@ struct PermissionFolderRow: View {
                             .font(Theme.Typography.size11Medium)
                     }
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, Theme.Spacing.xs)
+                    .padding(.vertical, Theme.Spacing.xxs)
                     .background(Color.green)
                     .clipShape(Capsule())
                 }
@@ -116,8 +116,8 @@ struct PermissionFolderRow: View {
                             .font(Theme.Typography.size11Medium)
                     }
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, Theme.Spacing.xs)
+                    .padding(.vertical, Theme.Spacing.xxs)
                     .background(Color.blue)
                     .clipShape(Capsule())
                 }

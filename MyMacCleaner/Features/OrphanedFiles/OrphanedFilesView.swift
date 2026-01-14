@@ -112,7 +112,7 @@ struct OrphanedFilesView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Theme.Spacing.md)
                 .padding(.vertical, 10)
                 .glassCard(cornerRadius: Theme.CornerRadius.medium)
             }
@@ -246,8 +246,8 @@ struct OrphanedFilesView: View {
                 }
                 .font(Theme.Typography.size12Medium)
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, Theme.Spacing.xs)
                 .glassCard(cornerRadius: Theme.CornerRadius.small)
             }
             .buttonStyle(.plain)
@@ -280,8 +280,8 @@ struct OrphanedFilesView: View {
                 }
                 .font(Theme.Typography.size12Medium)
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, Theme.Spacing.xxxs)
                 .glassCard(cornerRadius: Theme.CornerRadius.small)
             }
             .buttonStyle(.plain)

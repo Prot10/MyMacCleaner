@@ -172,7 +172,7 @@ struct DiskCleanerView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Theme.Spacing.md)
                 .padding(.vertical, 10)
                 .glassCard(cornerRadius: Theme.CornerRadius.medium)
             }
@@ -332,8 +332,8 @@ struct DiskCleanerView: View {
                     }
                     .font(Theme.Typography.size12Medium)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, Theme.Spacing.sm)
+                    .padding(.vertical, Theme.Spacing.xxxs)
                     .glassCard(cornerRadius: Theme.CornerRadius.small)
                 }
                 .buttonStyle(.plain)
@@ -436,8 +436,8 @@ struct DiskCleanerView: View {
                             .font(Theme.Typography.size10Medium)
                     }
                     .foregroundStyle(.orange)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, Theme.Spacing.xs)
+                    .padding(.vertical, Theme.Spacing.xxs)
                     .background(Color.orange.opacity(0.1))
                     .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
                 }
@@ -459,8 +459,8 @@ struct DiskCleanerView: View {
                         .font(Theme.Typography.size13Medium)
                 }
                 .foregroundStyle(viewModel.trashSize > 0 && !viewModel.isEmptyingTrash ? Color.orange : .secondary)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, Theme.Spacing.md)
+                .padding(.vertical, Theme.Spacing.xs)
                 .background(Color.orange.opacity(viewModel.trashSize > 0 ? 0.15 : 0.05))
                 .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
             }
@@ -547,15 +547,15 @@ struct ScanningOverlay: View {
                         .font(Theme.Typography.size14Medium)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
+                        .padding(.vertical, Theme.Spacing.xs)
                         .background(Color.white.opacity(0.1))
                         .cornerRadius(8)
                 }
                 .buttonStyle(.plain)
-                .padding(.top, 8)
+                .padding(.top, Theme.Spacing.xs)
             }
         }
-        .padding(28)
+        .padding(Theme.Spacing.section)
         .frame(width: 280)
         .glassCardProminent()
         .onAppear {

@@ -31,8 +31,8 @@ struct HomebrewCaskRow: View {
                     if showUpdateBadge {
                         Text(L("applications.homebrew.updateBadge"))
                             .font(Theme.Typography.caption2)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
+                            .padding(.horizontal, Theme.Spacing.xxxs)
+                            .padding(.vertical, Theme.Spacing.tiny)
                             .background(Color.orange)
                             .clipShape(Capsule())
                     }
@@ -87,7 +87,7 @@ struct HomebrewCaskRow: View {
                         .font(Theme.Typography.size12Medium)
                         .foregroundStyle(.white)
                         .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, Theme.Spacing.xxxs)
                         .background(Color.orange)
                         .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
                     }
@@ -98,7 +98,7 @@ struct HomebrewCaskRow: View {
                     Image(systemName: "trash")
                         .font(Theme.Typography.size14)
                         .foregroundStyle(.red)
-                        .padding(6)
+                        .padding(Theme.Spacing.xxxs)
                         .background(Color.red.opacity(0.1))
                         .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.xs))
                 }

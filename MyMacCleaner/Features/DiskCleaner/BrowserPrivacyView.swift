@@ -324,8 +324,8 @@ struct BrowserPrivacyView: View {
                     }
                     .font(Theme.Typography.size12Medium)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, Theme.Spacing.sm)
+                    .padding(.vertical, Theme.Spacing.xxxs)
                     .glassCard(cornerRadius: Theme.CornerRadius.small)
                 }
                 .buttonStyle(.plain)

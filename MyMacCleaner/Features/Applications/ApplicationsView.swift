@@ -138,7 +138,7 @@ struct ApplicationsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, Theme.Spacing.md)
                 .padding(.vertical, 10)
                 .glassCard(cornerRadius: Theme.CornerRadius.medium)
             }

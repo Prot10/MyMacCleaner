@@ -51,8 +51,8 @@ struct PermissionCategoryCard: View {
                                     .font(Theme.Typography.size12Medium)
                             }
                             .foregroundStyle(.blue)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, Theme.Spacing.sm)
+                            .padding(.vertical, Theme.Spacing.xxxs)
                             .background(Color.blue.opacity(0.1))
                             .clipShape(Capsule())
                         }
@@ -125,8 +125,8 @@ struct PermissionCategoryCard: View {
                 .font(Theme.Typography.size11Semibold)
         }
         .foregroundStyle(status.color)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.horizontal, Theme.Spacing.xs)
+        .padding(.vertical, Theme.Spacing.xxs)
         .background(status.color.opacity(0.12))
         .clipShape(Capsule())
     }

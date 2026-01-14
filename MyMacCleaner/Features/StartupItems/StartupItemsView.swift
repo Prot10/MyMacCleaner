@@ -416,8 +416,8 @@ struct StartupItemRow: View {
                             Text(L("startupItems.badge.system"))
                                 .font(Theme.Typography.size9Medium)
                                 .foregroundStyle(.secondary)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
+                                .padding(.horizontal, Theme.Spacing.xxxs)
+                                .padding(.vertical, Theme.Spacing.tiny)
                                 .background(Color.secondary.opacity(0.2))
                                 .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
                         }
@@ -445,8 +445,8 @@ struct StartupItemRow: View {
                 Text(item.type.localizedName)
                     .font(Theme.Typography.size10Medium)
                     .foregroundStyle(item.typeColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, Theme.Spacing.xs)
+                    .padding(.vertical, Theme.Spacing.xxs)
                     .background(item.typeColor.opacity(0.15))
                     .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny))
 

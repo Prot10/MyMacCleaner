@@ -217,7 +217,7 @@ struct SpaceLensView: View {
                     .frame(width: 90)
                 }
                 .padding(.horizontal, Theme.Spacing.sm)
-                .padding(.vertical, 4)
+                .padding(.vertical, Theme.Spacing.xxs)
                 .background(viewModel.sizeFilter != .all ? Color.blue.opacity(0.15) : Color.white.opacity(0.05))
                 .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
 
@@ -237,7 +237,7 @@ struct SpaceLensView: View {
                     .frame(width: 90)
                 }
                 .padding(.horizontal, Theme.Spacing.sm)
-                .padding(.vertical, 4)
+                .padding(.vertical, Theme.Spacing.xxs)
                 .background(viewModel.ageFilter != .all ? Color.orange.opacity(0.15) : Color.white.opacity(0.05))
                 .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small))
 
