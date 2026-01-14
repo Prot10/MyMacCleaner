@@ -11,13 +11,13 @@ extension View {
     @ViewBuilder
     func glassCard() -> some View {
         if #available(macOS 26, *) {
-            self.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+            self.glassEffect(.regular, in: RoundedRectangle(cornerRadius: Theme.CornerRadius.large))
         } else {
             self
                 .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.large))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.large)
                         .strokeBorder(.white.opacity(0.15), lineWidth: 1)
                 )
         }
@@ -180,7 +180,7 @@ struct LiquidGlassButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(.horizontal, 16)
+            .padding(.horizontal, Theme.Spacing.md)
             .padding(.vertical, 10)
             .background {
                 switch variant {
@@ -327,7 +327,7 @@ struct GlassActionButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: Theme.Spacing.xxxs) {
                 if let icon = icon {
                     Image(systemName: icon)
                         .font(Theme.Typography.size13Medium)
@@ -336,14 +336,14 @@ struct GlassActionButton: View {
                     .font(Theme.Typography.size13Semibold)
             }
             .foregroundStyle(isDisabled ? color.opacity(0.3) : color)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.xs)
             .background {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(color.opacity(isDisabled ? 0.05 : (isHovered ? 0.2 : 0.12)))
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .strokeBorder(
                         color.opacity(isDisabled ? 0.1 : (isHovered ? 0.5 : 0.3)),
                         lineWidth: 1
@@ -370,10 +370,10 @@ struct GlassToolbar<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.Spacing.xs) {
             content()
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, Theme.Spacing.md)
         .padding(.vertical, 10)
         .modifier(GlassCapsuleModifier())
         .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
@@ -391,7 +391,7 @@ struct GlassSegmentedControl<T: Hashable>: View {
 
     var body: some View {
         glassContainerWrapper {
-            HStack(spacing: 4) {
+            HStack(spacing: Theme.Spacing.xxs) {
                 ForEach(options, id: \.self) { option in
                     Button {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -402,7 +402,7 @@ struct GlassSegmentedControl<T: Hashable>: View {
                             .font(Theme.Typography.size13Medium)
                             .foregroundStyle(selection == option ? .primary : .secondary)
                             .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
+                            .padding(.vertical, Theme.Spacing.xs)
                             .background {
                                 if selection == option {
                                     segmentBackground
@@ -413,7 +413,7 @@ struct GlassSegmentedControl<T: Hashable>: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(4)
+            .padding(Theme.Spacing.xxs)
             .background(Color.white.opacity(0.05))
             .clipShape(.capsule)
         }
@@ -471,7 +471,7 @@ struct GlassTabPicker<T: Hashable>: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Theme.Spacing.xxs) {
             ForEach(tabs, id: \.self) { tab in
                 GlassTabButton(
                     icon: icon(tab),
@@ -486,7 +486,7 @@ struct GlassTabPicker<T: Hashable>: View {
                 }
             }
         }
-        .padding(4)
+        .padding(Theme.Spacing.xxs)
         .modifier(GlassCapsuleModifier())
     }
 }
@@ -503,7 +503,7 @@ struct GlassTabButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: Theme.Spacing.xxxs) {
                 Image(systemName: icon)
                     .font(Theme.Typography.size12Medium)
 
@@ -512,7 +512,7 @@ struct GlassTabButton: View {
             }
             .foregroundStyle(isSelected ? .white : (isHovered ? .primary : .secondary))
             .padding(.horizontal, 14)
-            .padding(.vertical, 8)
+            .padding(.vertical, Theme.Spacing.xs)
             .background {
                 if isSelected {
                     Capsule()
@@ -535,7 +535,7 @@ struct GlassSearchField: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: Theme.ControlSize.controlIconSize, weight: .medium))
                 .foregroundStyle(.secondary)
@@ -649,7 +649,7 @@ struct GlassToggle: View {
     @Binding var isOn: Bool
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Theme.Spacing.xs) {
             Text(title)
                 .font(Theme.ControlSize.controlFont)
                 .foregroundStyle(.secondary)
@@ -676,7 +676,7 @@ struct GlassMenuButton<Content: View>: View {
         Menu {
             content()
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: Theme.Spacing.xxxs) {
                 Image(systemName: icon)
                     .font(.system(size: Theme.ControlSize.controlIconSize, weight: .medium))
                 Text(title)
@@ -817,7 +817,7 @@ extension Color {
         )
         .ignoresSafeArea()
 
-        VStack(spacing: 24) {
+        VStack(spacing: Theme.Spacing.xl) {
             Text("Glass Card")
                 .padding()
                 .glassCard()
@@ -827,11 +827,11 @@ extension Color {
                 .glassCardProminent()
 
             Text("Glass Pill")
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, Theme.Spacing.md)
+                .padding(.vertical, Theme.Spacing.xs)
                 .glassPill()
 
-            HStack(spacing: 12) {
+            HStack(spacing: Theme.Spacing.sm) {
                 Button("Glass") {}
                     .buttonStyle(.liquidGlass)
 

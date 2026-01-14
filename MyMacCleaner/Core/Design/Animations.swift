@@ -331,7 +331,7 @@ struct ConfettiView: View {
         Text("Breathing")
             .padding()
             .background(.blue)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium))
             .breathingAnimation()
     }
     .padding()

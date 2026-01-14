@@ -138,11 +138,11 @@ struct CleaningProgressOverlay: View {
             // Progress bar
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .fill(Color.white.opacity(0.1))
                         .frame(height: 8)
 
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.tiny)
                         .fill(
                             LinearGradient(
                                 colors: [.orange, .orange.opacity(0.7)],
