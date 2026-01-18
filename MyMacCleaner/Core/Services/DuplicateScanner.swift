@@ -248,8 +248,9 @@ actor DuplicateScanner {
             if now.timeIntervalSince(lastProgressUpdate) > 0.1 {
                 lastProgressUpdate = now
                 let currentProgress = min(0.15, 0.05 + Double(totalFiles) / 100000.0 * 0.1)
+                let capturedTotalFiles = totalFiles
                 await MainActor.run {
-                    progress(currentProgress, LFormat("duplicates.scan.foundFiles %lld", Int64(totalFiles)))
+                    progress(currentProgress, LFormat("duplicates.scan.foundFiles %lld", Int64(capturedTotalFiles)))
                 }
             }
         }
@@ -259,7 +260,8 @@ actor DuplicateScanner {
             return []
         }
 
-        await MainActor.run { progress(0.2, LFormat("duplicates.scan.foundFiles %lld", Int64(totalFiles))) }
+        let finalTotalFiles = totalFiles
+        await MainActor.run { progress(0.2, LFormat("duplicates.scan.foundFiles %lld", Int64(finalTotalFiles))) }
 
         // Filter to only size groups with potential duplicates
         let potentialDuplicates = sizeGroups.filter { $0.value.count > 1 }
@@ -284,8 +286,9 @@ actor DuplicateScanner {
 
             // Throttle UI updates
             if processedGroups % 10 == 0 || processedGroups == totalGroupsToProcess {
+                let capturedProcessedGroups = processedGroups
                 await MainActor.run {
-                    progress(baseProgress, LFormat("duplicates.scan.comparingFiles %lld %lld", Int64(processedGroups), Int64(totalGroupsToProcess)))
+                    progress(baseProgress, LFormat("duplicates.scan.comparingFiles %lld %lld", Int64(capturedProcessedGroups), Int64(totalGroupsToProcess)))
                 }
             }
 
