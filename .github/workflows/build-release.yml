@@ -282,6 +282,69 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Update Website releases.json
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DATE=$(date +%Y-%m-%d)
+          DMG_SIZE=$(ls -lh "build/${{ env.APP_NAME }}-v${VERSION}.dmg" | awk '{print $5}')
+
+          # Update releases.json using Python
+          python3 << PYTHON_SCRIPT
+          import json
+          import os
+
+          version = "${VERSION}"
+          date = "${DATE}"
+          dmg_size = "${DMG_SIZE}"
+          repo = "${{ github.repository }}"
+
+          with open("website/public/data/releases.json", "r") as f:
+              data = json.load(f)
+
+          # Mark all existing releases as not latest
+          for release in data["releases"]:
+              release["latest"] = False
+
+          # Create new release entry
+          new_release = {
+              "version": version,
+              "date": date,
+              "latest": True,
+              "minOS": "macOS 14.0+",
+              "architecture": "Universal (Apple Silicon + Intel)",
+              "downloads": {
+                  "dmg": {
+                      "url": f"https://github.com/{repo}/releases/download/v{version}/MyMacCleaner-v{version}.dmg",
+                      "size": dmg_size
+                  }
+              },
+              "changelog": [
+                  {"type": "added", "description": "See GitHub release notes for full changelog"}
+              ]
+          }
+
+          # Insert at beginning
+          data["releases"].insert(0, new_release)
+
+          # Keep only last 5 releases
+          data["releases"] = data["releases"][:5]
+
+          with open("website/public/data/releases.json", "w") as f:
+              json.dump(data, f, indent=2)
+
+          print(f"Updated releases.json with v{version}")
+          PYTHON_SCRIPT
+
+      - name: Commit and Push Website Update
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add website/public/data/releases.json
+          git commit -m "chore: update website releases.json for v${{ steps.version.outputs.version }}" || echo "No changes to commit"
+          git push origin HEAD:main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Cleanup Keychain
         if: always()
         run: |

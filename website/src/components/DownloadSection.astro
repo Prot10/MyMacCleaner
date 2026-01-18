@@ -1,0 +1,199 @@
+---
+// Fetch releases data at build time
+import releases from '../../public/data/releases.json';
+
+const latestRelease = releases.releases.find(r => r.latest) || releases.releases[0];
+const olderReleases = releases.releases.filter(r => !r.latest);
+
+// Changelog type icons and colors
+const changelogIcons: Record<string, { icon: string; color: string; label: string }> = {
+  added: { icon: '+', color: 'text-green-400', label: 'Added' },
+  changed: { icon: '~', color: 'text-blue-400', label: 'Changed' },
+  fixed: { icon: '✓', color: 'text-yellow-400', label: 'Fixed' },
+  removed: { icon: '-', color: 'text-red-400', label: 'Removed' },
+  security: { icon: '!', color: 'text-orange-400', label: 'Security' },
+};
+---
+
+<section id="download" class="py-24 relative overflow-hidden">
+  <!-- Background -->
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+        Download MyMacCleaner
+      </h2>
+      <p class="text-lg text-gray-400 max-w-2xl mx-auto">
+        Free and open source. No sign-up required.
+      </p>
+    </div>
+
+    <!-- Latest Release Card -->
+    <div class="glass-card p-8 max-w-2xl mx-auto mb-8">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+          <img
+            src="/MyMacCleaner/icon-192.png"
+            alt="MyMacCleaner"
+            class="w-16 h-16 rounded-2xl shadow-lg"
+          />
+          <div>
+            <h3 class="text-xl font-semibold text-white">MyMacCleaner</h3>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="px-2 py-0.5 bg-primary/20 text-primary text-sm font-medium rounded-full">
+                v{latestRelease.version}
+              </span>
+              <span class="text-sm text-gray-500">
+                {new Date(latestRelease.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+            </div>
+          </div>
+        </div>
+        <span class="hidden sm:inline-flex items-center gap-1 px-3 py-1 bg-green-500/20 text-green-400 text-xs font-medium rounded-full">
+          <span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+          Latest
+        </span>
+      </div>
+
+      <!-- Download Button -->
+      <a
+        href={latestRelease.downloads.dmg.url}
+        class="glass-button w-full flex items-center justify-center gap-2 mb-4"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Download DMG
+        <span class="text-sm text-white/60">({latestRelease.downloads.dmg.size})</span>
+      </a>
+
+      <!-- System Requirements -->
+      <p class="text-xs text-gray-500 text-center mb-6">
+        {latestRelease.minOS} · {latestRelease.architecture}
+      </p>
+
+      <!-- Changelog -->
+      <div class="border-t border-white/10 pt-6">
+        <details class="group" open>
+          <summary class="flex items-center justify-between cursor-pointer text-sm font-medium text-white mb-4">
+            <span>What's New</span>
+            <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="space-y-2 max-h-64 overflow-y-auto pr-2">
+            {latestRelease.changelog.map((item) => {
+              const config = changelogIcons[item.type] || changelogIcons.added;
+              return (
+                <div class="flex items-start gap-3 text-sm">
+                  <span class={`${config.color} font-mono w-5 flex-shrink-0 text-center`}>{config.icon}</span>
+                  <span class="text-gray-300">{item.description}</span>
+                </div>
+              );
+            })}
+          </div>
+        </details>
+      </div>
+
+      <!-- Gatekeeper Warning -->
+      <div class="border-t border-white/10 pt-6 mt-6">
+        <div class="flex items-start gap-3 text-left">
+          <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg class="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-sm font-semibold text-white mb-1">Signed & Notarized</h4>
+            <p class="text-xs text-gray-400">
+              This app is code-signed and notarized by Apple. No security warnings on launch.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Older Releases -->
+    {olderReleases.length > 0 && (
+      <div class="max-w-2xl mx-auto">
+        <details class="group">
+          <summary class="flex items-center justify-center gap-2 cursor-pointer text-sm text-gray-400 hover:text-gray-300 transition-colors py-4">
+            <span>Previous Releases</span>
+            <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="space-y-4 mt-4">
+            {olderReleases.map((release) => (
+              <div class="glass-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center gap-3">
+                    <span class="px-2 py-0.5 bg-gray-500/20 text-gray-400 text-sm font-medium rounded-full">
+                      v{release.version}
+                    </span>
+                    <span class="text-sm text-gray-500">
+                      {new Date(release.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <a
+                    href={release.downloads.dmg.url}
+                    class="text-sm text-primary hover:text-primary-400 transition-colors flex items-center gap-1"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download ({release.downloads.dmg.size})
+                  </a>
+                </div>
+                <details class="group/changelog">
+                  <summary class="flex items-center gap-2 cursor-pointer text-xs text-gray-500 hover:text-gray-400 transition-colors">
+                    <span>View changelog</span>
+                    <svg class="w-3 h-3 transition-transform group-open/changelog:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </summary>
+                  <div class="mt-3 space-y-1.5 pl-2 border-l border-white/10">
+                    {release.changelog.slice(0, 5).map((item) => {
+                      const config = changelogIcons[item.type] || changelogIcons.added;
+                      return (
+                        <div class="flex items-start gap-2 text-xs">
+                          <span class={`${config.color} font-mono w-4 flex-shrink-0 text-center`}>{config.icon}</span>
+                          <span class="text-gray-400">{item.description}</span>
+                        </div>
+                      );
+                    })}
+                    {release.changelog.length > 5 && (
+                      <p class="text-xs text-gray-500 pl-6">
+                        +{release.changelog.length - 5} more changes
+                      </p>
+                    )}
+                  </div>
+                </details>
+              </div>
+            ))}
+          </div>
+        </details>
+      </div>
+    )}
+
+    <!-- Alternative Options -->
+    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-gray-400">
+      <span>Or build from source:</span>
+      <a
+        href="https://github.com/Prot10/MyMacCleaner"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="flex items-center gap-2 text-primary hover:text-primary-400 transition-colors"
+      >
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+        </svg>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</section>
