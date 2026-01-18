@@ -14,13 +14,15 @@ permissions:
   contents: write
 
 env:
-  XCODE_VERSION: '26.0'
+  XCODE_VERSION: '16.0'
   APP_NAME: MyMacCleaner
   SCHEME: MyMacCleaner
+  BUNDLE_ID: com.mymaccleaner.MyMacCleaner
 
 jobs:
-  build:
-    runs-on: macos-26
+  build-signed:
+    name: Build, Sign & Notarize
+    runs-on: macos-15
 
     steps:
       - name: Checkout code
@@ -32,32 +34,7 @@ jobs:
         run: |
           sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app || \
           sudo xcode-select -s /Applications/Xcode.app
-
-      - name: Show Xcode version
-        run: xcodebuild -version
-
-      - name: Resolve Swift Package Dependencies
-        run: |
-          xcodebuild -resolvePackageDependencies \
-            -project ${{ env.APP_NAME }}.xcodeproj \
-            -scheme ${{ env.SCHEME }}
-
-      - name: Build and Archive (Unsigned)
-        run: |
-          xcodebuild archive \
-            -project ${{ env.APP_NAME }}.xcodeproj \
-            -scheme ${{ env.SCHEME }} \
-            -archivePath build/${{ env.APP_NAME }}.xcarchive \
-            -configuration Release \
-            CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            ONLY_ACTIVE_ARCH=NO
-
-      - name: Export App
-        run: |
-          mkdir -p build/export
-          cp -R "build/${{ env.APP_NAME }}.xcarchive/Products/Applications/${{ env.APP_NAME }}.app" build/export/
+          xcodebuild -version
 
       - name: Get Version
         id: version
@@ -69,6 +46,116 @@ jobs:
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
+
+      - name: Import Apple Developer Certificate
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          KEYCHAIN_PWD: ${{ secrets.CI_KEYCHAIN_PWD }}
+        run: |
+          # Create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # Decode certificate from base64
+          echo "$MACOS_CERTIFICATE" | base64 --decode > "$CERTIFICATE_PATH"
+
+          # Create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PWD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PWD" "$KEYCHAIN_PATH"
+
+          # Import certificate to keychain
+          security import "$CERTIFICATE_PATH" -P "$MACOS_CERTIFICATE_PWD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PWD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+
+          # Verify certificate was imported
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+          # Clean up certificate file
+          rm "$CERTIFICATE_PATH"
+
+      - name: Store Notarization Credentials
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcrun notarytool store-credentials "notary-profile" \
+            --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_PASSWORD"
+
+      - name: Resolve Swift Package Dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project ${{ env.APP_NAME }}.xcodeproj \
+            -scheme ${{ env.SCHEME }}
+
+      - name: Build and Archive (Signed)
+        env:
+          CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
+        run: |
+          xcodebuild archive \
+            -project ${{ env.APP_NAME }}.xcodeproj \
+            -scheme ${{ env.SCHEME }} \
+            -archivePath build/${{ env.APP_NAME }}.xcarchive \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="$CERTIFICATE_NAME" \
+            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
+            CODE_SIGN_STYLE=Manual \
+            OTHER_CODE_SIGN_FLAGS="--options runtime --timestamp" \
+            ONLY_ACTIVE_ARCH=NO
+
+      - name: Export Signed App
+        env:
+          CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
+        run: |
+          mkdir -p build/export
+
+          # Create export options plist
+          cat > build/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>developer-id</string>
+              <key>teamID</key>
+              <string>${{ secrets.APPLE_TEAM_ID }}</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>signingCertificate</key>
+              <string>Developer ID Application</string>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath build/${{ env.APP_NAME }}.xcarchive \
+            -exportPath build/export \
+            -exportOptionsPlist build/ExportOptions.plist
+
+      - name: Notarize App
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Create ZIP for notarization
+          cd build/export
+          ditto -c -k --keepParent "${{ env.APP_NAME }}.app" "../notarization.zip"
+          cd ..
+
+          echo "Submitting for notarization..."
+          xcrun notarytool submit notarization.zip \
+            --keychain-profile "notary-profile" \
+            --wait
+
+          echo "Stapling notarization ticket..."
+          xcrun stapler staple "export/${{ env.APP_NAME }}.app"
+
+          # Verify stapling
+          xcrun stapler validate "export/${{ env.APP_NAME }}.app"
 
       - name: Create DMG
         run: |
@@ -85,9 +172,58 @@ jobs:
             -ov -format UDZO \
             "build/${{ env.APP_NAME }}-v${VERSION}.dmg"
 
-          # Also create a ZIP for Sparkle
+          # Sign the DMG
+          codesign --force --sign "${{ secrets.MACOS_CERTIFICATE_NAME }}" \
+            --options runtime --timestamp \
+            "build/${{ env.APP_NAME }}-v${VERSION}.dmg"
+
+          # Notarize the DMG
+          echo "Notarizing DMG..."
+          xcrun notarytool submit "build/${{ env.APP_NAME }}-v${VERSION}.dmg" \
+            --keychain-profile "notary-profile" \
+            --wait
+
+          # Staple the DMG
+          xcrun stapler staple "build/${{ env.APP_NAME }}-v${VERSION}.dmg"
+
+      - name: Create ZIP for Sparkle
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
           cd build/export
           zip -r -y "../${{ env.APP_NAME }}-v${VERSION}.zip" "${{ env.APP_NAME }}.app"
+
+      - name: Sign Update for Sparkle (EdDSA)
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Save private key to temp file
+          echo "$SPARKLE_PRIVATE_KEY" > $RUNNER_TEMP/sparkle_private_key
+
+          # Get Sparkle from the project's dependencies
+          SPARKLE_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "sign_update" -path "*/Sparkle.framework/*" 2>/dev/null | head -1)
+
+          if [ -z "$SPARKLE_PATH" ]; then
+            echo "Sparkle sign_update not found in DerivedData, downloading..."
+            curl -L -o sparkle.tar.xz "https://github.com/sparkle-project/Sparkle/releases/download/2.6.4/Sparkle-2.6.4.tar.xz"
+            mkdir -p sparkle
+            tar -xf sparkle.tar.xz -C sparkle
+            SPARKLE_PATH="sparkle/bin/sign_update"
+          fi
+
+          # Sign the update
+          SIGNATURE=$("$SPARKLE_PATH" --ed-key-file "$RUNNER_TEMP/sparkle_private_key" "build/${{ env.APP_NAME }}-v${VERSION}.zip")
+          echo "SPARKLE_SIGNATURE=$SIGNATURE" >> $GITHUB_ENV
+          echo "Sparkle signature: $SIGNATURE"
+
+          # Get file size
+          FILE_SIZE=$(stat -f%z "build/${{ env.APP_NAME }}-v${VERSION}.zip")
+          echo "FILE_SIZE=$FILE_SIZE" >> $GITHUB_ENV
+          echo "File size: $FILE_SIZE bytes"
+
+          # Clean up private key
+          rm -f $RUNNER_TEMP/sparkle_private_key
 
       - name: Generate Release Notes
         id: release_notes
@@ -102,33 +238,33 @@ jobs:
             COMMITS=$(git log --pretty=format:"- %s" -n 20)
           fi
 
-          echo "## What's New in v${VERSION}" > release_notes.md
-          echo "" >> release_notes.md
-          echo "$COMMITS" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "---" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### Installation" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "1. Download \`${{ env.APP_NAME }}-v${VERSION}.dmg\`" >> release_notes.md
-          echo "2. Open the DMG and drag **MyMacCleaner** to your **Applications** folder" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "### First Launch (Gatekeeper Bypass Required)" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "Since MyMacCleaner is an open-source app distributed for free without Apple Developer signing (\$99/year), macOS Gatekeeper will block it on first launch. **This is normal and expected for open-source apps distributed outside the App Store.**" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "**To open the app:**" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "1. Try to open MyMacCleaner → You'll see *\"Apple cannot check it for malicious software\"*" >> release_notes.md
-          echo "2. Open **System Settings** → **Privacy & Security**" >> release_notes.md
-          echo "3. Scroll down to the **Security** section" >> release_notes.md
-          echo "4. You'll see a message about MyMacCleaner being blocked" >> release_notes.md
-          echo "5. Click **\"Open Anyway\"**" >> release_notes.md
-          echo "6. Enter your password to confirm" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "> **Alternative:** Right-click the app and select \"Open\" from the context menu, then click \"Open\" in the dialog." >> release_notes.md
-          echo "" >> release_notes.md
-          echo "After this one-time setup, the app will open normally. The source code is [fully open](https://github.com/${{ github.repository }}) for review." >> release_notes.md
+          cat > release_notes.md << EOF
+          ## What's New in v${VERSION}
+
+          $COMMITS
+
+          ---
+
+          ### Installation
+
+          1. Download \`${{ env.APP_NAME }}-v${VERSION}.dmg\`
+          2. Open the DMG and drag **MyMacCleaner** to your **Applications** folder
+          3. Launch MyMacCleaner from Applications
+
+          **This release is signed and notarized by Apple** - no security warnings!
+
+          ---
+
+          ### For Developers: Sparkle Update Info
+
+          \`\`\`xml
+          <enclosure
+            url="https://github.com/${{ github.repository }}/releases/download/v${VERSION}/${{ env.APP_NAME }}-v${VERSION}.zip"
+            sparkle:edSignature="${SPARKLE_SIGNATURE}"
+            length="${FILE_SIZE}"
+            type="application/octet-stream"/>
+          \`\`\`
+          EOF
 
           cat release_notes.md
 
@@ -145,75 +281,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Cleanup Keychain
+        if: always()
+        run: |
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APP_NAME }}-v${{ steps.version.outputs.version }}
+          name: ${{ env.APP_NAME }}-v${{ steps.version.outputs.version }}-signed
           path: |
             build/${{ env.APP_NAME }}-v${{ steps.version.outputs.version }}.dmg
             build/${{ env.APP_NAME }}-v${{ steps.version.outputs.version }}.zip
-
-  # Optional: Signed build job (requires Apple Developer account)
-  build-signed:
-    runs-on: macos-26
-    if: ${{ false }}  # Disabled by default - enable when you have certificates
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Import Certificate
-        env:
-          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-          KEYCHAIN_PWD: ${{ secrets.CI_KEYCHAIN_PWD }}
-        run: |
-          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
-          security create-keychain -p "$KEYCHAIN_PWD" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$KEYCHAIN_PWD" build.keychain
-          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PWD" build.keychain
-
-      - name: Build and Sign
-        env:
-          CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
-        run: |
-          xcodebuild archive \
-            -project ${{ env.APP_NAME }}.xcodeproj \
-            -scheme ${{ env.SCHEME }} \
-            -archivePath build/${{ env.APP_NAME }}.xcarchive \
-            -configuration Release \
-            CODE_SIGN_IDENTITY="$CERTIFICATE_NAME" \
-            OTHER_CODE_SIGN_FLAGS="--options runtime"
-
-      - name: Notarize
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PWD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          # Store credentials
-          xcrun notarytool store-credentials "notary-profile" \
-            --apple-id "$APPLE_ID" \
-            --team-id "$TEAM_ID" \
-            --password "$APPLE_PWD"
-
-          # Export app
-          mkdir -p build/export
-          xcodebuild -exportArchive \
-            -archivePath build/${{ env.APP_NAME }}.xcarchive \
-            -exportPath build/export \
-            -exportOptionsPlist ExportOptions.plist
-
-          # Create ZIP for notarization
-          cd build/export
-          ditto -c -k --keepParent "${{ env.APP_NAME }}.app" notarization.zip
-
-          # Submit and wait
-          xcrun notarytool submit notarization.zip \
-            --keychain-profile "notary-profile" \
-            --wait
-
-          # Staple
-          xcrun stapler staple "${{ env.APP_NAME }}.app"
