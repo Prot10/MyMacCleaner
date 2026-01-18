@@ -151,14 +151,52 @@ jobs:
           ls -lh notarization.zip
 
           echo "Submitting for notarization..."
-          xcrun notarytool submit notarization.zip \
+          # Submit without --wait, then poll manually with longer timeout
+          SUBMIT_OUTPUT=$(xcrun notarytool submit notarization.zip \
             --keychain-profile "notary-profile" \
-            --wait \
-            --timeout 30m \
-            2>&1 | tee notarization-output.txt
+            --output-format json 2>&1)
 
-          # Show result
-          cat notarization-output.txt
+          echo "$SUBMIT_OUTPUT"
+          SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | grep -o '"id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*: *"\([^"]*\)".*/\1/')
+
+          if [ -z "$SUBMISSION_ID" ]; then
+            echo "Failed to get submission ID"
+            exit 1
+          fi
+
+          echo "Submission ID: $SUBMISSION_ID"
+          echo "SUBMISSION_ID=$SUBMISSION_ID" >> $GITHUB_ENV
+
+          # Poll for completion (up to 60 minutes, checking every 30 seconds)
+          MAX_ATTEMPTS=120
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Checking status (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
+
+            STATUS_OUTPUT=$(xcrun notarytool info "$SUBMISSION_ID" \
+              --keychain-profile "notary-profile" \
+              --output-format json 2>&1)
+
+            STATUS=$(echo "$STATUS_OUTPUT" | grep -o '"status"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*: *"\([^"]*\)".*/\1/')
+            echo "Status: $STATUS"
+
+            if [ "$STATUS" = "Accepted" ]; then
+              echo "Notarization successful!"
+              break
+            elif [ "$STATUS" = "Invalid" ] || [ "$STATUS" = "Rejected" ]; then
+              echo "Notarization failed with status: $STATUS"
+              xcrun notarytool log "$SUBMISSION_ID" --keychain-profile "notary-profile"
+              exit 1
+            fi
+
+            sleep 30
+          done
+
+          if [ "$STATUS" != "Accepted" ]; then
+            echo "Notarization timed out after 60 minutes"
+            exit 1
+          fi
 
           echo "Stapling notarization ticket..."
           xcrun stapler staple "export/${{ env.APP_NAME }}.app"
@@ -189,10 +227,51 @@ jobs:
           # Notarize the DMG
           echo "Notarizing DMG..."
           ls -lh "build/${{ env.APP_NAME }}-v${VERSION}.dmg"
-          xcrun notarytool submit "build/${{ env.APP_NAME }}-v${VERSION}.dmg" \
+
+          SUBMIT_OUTPUT=$(xcrun notarytool submit "build/${{ env.APP_NAME }}-v${VERSION}.dmg" \
             --keychain-profile "notary-profile" \
-            --wait \
-            --timeout 30m
+            --output-format json 2>&1)
+
+          echo "$SUBMIT_OUTPUT"
+          DMG_SUBMISSION_ID=$(echo "$SUBMIT_OUTPUT" | grep -o '"id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*: *"\([^"]*\)".*/\1/')
+
+          if [ -z "$DMG_SUBMISSION_ID" ]; then
+            echo "Failed to get DMG submission ID"
+            exit 1
+          fi
+
+          echo "DMG Submission ID: $DMG_SUBMISSION_ID"
+
+          # Poll for completion (up to 60 minutes)
+          MAX_ATTEMPTS=120
+          ATTEMPT=0
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Checking DMG status (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
+
+            STATUS_OUTPUT=$(xcrun notarytool info "$DMG_SUBMISSION_ID" \
+              --keychain-profile "notary-profile" \
+              --output-format json 2>&1)
+
+            STATUS=$(echo "$STATUS_OUTPUT" | grep -o '"status"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*: *"\([^"]*\)".*/\1/')
+            echo "Status: $STATUS"
+
+            if [ "$STATUS" = "Accepted" ]; then
+              echo "DMG notarization successful!"
+              break
+            elif [ "$STATUS" = "Invalid" ] || [ "$STATUS" = "Rejected" ]; then
+              echo "DMG notarization failed with status: $STATUS"
+              xcrun notarytool log "$DMG_SUBMISSION_ID" --keychain-profile "notary-profile"
+              exit 1
+            fi
+
+            sleep 30
+          done
+
+          if [ "$STATUS" != "Accepted" ]; then
+            echo "DMG notarization timed out after 60 minutes"
+            exit 1
+          fi
 
           # Staple the DMG
           xcrun stapler staple "build/${{ env.APP_NAME }}-v${VERSION}.dmg"
