@@ -3,6 +3,7 @@ import Combine
 
 // MARK: - Liquid Glass Design System
 // Native .glassEffect() on macOS 26+, .ultraThinMaterial fallback on older versions
+// CI_BUILD flag disables macOS 26 APIs for compatibility with older SDKs
 
 // MARK: - Glass Card Modifiers
 
@@ -10,107 +11,153 @@ extension View {
     /// Standard glass card with rounded corners
     @ViewBuilder
     func glassCard() -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             self.glassEffect(.regular, in: RoundedRectangle(cornerRadius: Theme.CornerRadius.large))
         } else {
-            self
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.large))
-                .overlay(
-                    RoundedRectangle(cornerRadius: Theme.CornerRadius.large)
-                        .strokeBorder(.white.opacity(0.15), lineWidth: 1)
-                )
+            glassCardFallback(cornerRadius: Theme.CornerRadius.large)
         }
+        #else
+        glassCardFallback(cornerRadius: Theme.CornerRadius.large)
+        #endif
+    }
+
+    private func glassCardFallback(cornerRadius: CGFloat) -> some View {
+        self
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .strokeBorder(.white.opacity(0.15), lineWidth: 1)
+            )
     }
 
     /// Glass card with custom corner radius
     @ViewBuilder
     func glassCard(cornerRadius: CGFloat) -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             self.glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
         } else {
-            self
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .strokeBorder(.white.opacity(0.15), lineWidth: 1)
-                )
+            glassCardFallback(cornerRadius: cornerRadius)
         }
+        #else
+        glassCardFallback(cornerRadius: cornerRadius)
+        #endif
     }
 
     /// Prominent glass card for important elements
     @ViewBuilder
     func glassCardProminent(cornerRadius: CGFloat = 16) -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             self
                 .glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
                 .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
         } else {
-            self
-                .background(.regularMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .strokeBorder(.white.opacity(0.2), lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
+            glassCardProminentFallback(cornerRadius: cornerRadius)
         }
+        #else
+        glassCardProminentFallback(cornerRadius: cornerRadius)
+        #endif
+    }
+
+    private func glassCardProminentFallback(cornerRadius: CGFloat) -> some View {
+        self
+            .background(.regularMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .strokeBorder(.white.opacity(0.2), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
     }
 
     /// Subtle glass card - uses clear variant for high transparency
     @ViewBuilder
     func glassCardSubtle(cornerRadius: CGFloat = 12) -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             self.glassEffect(.clear, in: RoundedRectangle(cornerRadius: cornerRadius))
         } else {
-            self
-                .background(.ultraThinMaterial.opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            glassCardSubtleFallback(cornerRadius: cornerRadius)
         }
+        #else
+        glassCardSubtleFallback(cornerRadius: cornerRadius)
+        #endif
+    }
+
+    private func glassCardSubtleFallback(cornerRadius: CGFloat) -> some View {
+        self
+            .background(.ultraThinMaterial.opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 
     /// Pill-shaped glass (for tags, buttons)
     @ViewBuilder
     func glassPill() -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             self.glassEffect(.regular, in: .capsule)
         } else {
-            self
-                .background(.ultraThinMaterial)
-                .clipShape(.capsule)
-                .overlay(Capsule().strokeBorder(.white.opacity(0.15), lineWidth: 1))
+            glassPillFallback()
         }
+        #else
+        glassPillFallback()
+        #endif
+    }
+
+    private func glassPillFallback() -> some View {
+        self
+            .background(.ultraThinMaterial)
+            .clipShape(.capsule)
+            .overlay(Capsule().strokeBorder(.white.opacity(0.15), lineWidth: 1))
     }
 
     /// Circle glass effect
     @ViewBuilder
     func glassCircle() -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             self.glassEffect(.regular, in: .circle)
         } else {
-            self
-                .background(.ultraThinMaterial)
-                .clipShape(.circle)
-                .overlay(Circle().strokeBorder(.white.opacity(0.15), lineWidth: 1))
+            glassCircleFallback()
         }
+        #else
+        glassCircleFallback()
+        #endif
+    }
+
+    private func glassCircleFallback() -> some View {
+        self
+            .background(.ultraThinMaterial)
+            .clipShape(.circle)
+            .overlay(Circle().strokeBorder(.white.opacity(0.15), lineWidth: 1))
     }
 
     /// Glass effect with tint color
     @ViewBuilder
     func glassCard(tint: Color, cornerRadius: CGFloat = 16) -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             self.glassEffect(.regular.tint(tint), in: RoundedRectangle(cornerRadius: cornerRadius))
         } else {
-            self
-                .background(tint.opacity(0.1))
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .strokeBorder(tint.opacity(0.3), lineWidth: 1)
-                )
+            glassCardTintFallback(tint: tint, cornerRadius: cornerRadius)
         }
+        #else
+        glassCardTintFallback(tint: tint, cornerRadius: cornerRadius)
+        #endif
+    }
+
+    private func glassCardTintFallback(tint: Color, cornerRadius: CGFloat) -> some View {
+        self
+            .background(tint.opacity(0.1))
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .strokeBorder(tint.opacity(0.3), lineWidth: 1)
+            )
     }
 }
 
@@ -150,14 +197,22 @@ extension View {
 struct GlassCapsuleModifier: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             content.glassEffect(.regular, in: .capsule)
         } else {
-            content
-                .background(.ultraThinMaterial)
-                .clipShape(.capsule)
-                .overlay(Capsule().strokeBorder(.white.opacity(0.15), lineWidth: 1))
+            capsuleFallback(content: content)
         }
+        #else
+        capsuleFallback(content: content)
+        #endif
+    }
+
+    private func capsuleFallback(content: Content) -> some View {
+        content
+            .background(.ultraThinMaterial)
+            .clipShape(.capsule)
+            .overlay(Capsule().strokeBorder(.white.opacity(0.15), lineWidth: 1))
     }
 }
 
@@ -220,19 +275,28 @@ struct GlassEffectModifier: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             content.glassEffect(glassVariantMacOS26, in: RoundedRectangle(cornerRadius: cornerRadius))
         } else {
-            content
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .strokeBorder(.white.opacity(0.2), lineWidth: 1)
-                )
+            fallbackContent(content: content)
         }
+        #else
+        fallbackContent(content: content)
+        #endif
     }
 
+    private func fallbackContent(content: Content) -> some View {
+        content
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .strokeBorder(.white.opacity(0.2), lineWidth: 1)
+            )
+    }
+
+    #if !CI_BUILD
     @available(macOS 26, *)
     private var glassVariantMacOS26: Glass {
         switch variant {
@@ -242,6 +306,7 @@ struct GlassEffectModifier: ViewModifier {
             return .regular.tint(color)
         }
     }
+    #endif
 }
 
 extension ButtonStyle where Self == LiquidGlassButtonStyle {
@@ -293,15 +358,23 @@ struct CircleGlassModifier: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             content.glassEffect(.regular.tint(color), in: .circle)
         } else {
-            content
-                .overlay(
-                    Circle()
-                        .strokeBorder(.white.opacity(0.3), lineWidth: 1)
-                )
+            circleFallback(content: content)
         }
+        #else
+        circleFallback(content: content)
+        #endif
+    }
+
+    private func circleFallback(content: Content) -> some View {
+        content
+            .overlay(
+                Circle()
+                    .strokeBorder(.white.opacity(0.3), lineWidth: 1)
+            )
     }
 }
 
@@ -421,6 +494,7 @@ struct GlassSegmentedControl<T: Hashable>: View {
 
     @ViewBuilder
     private func glassContainerWrapper<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             GlassEffectContainer {
                 content()
@@ -430,10 +504,16 @@ struct GlassSegmentedControl<T: Hashable>: View {
                 .background(.ultraThinMaterial)
                 .clipShape(.capsule)
         }
+        #else
+        content()
+            .background(.ultraThinMaterial)
+            .clipShape(.capsule)
+        #endif
     }
 
     @ViewBuilder
     private var segmentBackground: some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             Capsule()
                 .fill(.clear)
@@ -442,6 +522,10 @@ struct GlassSegmentedControl<T: Hashable>: View {
             Capsule()
                 .fill(.white.opacity(0.15))
         }
+        #else
+        Capsule()
+            .fill(.white.opacity(0.15))
+        #endif
     }
 }
 
@@ -571,20 +655,28 @@ struct SearchFieldGlassModifier: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             content.glassEffect(
                 isFocused ? .regular : .clear,
                 in: RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
             )
         } else {
-            content
-                .background(isFocused ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.clear))
-                .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
-                        .strokeBorder(.white.opacity(isFocused ? 0.2 : 0.1), lineWidth: 1)
-                )
+            searchFieldFallback(content: content)
         }
+        #else
+        searchFieldFallback(content: content)
+        #endif
+    }
+
+    private func searchFieldFallback(content: Content) -> some View {
+        content
+            .background(isFocused ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.clear))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
+                    .strokeBorder(.white.opacity(isFocused ? 0.2 : 0.1), lineWidth: 1)
+            )
     }
 }
 
@@ -593,6 +685,7 @@ struct SearchFieldGlassModifier: ViewModifier {
 struct GlassControlModifier: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             content
                 .padding(.horizontal, Theme.ControlSize.horizontalPadding)
@@ -600,17 +693,24 @@ struct GlassControlModifier: ViewModifier {
                 .frame(height: Theme.ControlSize.toolbarHeight)
                 .glassEffect(.regular, in: RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
         } else {
-            content
-                .padding(.horizontal, Theme.ControlSize.horizontalPadding)
-                .padding(.vertical, Theme.ControlSize.verticalPadding)
-                .frame(height: Theme.ControlSize.toolbarHeight)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
-                        .strokeBorder(.white.opacity(0.1), lineWidth: 1)
-                )
+            controlFallback(content: content)
         }
+        #else
+        controlFallback(content: content)
+        #endif
+    }
+
+    private func controlFallback(content: Content) -> some View {
+        content
+            .padding(.horizontal, Theme.ControlSize.horizontalPadding)
+            .padding(.vertical, Theme.ControlSize.verticalPadding)
+            .frame(height: Theme.ControlSize.toolbarHeight)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
+                    .strokeBorder(.white.opacity(0.1), lineWidth: 1)
+            )
     }
 }
 
@@ -700,20 +800,28 @@ struct GlassMenuModifier: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
+        #if !CI_BUILD
         if #available(macOS 26, *) {
             content.glassEffect(
                 isHovered ? .regular : .clear,
                 in: RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
             )
         } else {
-            content
-                .background(isHovered ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.clear))
-                .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
-                        .strokeBorder(.white.opacity(isHovered ? 0.15 : 0.1), lineWidth: 1)
-                )
+            menuFallback(content: content)
         }
+        #else
+        menuFallback(content: content)
+        #endif
+    }
+
+    private func menuFallback(content: Content) -> some View {
+        content
+            .background(isHovered ? AnyShapeStyle(.ultraThinMaterial) : AnyShapeStyle(Color.clear))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.ControlSize.controlRadius)
+                    .strokeBorder(.white.opacity(isHovered ? 0.15 : 0.1), lineWidth: 1)
+            )
     }
 }
 
@@ -722,6 +830,7 @@ struct GlassMenuModifier: ViewModifier {
 /// Wrapper that provides GlassEffectContainer on macOS 26+, passthrough on older versions
 @ViewBuilder
 func glassEffectContainerCompat<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+    #if !CI_BUILD
     if #available(macOS 26, *) {
         GlassEffectContainer {
             content()
@@ -729,6 +838,9 @@ func glassEffectContainerCompat<Content: View>(@ViewBuilder content: () -> Conte
     } else {
         content()
     }
+    #else
+    content()
+    #endif
 }
 
 // MARK: - Shimmer Effect
