@@ -147,10 +147,18 @@ jobs:
           ditto -c -k --keepParent "${{ env.APP_NAME }}.app" "../notarization.zip"
           cd ..
 
+          # Show ZIP size
+          ls -lh notarization.zip
+
           echo "Submitting for notarization..."
           xcrun notarytool submit notarization.zip \
             --keychain-profile "notary-profile" \
-            --wait
+            --wait \
+            --timeout 30m \
+            2>&1 | tee notarization-output.txt
+
+          # Show result
+          cat notarization-output.txt
 
           echo "Stapling notarization ticket..."
           xcrun stapler staple "export/${{ env.APP_NAME }}.app"
@@ -180,9 +188,11 @@ jobs:
 
           # Notarize the DMG
           echo "Notarizing DMG..."
+          ls -lh "build/${{ env.APP_NAME }}-v${VERSION}.dmg"
           xcrun notarytool submit "build/${{ env.APP_NAME }}-v${VERSION}.dmg" \
             --keychain-profile "notary-profile" \
-            --wait
+            --wait \
+            --timeout 30m
 
           # Staple the DMG
           xcrun stapler staple "build/${{ env.APP_NAME }}-v${VERSION}.dmg"
