@@ -1,0 +1,56 @@
+{
+  "releases": [
+    {
+      "version": "1.1.0",
+      "date": "2025-01-15",
+      "latest": true,
+      "minOS": "macOS 14.0+",
+      "architecture": "Universal (Apple Silicon + Intel)",
+      "downloads": {
+        "dmg": {
+          "url": "https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.0/MyMacCleaner-v1.1.0.dmg",
+          "size": "4.6 MB"
+        }
+      },
+      "changelog": [
+        { "type": "added", "description": "Browser Privacy Cleaner - Clear data from Safari, Chrome, Firefox, and Edge" },
+        { "type": "added", "description": "Orphaned Files Scanner - Detect leftover files from uninstalled applications" },
+        { "type": "added", "description": "Duplicate File Finder - Find duplicate files with SHA256 hashing" },
+        { "type": "added", "description": "Menu Bar Monitor - Real-time CPU/RAM/Disk stats with 4 display modes" },
+        { "type": "added", "description": "Permissions Management - Manage FDA and folder access permissions" },
+        { "type": "added", "description": "Empty Trash functionality with confirmation dialog" },
+        { "type": "changed", "description": "Complete Theme system with consistent typography, spacing, and corner radius" },
+        { "type": "changed", "description": "Enhanced UI with standardized glass styling across all views" },
+        { "type": "changed", "description": "Improved app initialization to avoid unnecessary TCC permission prompts" },
+        { "type": "changed", "description": "Better localization support with runtime language switching" },
+        { "type": "fixed", "description": "FDA detection with multiple fallback methods" },
+        { "type": "fixed", "description": "Async update checking and command escaping" },
+        { "type": "fixed", "description": "Thread safety in file scanning operations" }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2025-01-06",
+      "latest": false,
+      "minOS": "macOS 14.0+",
+      "architecture": "Universal (Apple Silicon + Intel)",
+      "downloads": {
+        "dmg": {
+          "url": "https://github.com/Prot10/MyMacCleaner/releases/download/v1.0.0/MyMacCleaner-v1.0.0.dmg",
+          "size": "3.7 MB"
+        }
+      },
+      "changelog": [
+        { "type": "added", "description": "Initial release with Liquid Glass UI design" },
+        { "type": "added", "description": "Smart Scan for quick system cleanup" },
+        { "type": "added", "description": "Disk Cleaner with category-based file management" },
+        { "type": "added", "description": "Space Lens with treemap visualization" },
+        { "type": "added", "description": "Performance monitoring and maintenance tools" },
+        { "type": "added", "description": "Applications manager with Homebrew integration" },
+        { "type": "added", "description": "Startup items and port management" },
+        { "type": "added", "description": "System health dashboard" },
+        { "type": "added", "description": "Multi-language support (English, Italian, Spanish)" }
+      ]
+    }
+  ]
+}
