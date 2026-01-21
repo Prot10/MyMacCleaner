@@ -121,6 +121,14 @@ struct HomeView: View {
 
             // System status indicator
             HStack(spacing: Theme.Spacing.sm) {
+                // Version badge
+                Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
+                    .font(Theme.Typography.size12)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, Theme.Spacing.sm)
+                    .padding(.vertical, Theme.Spacing.xxs)
+                    .background(.ultraThinMaterial, in: Capsule())
+
                 PermissionStatusView(hasFullDiskAccess: viewModel.hasFullDiskAccess)
 
                 SystemHealthPill(
