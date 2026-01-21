@@ -1,9 +1,25 @@
 {
   "releases": [
     {
-      "version": "1.1.1",
+      "version": "1.1.2",
       "date": "2026-01-22",
       "latest": true,
+      "minOS": "macOS 14.0+",
+      "architecture": "Universal (Apple Silicon + Intel)",
+      "downloads": {
+        "dmg": {
+          "url": "https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.2/MyMacCleaner-v1.1.2.dmg",
+          "size": "6.3 MB"
+        }
+      },
+      "changelog": [
+        { "type": "fixed", "description": "Auto-update system now working with Sparkle framework properly linked" }
+      ]
+    },
+    {
+      "version": "1.1.1",
+      "date": "2026-01-22",
+      "latest": false,
       "minOS": "macOS 14.0+",
       "architecture": "Universal (Apple Silicon + Intel)",
       "downloads": {
