@@ -18,6 +18,22 @@
         -->
 
         <item>
+            <title>Version 1.1.4</title>
+            <pubDate>Wed, 22 Jan 2026 03:00:00 +0000</pubDate>
+            <sparkle:version>6</sparkle:version>
+            <sparkle:shortVersionString>1.1.4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <h2>What's New in Version 1.1.4</h2>
+                <h3>Test Release</h3>
+                <ul>
+                    <li>Test release to verify update banner functionality</li>
+                </ul>
+            ]]></description>
+            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.4/MyMacCleaner-v1.1.4.zip" sparkle:edSignature="59fGuRD8O6lmwe5z3ZYfTCtqhUW9pfeXHyTqIHsoE5QR/O6xoJ9iqDGgRvBvTT1oLGPiUQvHUSgvlQGM2eaCBg==" length="5779701" type="application/octet-stream"/>
+        </item>
+
+        <item>
             <title>Version 1.1.3</title>
             <pubDate>Wed, 22 Jan 2026 02:00:00 +0000</pubDate>
             <sparkle:version>5</sparkle:version>
