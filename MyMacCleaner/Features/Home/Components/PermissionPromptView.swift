@@ -221,6 +221,77 @@ struct PermissionStatusView: View {
     }
 }
 
+// MARK: - Update Available Banner
+
+struct UpdateBanner: View {
+    let updateManager: UpdateManager
+    let availableVersion: String
+
+    @State private var isHovered = false
+
+    var body: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            // Icon
+            ZStack {
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
+                    .fill(Color.yellow.opacity(0.2))
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: "arrow.down.circle.fill")
+                    .font(Theme.Typography.size18Semibold)
+                    .foregroundStyle(.yellow)
+            }
+
+            // Text
+            VStack(alignment: .leading, spacing: Theme.Spacing.tiny) {
+                Text(L("update.banner.title"))
+                    .font(Theme.Typography.subheadline)
+
+                Text(LFormat("update.banner.version %@", availableVersion))
+                    .font(Theme.Typography.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            // Dismiss button
+            Button(action: {
+                withAnimation(Theme.Animation.spring) {
+                    updateManager.dismissUpdateBanner()
+                }
+            }) {
+                Image(systemName: "xmark")
+                    .font(Theme.Typography.size12)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24, height: 24)
+            }
+            .buttonStyle(.plain)
+
+            // Update button
+            GlassActionButton(
+                L("update.banner.button"),
+                icon: nil,
+                color: .yellow
+            ) {
+                updateManager.checkForUpdates()
+            }
+        }
+        .padding(Theme.Spacing.md)
+        .background(
+            RoundedRectangle(cornerRadius: Theme.CornerRadius.large)
+                .fill(Color.yellow.opacity(0.08))
+        )
+        .glassCard()
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.CornerRadius.large)
+                .strokeBorder(Color.yellow.opacity(0.4), lineWidth: 1)
+        )
+        .scaleEffect(isHovered ? 1.01 : 1.0)
+        .animation(Theme.Animation.fast, value: isHovered)
+        .onHover { isHovered = $0 }
+    }
+}
+
 // MARK: - Preview
 
 #Preview("Permission Prompt") {

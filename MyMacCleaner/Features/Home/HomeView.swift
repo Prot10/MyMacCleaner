@@ -2,9 +2,18 @@ import SwiftUI
 
 struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
+    @Environment(UpdateManager.self) var updateManager
     @State private var isVisible = false
 
     private let sectionColor = Theme.Colors.home
+
+    /// Base animation index that accounts for optional banners above the main content
+    private var baseAnimationIndex: Int {
+        var index = 1 // Start after header
+        if updateManager.updateAvailable && !updateManager.updateDismissed { index += 1 }
+        if !viewModel.hasFullDiskAccess && !viewModel.showPermissionPrompt { index += 1 }
+        return index
+    }
 
     var body: some View {
         ZStack {
@@ -14,15 +23,26 @@ struct HomeView: View {
                     headerSection
                         .staggeredAnimation(index: 0, isActive: isVisible)
 
+                    // Update banner (if update available)
+                    if updateManager.updateAvailable && !updateManager.updateDismissed,
+                       let version = updateManager.availableVersion {
+                        UpdateBanner(updateManager: updateManager, availableVersion: version)
+                            .staggeredAnimation(index: 1, isActive: isVisible)
+                            .transition(.asymmetric(
+                                insertion: .push(from: .top),
+                                removal: .push(from: .bottom)
+                            ))
+                    }
+
                     // Permission banner (if needed)
                     if !viewModel.hasFullDiskAccess && !viewModel.showPermissionPrompt {
                         PermissionBanner(permissionsService: PermissionsService.shared)
-                            .staggeredAnimation(index: 1, isActive: isVisible)
+                            .staggeredAnimation(index: updateManager.updateAvailable ? 2 : 1, isActive: isVisible)
                     }
 
                     // Smart Scan Button
                     smartScanSection
-                        .staggeredAnimation(index: 2, isActive: isVisible)
+                        .staggeredAnimation(index: baseAnimationIndex, isActive: isVisible)
 
                     // Scan Results (if available)
                     if viewModel.showScanResults {
@@ -33,16 +53,16 @@ struct HomeView: View {
                                 print("View details for \(result.category.rawValue)")
                             }
                         )
-                        .staggeredAnimation(index: 3, isActive: isVisible)
+                        .staggeredAnimation(index: baseAnimationIndex + 1, isActive: isVisible)
                     }
 
                     // Quick Stats
                     quickStatsSection
-                        .staggeredAnimation(index: viewModel.showScanResults ? 4 : 3, isActive: isVisible)
+                        .staggeredAnimation(index: viewModel.showScanResults ? baseAnimationIndex + 2 : baseAnimationIndex + 1, isActive: isVisible)
 
                     // Quick Actions
                     quickActionsSection
-                        .staggeredAnimation(index: viewModel.showScanResults ? 5 : 4, isActive: isVisible)
+                        .staggeredAnimation(index: viewModel.showScanResults ? baseAnimationIndex + 3 : baseAnimationIndex + 2, isActive: isVisible)
                 }
                 .padding(Theme.Spacing.lg)
             }
@@ -94,6 +114,8 @@ struct HomeView: View {
         .animation(Theme.Animation.springSmooth, value: viewModel.showPermissionPrompt)
         .animation(Theme.Animation.springSmooth, value: viewModel.isCleaning)
         .animation(Theme.Animation.spring, value: viewModel.showToast)
+        .animation(Theme.Animation.spring, value: updateManager.updateDismissed)
+        .animation(Theme.Animation.spring, value: updateManager.updateAvailable)
         .onAppear {
             withAnimation(Theme.Animation.springSmooth) {
                 isVisible = true
