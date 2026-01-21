@@ -125,6 +125,7 @@
 			);
 			name = MyMacCleaner;
 			packageProductDependencies = (
+				65E790862F0C23E200CA264D /* Sparkle */,
 			);
 			productName = MyMacCleaner;
 			productReference = 650DE29B2EE843C000C84519 /* MyMacCleaner.app */;
@@ -610,6 +611,14 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		65E790862F0C23E200CA264D /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 65E790852F0C23E200CA264C /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 650DE2932EE843C000C84519 /* Project object */;
 }
