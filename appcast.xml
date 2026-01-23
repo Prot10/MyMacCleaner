@@ -7,6 +7,22 @@
         <language>en</language>
 
         <item>
+            <title>Version 0.1.1</title>
+            <pubDate>Fri, 23 Jan 2026 15:01:35 +0100</pubDate>
+            <sparkle:version>2</sparkle:version>
+            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <h2>What's New in Version 0.1.1</h2>
+                <ul>
+                    <li>Update notification button improvements</li>
+                </ul>
+            ]]></description>
+            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.1/MyMacCleaner-v0.1.1.zip" sparkle:edSignature="2e7Vwinpz9H3C6obXsVNq2C0KuPH+YWKICfUEfLx0kJFDWtAeTSTUgsCYImpupUI66k3O9H/5NwMNrageeEOCw==" length="4451352" type="application/octet-stream"/>
+        </item>
+
+
+        <item>
             <title>Version 0.1.0</title>
             <pubDate>Fri, 23 Jan 2026 14:58:40 +0100</pubDate>
             <sparkle:version>1</sparkle:version>
