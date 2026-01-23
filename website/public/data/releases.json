@@ -1,9 +1,28 @@
 {
   "releases": [
     {
-      "version": "0.1.1",
+      "version": "0.1.2",
       "date": "2026-01-23",
       "latest": true,
+      "minOS": "macOS 14.0+",
+      "architecture": "Universal (Apple Silicon + Intel)",
+      "downloads": {
+        "dmg": {
+          "url": "https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.2/MyMacCleaner-v0.1.2.dmg",
+          "size": "4.9 MB"
+        }
+      },
+      "changelog": [
+        {
+          "type": "fixed",
+          "description": "Fixed update notification button not appearing in toolbar"
+        }
+      ]
+    },
+    {
+      "version": "0.1.1",
+      "date": "2026-01-23",
+      "latest": false,
       "minOS": "macOS 14.0+",
       "architecture": "Universal (Apple Silicon + Intel)",
       "downloads": {
@@ -13,7 +32,10 @@
         }
       },
       "changelog": [
-        { "type": "added", "description": "Test release for auto-update verification" }
+        {
+          "type": "added",
+          "description": "Test release for auto-update verification"
+        }
       ]
     },
     {
@@ -29,8 +51,14 @@
         }
       },
       "changelog": [
-        { "type": "added", "description": "Initial beta release with all core features" },
-        { "type": "added", "description": "Update notification button in toolbar" }
+        {
+          "type": "added",
+          "description": "Initial beta release with all core features"
+        },
+        {
+          "type": "added",
+          "description": "Update notification button in toolbar"
+        }
       ]
     }
   ]

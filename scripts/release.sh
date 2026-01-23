@@ -314,12 +314,6 @@ echo -e "${YELLOW}[9/10] Updating releases.json...${NC}"
 
 RELEASE_DATE=$(date +%Y-%m-%d)
 
-# Read current releases
-CURRENT_RELEASES=$(cat website/public/data/releases.json)
-
-# Mark all existing releases as not latest
-UPDATED_RELEASES=$(echo "$CURRENT_RELEASES" | sed 's/"latest": true/"latest": false/g')
-
 # Determine changelog type based on keywords
 if echo "$CHANGELOG" | grep -qi "fix"; then
     CHANGE_TYPE="fixed"
@@ -329,39 +323,45 @@ else
     CHANGE_TYPE="added"
 fi
 
-# Create new release entry
-NEW_RELEASE=$(cat << EOF
-{
-      "version": "${VERSION}",
-      "date": "${RELEASE_DATE}",
-      "latest": true,
-      "minOS": "macOS 14.0+",
-      "architecture": "Universal (Apple Silicon + Intel)",
-      "downloads": {
-        "dmg": {
-          "url": "https://github.com/${REPO}/releases/download/v${VERSION}/${APP_NAME}-v${VERSION}.dmg",
-          "size": "${DMG_SIZE_MB} MB"
-        }
-      },
-      "changelog": [
-        { "type": "${CHANGE_TYPE}", "description": "${CHANGELOG}" }
-      ]
-    }
-EOF
-)
+# Use Python to update releases.json properly
+python3 << PYEOF
+import json
 
-# Check if releases array is empty
-if echo "$UPDATED_RELEASES" | grep -q '"releases": \[\]'; then
-    # Empty releases array
-    echo "{
-  \"releases\": [
-    ${NEW_RELEASE}
-  ]
-}" > website/public/data/releases.json
-else
-    # Add to existing releases (insert at beginning of array)
-    echo "$UPDATED_RELEASES" | sed "s/\"releases\": \[/\"releases\": [\n    ${NEW_RELEASE},/" > website/public/data/releases.json
-fi
+# Read current releases
+with open('website/public/data/releases.json', 'r') as f:
+    data = json.load(f)
+
+# Mark all existing releases as not latest
+for release in data['releases']:
+    release['latest'] = False
+
+# Create new release entry
+new_release = {
+    "version": "${VERSION}",
+    "date": "${RELEASE_DATE}",
+    "latest": True,
+    "minOS": "macOS 14.0+",
+    "architecture": "Universal (Apple Silicon + Intel)",
+    "downloads": {
+        "dmg": {
+            "url": "https://github.com/${REPO}/releases/download/v${VERSION}/${APP_NAME}-v${VERSION}.dmg",
+            "size": "${DMG_SIZE_MB} MB"
+        }
+    },
+    "changelog": [
+        {"type": "${CHANGE_TYPE}", "description": "${CHANGELOG}"}
+    ]
+}
+
+# Insert new release at the beginning
+data['releases'].insert(0, new_release)
+
+# Write updated releases
+with open('website/public/data/releases.json', 'w') as f:
+    json.dump(data, f, indent=2)
+    f.write('\n')
+
+PYEOF
 
 echo -e "${GREEN}releases.json updated${NC}"
 

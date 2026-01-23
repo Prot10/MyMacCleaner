@@ -300,17 +300,18 @@ struct DetailContentView: View {
                 .padding(.top, isFullScreen ? 28 : 16)
         }
         .ignoresSafeArea(edges: .top)
-        // CRITICAL: Force complete re-render of ALL child views when language changes
-        .id(localization.languageCode)
+        // CRITICAL: Force complete re-render of ALL child views when language or update status changes
+        .id("\(localization.languageCode)-\(updateManager.updateAvailable)")
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Spacer()
             }
-            // Update available button (only shows when update is available)
-            if updateManager.updateAvailable {
-                ToolbarItem(placement: .automatic) {
-                    UpdateAvailableButton()
-                }
+            // Update available button (always present, visibility controlled by opacity)
+            ToolbarItem(placement: .automatic) {
+                UpdateAvailableButton()
+                    .opacity(updateManager.updateAvailable ? 1 : 0)
+                    .frame(width: updateManager.updateAvailable ? nil : 0)
+                    .disabled(!updateManager.updateAvailable)
             }
             ToolbarItem(placement: .automatic) {
                 LanguageSwitcherButton()
