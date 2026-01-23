@@ -6,175 +6,20 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
 
-        <!--
-        TEMPLATE FOR NEW RELEASES:
-        Copy this item block and update for each release.
-
-        To generate EdDSA signature:
-        1. Download Sparkle from https://github.com/sparkle-project/Sparkle/releases
-        2. Run: ./bin/generate_keys (saves private key to Keychain)
-        3. Run: ./bin/sign_update MyMacCleaner-vX.X.X.zip
-        4. Copy the sparkle:edSignature value from output
-        -->
-
         <item>
-            <title>Version 1.1.6</title>
-            <pubDate>Thu, 23 Jan 2026 11:00:00 +0000</pubDate>
-            <sparkle:version>8</sparkle:version>
-            <sparkle:shortVersionString>1.1.6</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <h2>What's New in Version 1.1.6</h2>
-                <h3>New Features</h3>
-                <ul>
-                    <li>New update notification button in toolbar when updates are available</li>
-                    <li>Update dialog shows current and new version with download option</li>
-                </ul>
-            ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.6/MyMacCleaner-v1.1.6.zip" sparkle:edSignature="/8PRiD462C8kxJc4AUN/QIfEHmsfYY+Q5m778jf0p5LL/F1MeAtfe/CyXWIMJKF8oaz2rD+MNhzRK4Tdg1ZoAg==" length="4416493" type="application/octet-stream"/>
-        </item>
-
-        <item>
-            <title>Version 1.1.5</title>
-            <pubDate>Thu, 23 Jan 2026 10:00:00 +0000</pubDate>
-            <sparkle:version>7</sparkle:version>
-            <sparkle:shortVersionString>1.1.5</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <h2>What's New in Version 1.1.5</h2>
-                <h3>Bug Fixes</h3>
-                <ul>
-                    <li>Fixed app icon not displaying correctly</li>
-                </ul>
-            ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.5/MyMacCleaner-v1.1.5.zip" sparkle:edSignature="uk61vK2BJMlKRCRLFoYi9V+5Orh2K0kBsctgEbUPVmmKh0Nr8n/7sKiXgusgv5oRJCkQ2Szvt/BVwTEEGQhnBg==" length="4385750" type="application/octet-stream"/>
-        </item>
-
-        <item>
-            <title>Version 1.1.4</title>
-            <pubDate>Wed, 22 Jan 2026 03:00:00 +0000</pubDate>
-            <sparkle:version>6</sparkle:version>
-            <sparkle:shortVersionString>1.1.4</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <h2>What's New in Version 1.1.4</h2>
-                <h3>Test Release</h3>
-                <ul>
-                    <li>Test release to verify update banner functionality</li>
-                </ul>
-            ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.4/MyMacCleaner-v1.1.4.zip" sparkle:edSignature="59fGuRD8O6lmwe5z3ZYfTCtqhUW9pfeXHyTqIHsoE5QR/O6xoJ9iqDGgRvBvTT1oLGPiUQvHUSgvlQGM2eaCBg==" length="5779701" type="application/octet-stream"/>
-        </item>
-
-        <item>
-            <title>Version 1.1.3</title>
-            <pubDate>Wed, 22 Jan 2026 02:00:00 +0000</pubDate>
-            <sparkle:version>5</sparkle:version>
-            <sparkle:shortVersionString>1.1.3</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <h2>What's New in Version 1.1.3</h2>
-                <h3>New Features</h3>
-                <ul>
-                    <li>Update notification banner - Shows a yellow banner on home screen when a new version is available</li>
-                    <li>Automatic update check on app launch with dismiss option</li>
-                </ul>
-            ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.3/MyMacCleaner-v1.1.3.zip" sparkle:edSignature="kyNMnZk7UCpmoZZypZRII3m3eF9Asw5EfpDePlwcGsIhcXk+llw7Tz9pCGE2T5+PdFj2sSGlh/2UH1Am1A74BQ==" length="5779722" type="application/octet-stream"/>
-        </item>
-
-        <item>
-            <title>Version 1.1.2</title>
-            <pubDate>Wed, 22 Jan 2026 01:00:00 +0000</pubDate>
-            <sparkle:version>4</sparkle:version>
-            <sparkle:shortVersionString>1.1.2</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <h2>What's New in Version 1.1.2</h2>
-                <h3>Improvements</h3>
-                <ul>
-                    <li>Auto-update system now working with Sparkle framework properly linked</li>
-                </ul>
-            ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.2/MyMacCleaner-v1.1.2.zip" sparkle:edSignature="Ly+XYJW2t+wWR0PoLUO1xJ01Bs0u3UziprOxGDDIMU3lr4VjcfyOV/qgiTGvqyyR9g6WStDZ77S6IaU/ErCcDQ==" length="5788813" type="application/octet-stream"/>
-        </item>
-
-        <item>
-            <title>Version 1.1.1</title>
-            <pubDate>Wed, 22 Jan 2026 00:00:00 +0000</pubDate>
-            <sparkle:version>3</sparkle:version>
-            <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <h2>What's New in Version 1.1.1</h2>
-                <h3>UI Improvements</h3>
-                <ul>
-                    <li>Added version indicator badge in the Home screen header</li>
-                </ul>
-            ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.1/MyMacCleaner-v1.1.1.zip" sparkle:edSignature="f+54v+CCmFW2NSilyoPtbx0PknVoyQhgPSozsH5wqHAEWFGlGzEPtLPkO2poW6nzdn4iiZnSn4ev+nxw4/PeAw==" length="5788805" type="application/octet-stream"/>
-        </item>
-
-        <item>
-            <title>Version 1.1.0</title>
-            <pubDate>Wed, 15 Jan 2026 12:00:00 +0000</pubDate>
-            <sparkle:version>2</sparkle:version>
-            <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <h2>What's New in Version 1.1.0</h2>
-                <h3>New Features</h3>
-                <ul>
-                    <li>Browser Privacy Cleaner - Clear data from Safari, Chrome, Firefox, and Edge</li>
-                    <li>Orphaned Files Scanner - Detect leftover files from uninstalled applications</li>
-                    <li>Duplicate File Finder - Find duplicate files with SHA256 hashing and cancellation support</li>
-                    <li>Menu Bar Monitor - Real-time CPU/RAM/Disk stats with 4 display modes</li>
-                    <li>Permissions Management - Manage FDA and folder access permissions</li>
-                    <li>Empty Trash functionality with confirmation dialog</li>
-                    <li>Select All/Deselect All in cleanup categories</li>
-                </ul>
-                <h3>Improvements</h3>
-                <ul>
-                    <li>Complete Theme system with consistent typography, spacing, and corner radius</li>
-                    <li>Enhanced UI with standardized glass styling across all views</li>
-                    <li>Improved app initialization to avoid unnecessary TCC permission prompts</li>
-                    <li>Better localization support with runtime language switching</li>
-                    <li>Refactored Performance and Applications views with reusable components</li>
-                </ul>
-                <h3>Bug Fixes</h3>
-                <ul>
-                    <li>Fixed FDA detection with multiple fallback methods</li>
-                    <li>Improved async update checking and command escaping</li>
-                    <li>Enhanced thread safety in file scanning operations</li>
-                </ul>
-            ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.0/MyMacCleaner-v1.1.0.zip" sparkle:edSignature="Muxy0gKY/ChoKAA35wAALVFgSjl2ML7JDvStSYqPCbmW8ZkmWcQbWS2Y2IKrg/pQuMK+HgpvlKk89RGJVwIKBQ==" length="4851420" type="application/octet-stream"/>
-        </item>
-
-        <item>
-            <title>Version 1.0.0</title>
-            <pubDate>Mon, 06 Jan 2026 12:00:00 +0000</pubDate>
+            <title>Version 0.1.0</title>
+            <pubDate>Fri, 23 Jan 2026 10:20:26 +0100</pubDate>
             <sparkle:version>1</sparkle:version>
-            <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+            <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                <h2>What's New in Version 1.0.0</h2>
+                <h2>What's New in Version 0.1.0</h2>
                 <ul>
-                    <li>Initial release</li>
-                    <li>Liquid Glass UI design for macOS Tahoe</li>
-                    <li>Graceful fallback to material design on macOS Sonoma/Sequoia</li>
-                    <li>Smart Scan for quick system cleanup</li>
-                    <li>Disk Cleaner with category-based file management</li>
-                    <li>Space Lens with treemap visualization</li>
-                    <li>Performance monitoring and maintenance tools</li>
-                    <li>Applications manager with Homebrew integration</li>
-                    <li>Startup items management</li>
-                    <li>Port management and process control</li>
-                    <li>System health dashboard</li>
-                    <li>Multi-language support (English, Italian, Spanish)</li>
+                    <li>Initial beta release with all core features</li>
                 </ul>
             ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v1.0.0/MyMacCleaner-v1.0.0.zip" sparkle:edSignature="8SOtnSXkGRn0ILs5OI7ZY8y0fKcrcosICE9YJ4WUvxzCbKbP2SrZcv9UG2JqN7ss5FuYpTUepUgFss2Y/JJoBQ==" length="3835102" type="application/octet-stream"/>
+            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.0/MyMacCleaner-v0.1.0.zip" sparkle:edSignature="CBrelHhbYlvzEC7CRa8dtt5Qek2CiIAKcsOsH6ByxDGdT0K013atk/Zs6nFpfgFCe42EAMub9HSm1Hb4UWc7Cw==" length="4452540" type="application/octet-stream"/>
         </item>
+
     </channel>
 </rss>
