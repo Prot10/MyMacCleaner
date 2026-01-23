@@ -1,21 +1,21 @@
 {
   "releases": [
     {
-      "version": "0.1.2",
+      "version": "0.1.3",
       "date": "2026-01-23",
       "latest": true,
       "minOS": "macOS 14.0+",
       "architecture": "Universal (Apple Silicon + Intel)",
       "downloads": {
         "dmg": {
-          "url": "https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.2/MyMacCleaner-v0.1.2.dmg",
+          "url": "https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.3/MyMacCleaner-v0.1.3.dmg",
           "size": "4.9 MB"
         }
       },
       "changelog": [
         {
           "type": "fixed",
-          "description": "Fixed update notification button not appearing in toolbar"
+          "description": "Fixed update notification button in toolbar"
         }
       ]
     },
