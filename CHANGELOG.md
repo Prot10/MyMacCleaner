@@ -8,6 +8,8 @@ All notable changes to MyMacCleaner will be documented in this file.
 <!-- Format: - [type] Description -->
 <!-- Types: added, changed, fixed, removed -->
 
+## [0.1.3] - 2026-01-23
+
 - [fixed] Rebuild with correct toolbar rendering code
 
 ## [0.1.2] - 2026-01-23
