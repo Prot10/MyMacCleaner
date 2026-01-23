@@ -8,6 +8,8 @@ All notable changes to MyMacCleaner will be documented in this file.
 <!-- Format: - [type] Description -->
 <!-- Types: added, changed, fixed, removed -->
 
+## [0.1.2] - 2026-01-23
+
 - [fixed] Removed version badge from Home header
 
 ## [0.1.1] - 2026-01-23
