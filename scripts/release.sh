@@ -44,6 +44,23 @@ else
     exit 1
 fi
 
+# Validate required environment variables
+if [ -z "$MACOS_CERTIFICATE_SHA1" ]; then
+    echo -e "${RED}Error: MACOS_CERTIFICATE_SHA1 not set in .env${NC}"
+    echo "Run 'security find-identity -v -p codesigning' to find your certificate SHA-1"
+    exit 1
+fi
+
+if [ -z "$APPLE_TEAM_ID" ]; then
+    echo -e "${RED}Error: APPLE_TEAM_ID not set in .env${NC}"
+    exit 1
+fi
+
+if [ -z "$SPARKLE_PRIVATE_KEY" ]; then
+    echo -e "${RED}Error: SPARKLE_PRIVATE_KEY not set in .env${NC}"
+    exit 1
+fi
+
 # Configuration
 APP_NAME="MyMacCleaner"
 SCHEME="MyMacCleaner"
@@ -103,7 +120,7 @@ xcodebuild archive \
     -scheme "${SCHEME}" \
     -archivePath "build/${APP_NAME}.xcarchive" \
     -configuration Release \
-    CODE_SIGN_IDENTITY="${MACOS_CERTIFICATE_NAME}" \
+    CODE_SIGN_IDENTITY="${MACOS_CERTIFICATE_SHA1}" \
     DEVELOPMENT_TEAM="${APPLE_TEAM_ID}" \
     CODE_SIGN_STYLE=Manual \
     OTHER_CODE_SIGN_FLAGS="--options runtime --timestamp" \
@@ -199,7 +216,7 @@ echo -e "${GREEN}DMG created successfully${NC}"
 echo ""
 echo -e "${YELLOW}[6/10] Signing and notarizing DMG...${NC}"
 
-codesign --force --sign "${MACOS_CERTIFICATE_NAME}" \
+codesign --force --sign "${MACOS_CERTIFICATE_SHA1}" \
     --options runtime --timestamp \
     "build/${APP_NAME}-v${VERSION}.dmg"
 
