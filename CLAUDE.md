@@ -11,7 +11,7 @@
 | Target | macOS 14.0+ (Sonoma) |
 | Design | Liquid Glass (native on macOS 26+, material fallback on 14-15) |
 | Architecture | MVVM with Swift actors for services |
-| Status | Complete (v1.0.0 released) |
+| Status | Beta (v0.1.x) |
 
 ## Features
 
@@ -75,6 +75,41 @@ MyMacCleaner/
 xcodebuild -project MyMacCleaner.xcodeproj -scheme MyMacCleaner build
 xcodebuild test -project MyMacCleaner.xcodeproj -scheme MyMacCleaner
 ```
+
+## Release Process
+
+The release script automates the complete release workflow:
+
+```bash
+./scripts/release.sh <version> "<changelog>"
+# Example: ./scripts/release.sh 0.1.1 "Fixed bug in file scanner"
+```
+
+### What the script does:
+1. Updates version in Xcode project (version string + build number)
+2. Builds and archives the app
+3. Signs with Developer ID certificate
+4. Notarizes with Apple (app + DMG)
+5. Creates DMG and ZIP packages
+6. Signs ZIP for Sparkle auto-updates
+7. Updates `appcast.xml` and `website/public/data/releases.json`
+8. Creates GitHub release with assets
+9. Commits and pushes all changes
+
+### Prerequisites:
+1. Copy `.env.example` to `.env` and fill in credentials
+2. Set up notarization profile: `xcrun notarytool store-credentials "notary-profile" --apple-id YOUR_APPLE_ID --team-id YOUR_TEAM_ID`
+3. Authenticate gh CLI: `gh auth login`
+4. Find certificate SHA-1: `security find-identity -v -p codesigning`
+
+### Environment Variables (.env):
+| Variable | Description |
+|----------|-------------|
+| `APPLE_ID` | Apple Developer email |
+| `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password for notarization |
+| `APPLE_TEAM_ID` | 10-character Team ID |
+| `MACOS_CERTIFICATE_SHA1` | 40-character SHA-1 hash of signing certificate |
+| `SPARKLE_PRIVATE_KEY` | Base64 EdDSA private key for Sparkle updates |
 
 ## Dependencies
 
