@@ -14,15 +14,9 @@ struct HomeView: View {
                     headerSection
                         .staggeredAnimation(index: 0, isActive: isVisible)
 
-                    // Permission banner (if needed)
-                    if !viewModel.hasFullDiskAccess && !viewModel.showPermissionPrompt {
-                        PermissionBanner(permissionsService: PermissionsService.shared)
-                            .staggeredAnimation(index: 1, isActive: isVisible)
-                    }
-
                     // Smart Scan Button
                     smartScanSection
-                        .staggeredAnimation(index: 2, isActive: isVisible)
+                        .staggeredAnimation(index: 1, isActive: isVisible)
 
                     // Scan Results (if available)
                     if viewModel.showScanResults {
@@ -33,16 +27,16 @@ struct HomeView: View {
                                 print("View details for \(result.category.rawValue)")
                             }
                         )
-                        .staggeredAnimation(index: 3, isActive: isVisible)
+                        .staggeredAnimation(index: 2, isActive: isVisible)
                     }
 
                     // Quick Stats
                     quickStatsSection
-                        .staggeredAnimation(index: viewModel.showScanResults ? 4 : 3, isActive: isVisible)
+                        .staggeredAnimation(index: viewModel.showScanResults ? 3 : 2, isActive: isVisible)
 
                     // Quick Actions
                     quickActionsSection
-                        .staggeredAnimation(index: viewModel.showScanResults ? 5 : 4, isActive: isVisible)
+                        .staggeredAnimation(index: viewModel.showScanResults ? 4 : 3, isActive: isVisible)
                 }
                 .padding(Theme.Spacing.lg)
             }
@@ -128,8 +122,6 @@ struct HomeView: View {
                     .padding(.horizontal, Theme.Spacing.sm)
                     .padding(.vertical, Theme.Spacing.xxs)
                     .background(.ultraThinMaterial, in: Capsule())
-
-                PermissionStatusView(hasFullDiskAccess: viewModel.hasFullDiskAccess)
 
                 SystemHealthPill(
                     status: viewModel.systemHealthStatus,
