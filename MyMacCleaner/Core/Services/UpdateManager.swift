@@ -62,10 +62,18 @@ final class UpdateManager: NSObject, SPUUpdaterDelegate {
         // Start the updater
         updaterController.startUpdater()
 
-        // Check for updates in background after a short delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-            self?.checkForUpdatesQuietly()
-        }
+        // Check for updates once canCheckForUpdates becomes true
+        updaterController.updater.publisher(for: \.canCheckForUpdates)
+            .receive(on: DispatchQueue.main)
+            .filter { $0 == true }
+            .first()
+            .sink { [weak self] _ in
+                // Small delay to ensure everything is ready
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self?.checkForUpdatesQuietly()
+                }
+            }
+            .store(in: &cancellables)
     }
 
     /// Check for updates interactively (shows UI)
@@ -80,9 +88,9 @@ final class UpdateManager: NSObject, SPUUpdaterDelegate {
 
     /// Check for updates quietly (just to detect if update is available)
     func checkForUpdatesQuietly() {
-        guard canCheckForUpdates else { return }
+        print("[UpdateManager] checkForUpdatesQuietly called, canCheckForUpdates: \(canCheckForUpdates)")
 
-        // Use background check - Sparkle will call our delegate method if update found
+        // Check appcast directly - don't wait for canCheckForUpdates
         Task {
             await checkAppcastForUpdates()
         }
@@ -102,28 +110,40 @@ final class UpdateManager: NSObject, SPUUpdaterDelegate {
 
     /// Manually fetch and parse the appcast to check for updates
     private func checkAppcastForUpdates() async {
-        guard let feedURL = updaterController.updater.feedURL else { return }
+        guard let feedURL = updaterController.updater.feedURL else {
+            print("[UpdateManager] No feed URL configured")
+            return
+        }
+
+        print("[UpdateManager] Fetching appcast from: \(feedURL)")
 
         do {
             let (data, _) = try await URLSession.shared.data(from: feedURL)
             let parser = AppcastParser()
             if let latestVersion = parser.parseLatestVersion(from: data) {
-                let currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
+                let currentBuildStr = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
                 let currentShortVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+
+                print("[UpdateManager] Current: \(currentShortVersion) (build \(currentBuildStr)), Latest: \(latestVersion.displayVersion) (build \(latestVersion.buildNumber))")
 
                 // Compare build numbers
                 if let latestBuild = Int(latestVersion.buildNumber),
-                   let currentBuild = Int(currentVersion),
+                   let currentBuild = Int(currentBuildStr),
                    latestBuild > currentBuild {
+                    print("[UpdateManager] Update available! Setting updateAvailable = true")
                     await MainActor.run {
                         self.availableVersion = latestVersion.displayVersion
                         self.updateAvailable = true
                         self.updateDismissed = false
                     }
+                } else {
+                    print("[UpdateManager] No update available (current build \(currentBuildStr) >= latest build \(latestVersion.buildNumber))")
                 }
+            } else {
+                print("[UpdateManager] Failed to parse appcast")
             }
         } catch {
-            print("Failed to check for updates: \(error)")
+            print("[UpdateManager] Failed to check for updates: \(error)")
         }
     }
 }
