@@ -63,37 +63,50 @@ Save the private key to your `.env` file and add the public key to your app's `I
 
 ### Quick Release (Recommended)
 
-For a standard release, just run:
+**Step 1:** Update `CHANGELOG.md` during development. Add your changes to the `[Unreleased]` section:
+
+```markdown
+## [Unreleased]
+
+- [added] New feature description
+- [fixed] Bug fix description
+- [changed] Improvement description
+- [removed] Removed feature description
+```
+
+**Step 2:** When ready to release, run:
 
 ```bash
-./scripts/release.sh <version> "<changelog>"
+./scripts/release.sh <version>
 ```
 
 **Examples:**
 
 ```bash
 # Patch release (bug fixes)
-./scripts/release.sh 0.1.2 "Fixed crash on startup"
+./scripts/release.sh 0.1.2
 
 # Minor release (new features)
-./scripts/release.sh 0.2.0 "Added new disk analysis feature"
+./scripts/release.sh 0.2.0
 
 # Major release
-./scripts/release.sh 1.0.0 "First stable release"
+./scripts/release.sh 1.0.0
 ```
 
 The script automatically:
-1. Increments the build number
-2. Updates version in Xcode project
-3. Builds and archives the app
-4. Signs with Developer ID certificate
-5. Notarizes with Apple
-6. Creates DMG and ZIP packages
-7. Signs ZIP for Sparkle auto-updates
-8. Updates `appcast.xml` for Sparkle
-9. Updates `website/public/data/releases.json`
-10. Creates GitHub release with assets
-11. Commits and pushes all changes
+1. Reads changelog from `CHANGELOG.md` `[Unreleased]` section
+2. Increments the build number
+3. Updates version in Xcode project
+4. Builds and archives the app
+5. Signs with Developer ID certificate
+6. Notarizes with Apple
+7. Creates DMG and ZIP packages
+8. Signs ZIP for Sparkle auto-updates
+9. Updates `appcast.xml` for Sparkle
+10. Updates `website/public/data/releases.json`
+11. Creates GitHub release with assets
+12. Updates `CHANGELOG.md` (moves `[Unreleased]` to versioned section)
+13. Commits and pushes all changes
 
 ---
 
@@ -316,14 +329,44 @@ EOF
 sed -i '' 's/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = 0.1.0;/g' MyMacCleaner.xcodeproj/project.pbxproj
 sed -i '' 's/CURRENT_PROJECT_VERSION = [^;]*;/CURRENT_PROJECT_VERSION = 0;/g' MyMacCleaner.xcodeproj/project.pbxproj
 
+# Reset CHANGELOG.md
+cat > CHANGELOG.md << 'EOF'
+# Changelog
+
+All notable changes to MyMacCleaner will be documented in this file.
+
+## [Unreleased]
+
+- [added] Initial release with auto-update functionality
+
+EOF
+
 # Commit and push
 git add -A && git commit -m "chore: prepare for fresh release" && git push
 
 # Release first version
-./scripts/release.sh 0.1.0 "Initial release"
+./scripts/release.sh 0.1.0
+
+# Update CHANGELOG.md for second version
+cat > CHANGELOG.md << 'EOF'
+# Changelog
+
+All notable changes to MyMacCleaner will be documented in this file.
+
+## [Unreleased]
+
+- [changed] Update notification improvements
+
+## [0.1.0] - 2026-01-23
+
+- [added] Initial release with auto-update functionality
+
+EOF
+
+git add CHANGELOG.md && git commit -m "docs: prepare changelog for v0.1.1" && git push
 
 # Release second version (for testing updates)
-./scripts/release.sh 0.1.1 "Update notification improvements"
+./scripts/release.sh 0.1.1
 ```
 
 ---
@@ -331,8 +374,9 @@ git add -A && git commit -m "chore: prepare for fresh release" && git push
 ## Quick Reference
 
 ```bash
-# Standard release
-./scripts/release.sh 0.1.2 "Bug fixes and improvements"
+# 1. Update CHANGELOG.md with your changes during development
+# 2. When ready to release:
+./scripts/release.sh 0.1.2
 
 # Check current version
 grep -m1 "MARKETING_VERSION" MyMacCleaner.xcodeproj/project.pbxproj
@@ -343,6 +387,9 @@ gh release list
 
 # View appcast
 cat appcast.xml
+
+# View changelog
+cat CHANGELOG.md
 
 # Check notarization history
 xcrun notarytool history --keychain-profile "notary-profile"

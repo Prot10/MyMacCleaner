@@ -11,15 +11,20 @@ set -e
 # 4. Signs the ZIP for Sparkle auto-updates
 # 5. Updates appcast.xml and releases.json
 # 6. Creates GitHub release with assets
-# 7. Commits and pushes all changes
+# 7. Updates CHANGELOG.md
+# 8. Commits and pushes all changes
 #
-# Usage: ./scripts/release.sh <version> "<changelog>"
-# Example: ./scripts/release.sh 0.1.0 "Initial release with core features"
+# Usage: ./scripts/release.sh <version>
+# Example: ./scripts/release.sh 0.1.2
+#
+# The changelog is automatically read from CHANGELOG.md [Unreleased] section.
+# Update CHANGELOG.md during development, then run this script to release.
 #
 # Prerequisites:
 # - .env file with Apple credentials and Sparkle key
 # - Keychain profile 'notary-profile' configured
 # - gh CLI authenticated
+# - CHANGELOG.md with [Unreleased] section
 # =============================================================================
 
 # Colors for output
@@ -66,18 +71,45 @@ APP_NAME="MyMacCleaner"
 SCHEME="MyMacCleaner"
 REPO="Prot10/MyMacCleaner"
 VERSION="${1:-}"
-CHANGELOG="${2:-}"
+CHANGELOG_FILE="CHANGELOG.md"
 
 # Validate arguments
 if [ -z "$VERSION" ]; then
-    echo -e "${YELLOW}Usage: ./scripts/release.sh <version> \"<changelog>\"${NC}"
-    echo "Example: ./scripts/release.sh 0.1.0 \"Initial release\""
+    echo -e "${YELLOW}Usage: ./scripts/release.sh <version>${NC}"
+    echo "Example: ./scripts/release.sh 0.1.2"
+    echo ""
+    echo "The changelog is read from CHANGELOG.md [Unreleased] section."
     exit 1
 fi
 
-if [ -z "$CHANGELOG" ]; then
-    echo -e "${YELLOW}Warning: No changelog provided. Using default message.${NC}"
-    CHANGELOG="Release v${VERSION}"
+# Read changelog from CHANGELOG.md [Unreleased] section
+if [ -f "$CHANGELOG_FILE" ]; then
+    # Extract lines between [Unreleased] and the next ## header
+    CHANGELOG_ITEMS=$(sed -n '/^## \[Unreleased\]/,/^## \[/p' "$CHANGELOG_FILE" | grep -E '^\s*-' | sed 's/^[[:space:]]*//' || true)
+
+    if [ -z "$CHANGELOG_ITEMS" ]; then
+        echo -e "${RED}Error: No changes found in [Unreleased] section of CHANGELOG.md${NC}"
+        echo "Add your changes to CHANGELOG.md before releasing:"
+        echo ""
+        echo "## [Unreleased]"
+        echo "- [added] New feature description"
+        echo "- [fixed] Bug fix description"
+        exit 1
+    fi
+
+    # Convert changelog items to single line for appcast (remove [type] prefix)
+    CHANGELOG=$(echo "$CHANGELOG_ITEMS" | sed 's/- \[[^]]*\] /- /' | head -5 | tr '\n' ' ' | sed 's/  */ /g' | sed 's/^ *//' | sed 's/ *$//')
+
+    # Keep full changelog for GitHub release
+    CHANGELOG_FULL="$CHANGELOG_ITEMS"
+
+    echo -e "${GREEN}Found changelog from CHANGELOG.md:${NC}"
+    echo "$CHANGELOG_ITEMS"
+    echo ""
+else
+    echo -e "${RED}Error: CHANGELOG.md not found${NC}"
+    echo "Create CHANGELOG.md with an [Unreleased] section"
+    exit 1
 fi
 
 # Get current build number and increment
@@ -96,7 +128,7 @@ echo ""
 # =============================================================================
 # Step 1: Update version in Xcode project
 # =============================================================================
-echo -e "${YELLOW}[1/10] Updating version in Xcode project...${NC}"
+echo -e "${YELLOW}[1/11] Updating version in Xcode project...${NC}"
 
 # Update MARKETING_VERSION (display version)
 sed -i '' "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = ${VERSION};/g" "${APP_NAME}.xcodeproj/project.pbxproj"
@@ -110,7 +142,7 @@ echo -e "${GREEN}Version updated to ${VERSION} (build ${NEW_BUILD})${NC}"
 # Step 2: Clean and build
 # =============================================================================
 echo ""
-echo -e "${YELLOW}[2/10] Building and archiving...${NC}"
+echo -e "${YELLOW}[2/11] Building and archiving...${NC}"
 
 rm -rf build
 mkdir -p build
@@ -138,7 +170,7 @@ echo -e "${GREEN}Archive created successfully${NC}"
 # Step 3: Export signed app
 # =============================================================================
 echo ""
-echo -e "${YELLOW}[3/10] Exporting signed app...${NC}"
+echo -e "${YELLOW}[3/11] Exporting signed app...${NC}"
 
 mkdir -p build/export
 
@@ -176,7 +208,7 @@ echo -e "${GREEN}App exported successfully${NC}"
 # Step 4: Notarize the app
 # =============================================================================
 echo ""
-echo -e "${YELLOW}[4/10] Notarizing app...${NC}"
+echo -e "${YELLOW}[4/11] Notarizing app...${NC}"
 
 cd build/export
 ditto -c -k --keepParent "${APP_NAME}.app" "../notarization.zip"
@@ -197,7 +229,7 @@ echo -e "${GREEN}App notarized and stapled successfully${NC}"
 # Step 5: Create DMG
 # =============================================================================
 echo ""
-echo -e "${YELLOW}[5/10] Creating DMG...${NC}"
+echo -e "${YELLOW}[5/11] Creating DMG...${NC}"
 
 mkdir -p build/dmg-contents
 cp -R "build/export/${APP_NAME}.app" build/dmg-contents/
@@ -214,7 +246,7 @@ echo -e "${GREEN}DMG created successfully${NC}"
 # Step 6: Sign and notarize DMG
 # =============================================================================
 echo ""
-echo -e "${YELLOW}[6/10] Signing and notarizing DMG...${NC}"
+echo -e "${YELLOW}[6/11] Signing and notarizing DMG...${NC}"
 
 codesign --force --sign "${MACOS_CERTIFICATE_SHA1}" \
     --options runtime --timestamp \
@@ -232,7 +264,7 @@ echo -e "${GREEN}DMG signed and notarized successfully${NC}"
 # Step 7: Create ZIP for Sparkle and sign
 # =============================================================================
 echo ""
-echo -e "${YELLOW}[7/10] Creating Sparkle update ZIP...${NC}"
+echo -e "${YELLOW}[7/11] Creating Sparkle update ZIP...${NC}"
 
 cd build/export
 zip -r -y "../${APP_NAME}-v${VERSION}.zip" "${APP_NAME}.app"
@@ -267,7 +299,7 @@ echo "Signature: ${ED_SIGNATURE:0:20}..."
 # Step 8: Update appcast.xml
 # =============================================================================
 echo ""
-echo -e "${YELLOW}[8/10] Updating appcast.xml...${NC}"
+echo -e "${YELLOW}[8/11] Updating appcast.xml...${NC}"
 
 # Get current date in RFC 2822 format
 PUB_DATE=$(date -R)
@@ -319,7 +351,7 @@ echo -e "${GREEN}appcast.xml updated${NC}"
 # Step 9: Update releases.json
 # =============================================================================
 echo ""
-echo -e "${YELLOW}[9/10] Updating releases.json...${NC}"
+echo -e "${YELLOW}[9/11] Updating releases.json...${NC}"
 
 RELEASE_DATE=$(date +%Y-%m-%d)
 
@@ -378,7 +410,7 @@ echo -e "${GREEN}releases.json updated${NC}"
 # Step 10: Create GitHub release and push
 # =============================================================================
 echo ""
-echo -e "${YELLOW}[10/10] Creating GitHub release and pushing changes...${NC}"
+echo -e "${YELLOW}[10/11] Creating GitHub release and pushing changes...${NC}"
 
 # Create GitHub release
 gh release create "v${VERSION}" \
@@ -399,6 +431,73 @@ ${CHANGELOG}
 Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
 
 git push origin main
+
+# =============================================================================
+# Step 11: Update CHANGELOG.md
+# =============================================================================
+echo ""
+echo -e "${YELLOW}[11/11] Updating CHANGELOG.md...${NC}"
+
+# Update CHANGELOG.md - move [Unreleased] items to new version section
+python3 << PYEOF
+import re
+from datetime import date
+
+version = "${VERSION}"
+today = date.today().strftime("%Y-%m-%d")
+
+with open('CHANGELOG.md', 'r') as f:
+    content = f.read()
+
+# Find the [Unreleased] section and its content
+unreleased_pattern = r'(## \[Unreleased\].*?\n)(.*?)(## \[)'
+match = re.search(unreleased_pattern, content, re.DOTALL)
+
+if match:
+    unreleased_header = match.group(1)
+    unreleased_content = match.group(2)
+    next_section = match.group(3)
+
+    # Create new version section
+    new_version_section = f"## [{version}] - {today}\n\n"
+
+    # Extract just the changelog items (lines starting with -)
+    items = [line for line in unreleased_content.split('\n') if line.strip().startswith('-')]
+    if items:
+        new_version_section += '\n'.join(items) + '\n\n'
+
+    # Reset [Unreleased] section with template
+    new_unreleased = """## [Unreleased]
+
+<!-- Add your changes here during development. This section will be used for the next release. -->
+<!-- Format: - [type] Description -->
+<!-- Types: added, changed, fixed, removed -->
+
+"""
+
+    # Replace in content
+    content = content.replace(
+        unreleased_header + unreleased_content + next_section,
+        new_unreleased + new_version_section + next_section
+    )
+
+    with open('CHANGELOG.md', 'w') as f:
+        f.write(content)
+
+    print(f"Updated CHANGELOG.md with version {version}")
+else:
+    print("Warning: Could not parse CHANGELOG.md structure")
+
+PYEOF
+
+# Commit changelog update
+git add CHANGELOG.md
+git commit -m "docs: update CHANGELOG.md for v${VERSION}
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+git push origin main
+
+echo -e "${GREEN}CHANGELOG.md updated${NC}"
 
 echo ""
 echo -e "${GREEN}==========================================${NC}"
