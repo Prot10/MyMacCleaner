@@ -1,9 +1,28 @@
 {
   "releases": [
     {
-      "version": "0.1.6",
+      "version": "0.1.7",
       "date": "2026-01-23",
       "latest": true,
+      "minOS": "macOS 14.0+",
+      "architecture": "Universal (Apple Silicon + Intel)",
+      "downloads": {
+        "dmg": {
+          "url": "https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.7/MyMacCleaner-v0.1.7.dmg",
+          "size": "4.6 MB"
+        }
+      },
+      "changelog": [
+        {
+          "type": "fixed",
+          "description": "Fixed update button visibility with polling mechanism"
+        }
+      ]
+    },
+    {
+      "version": "0.1.6",
+      "date": "2026-01-23",
+      "latest": false,
       "minOS": "macOS 14.0+",
       "architecture": "Universal (Apple Silicon + Intel)",
       "downloads": {
