@@ -5,25 +5,31 @@ import SwiftUI
 
 struct UpdateToolbarItem: View {
     @Environment(UpdateManager.self) var updateManager
-    @State private var forceRefresh = false
+    @State private var showButton = false
 
     var body: some View {
-        // Use both @Observable and notification-based refresh
-        let _ = forceRefresh // Force view to depend on this state
-
-        Group {
-            if updateManager.updateAvailable {
-                UpdateAvailableButton()
+        // Always render the button but control visibility
+        // This ensures toolbar item exists and updates properly
+        UpdateAvailableButton()
+            .opacity(showButton ? 1 : 0)
+            .frame(width: showButton ? nil : 0, height: showButton ? nil : 0)
+            .allowsHitTesting(showButton)
+            .onAppear {
+                showButton = updateManager.updateAvailable
+                print("[UpdateToolbarItem] onAppear, showButton: \(showButton)")
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .updateAvailabilityChanged)) { _ in
-            // Force refresh when notification is received
-            print("[UpdateToolbarItem] Received update availability notification, updateAvailable: \(updateManager.updateAvailable)")
-            forceRefresh.toggle()
-        }
-        .onAppear {
-            print("[UpdateToolbarItem] onAppear, updateAvailable: \(updateManager.updateAvailable)")
-        }
+            .onReceive(NotificationCenter.default.publisher(for: .updateAvailabilityChanged)) { _ in
+                print("[UpdateToolbarItem] Notification received, updateAvailable: \(updateManager.updateAvailable)")
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    showButton = updateManager.updateAvailable
+                }
+            }
+            .onChange(of: updateManager.updateAvailable) { _, newValue in
+                print("[UpdateToolbarItem] onChange, newValue: \(newValue)")
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    showButton = newValue
+                }
+            }
     }
 }
 
