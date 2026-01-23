@@ -7,6 +7,22 @@
         <language>en</language>
 
         <item>
+            <title>Version 0.1.3</title>
+            <pubDate>Fri, 23 Jan 2026 15:51:31 +0100</pubDate>
+            <sparkle:version>4</sparkle:version>
+            <sparkle:shortVersionString>0.1.3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <h2>What's New in Version 0.1.3</h2>
+                <ul>
+                    <li>- Rebuild with correct toolbar rendering code</li>
+                </ul>
+            ]]></description>
+            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.3/MyMacCleaner-v0.1.3.zip" sparkle:edSignature="jfBkC5RpYr/LYwa6hTQ44zTmmV26qFRhzMuwYjRtgyBkPtLRjEDn2/e/pqsilFPpdmBFcHzdEBTyHgn7aIHBCQ==" length="4451191" type="application/octet-stream"/>
+        </item>
+
+
+        <item>
             <title>Version 0.1.2</title>
             <pubDate>Fri, 23 Jan 2026 15:33:22 +0100</pubDate>
             <sparkle:version>3</sparkle:version>
