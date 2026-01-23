@@ -5,36 +5,24 @@ import SwiftUI
 
 struct UpdateToolbarItem: View {
     @Environment(UpdateManager.self) var updateManager
-    @State private var showButton = false
+    @State private var forceRefresh = false
 
     var body: some View {
+        // Use both @Observable and notification-based refresh
+        let _ = forceRefresh // Force view to depend on this state
+
         Group {
-            if showButton {
+            if updateManager.updateAvailable {
                 UpdateAvailableButton()
             }
         }
-        .onAppear {
-            // Check immediately
-            showButton = updateManager.updateAvailable
-
-            // Also poll periodically in case the state changes
-            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
-                let shouldShow = updateManager.updateAvailable
-                if shouldShow != showButton {
-                    withAnimation {
-                        showButton = shouldShow
-                    }
-                }
-                // Stop polling once we find an update
-                if shouldShow {
-                    timer.invalidate()
-                }
-            }
+        .onReceive(NotificationCenter.default.publisher(for: .updateAvailabilityChanged)) { _ in
+            // Force refresh when notification is received
+            print("[UpdateToolbarItem] Received update availability notification, updateAvailable: \(updateManager.updateAvailable)")
+            forceRefresh.toggle()
         }
-        .onChange(of: updateManager.updateAvailable) { _, newValue in
-            withAnimation {
-                showButton = newValue
-            }
+        .onAppear {
+            print("[UpdateToolbarItem] onAppear, updateAvailable: \(updateManager.updateAvailable)")
         }
     }
 }
@@ -54,8 +42,9 @@ struct UpdateAvailableButton: View {
                 Image(systemName: "arrow.down.circle.fill")
                     .foregroundStyle(.orange)
 
+                // Show version number
                 if let version = updateManager.availableVersion {
-                    Text(version)
+                    Text("v\(version)")
                         .foregroundStyle(.orange)
                 }
             }

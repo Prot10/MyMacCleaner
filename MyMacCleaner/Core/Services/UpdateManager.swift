@@ -1,6 +1,11 @@
 import SwiftUI
 import Combine
 
+// MARK: - Update Available Notification
+extension Notification.Name {
+    static let updateAvailabilityChanged = Notification.Name("updateAvailabilityChanged")
+}
+
 // MARK: - Update Manager
 // Handles auto-updates via Sparkle framework
 // Note: Sparkle must be added via File > Add Package Dependencies in Xcode
@@ -18,7 +23,15 @@ final class UpdateManager: NSObject, SPUUpdaterDelegate {
     var lastUpdateCheck: Date?
 
     // Update availability state
-    var updateAvailable: Bool = false
+    var updateAvailable: Bool = false {
+        didSet {
+            if updateAvailable != oldValue {
+                print("[UpdateManager] updateAvailable changed: \(oldValue) -> \(updateAvailable)")
+                // Broadcast notification for views that might not observe @Observable properly
+                NotificationCenter.default.post(name: .updateAvailabilityChanged, object: nil)
+            }
+        }
+    }
     var availableVersion: String?
     var updateDismissed: Bool = false
 
@@ -36,6 +49,8 @@ final class UpdateManager: NSObject, SPUUpdaterDelegate {
         )
 
         super.init()
+
+        print("[UpdateManager] Initializing...")
 
         // Default to automatically checking for updates on first launch
         if !UserDefaults.standard.bool(forKey: "SUHasLaunchedBefore") {
@@ -62,18 +77,11 @@ final class UpdateManager: NSObject, SPUUpdaterDelegate {
         // Start the updater
         updaterController.startUpdater()
 
-        // Check for updates once canCheckForUpdates becomes true
-        updaterController.updater.publisher(for: \.canCheckForUpdates)
-            .receive(on: DispatchQueue.main)
-            .filter { $0 == true }
-            .first()
-            .sink { [weak self] _ in
-                // Small delay to ensure everything is ready
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self?.checkForUpdatesQuietly()
-                }
-            }
-            .store(in: &cancellables)
+        // Check for updates immediately on launch
+        print("[UpdateManager] Starting initial update check...")
+        Task { @MainActor in
+            await self.checkAppcastForUpdates()
+        }
     }
 
     /// Check for updates interactively (shows UI)
@@ -109,41 +117,75 @@ final class UpdateManager: NSObject, SPUUpdaterDelegate {
     // MARK: - Manual Appcast Check
 
     /// Manually fetch and parse the appcast to check for updates
+    @MainActor
     private func checkAppcastForUpdates() async {
-        guard let feedURL = updaterController.updater.feedURL else {
-            print("[UpdateManager] No feed URL configured")
+        // Use hardcoded URL with cache-busting query parameter
+        let timestamp = Int(Date().timeIntervalSince1970)
+        let feedURLString = "https://raw.githubusercontent.com/Prot10/MyMacCleaner/main/appcast.xml?t=\(timestamp)"
+        guard let feedURL = URL(string: feedURLString) else {
+            print("[UpdateManager] ERROR: Invalid feed URL")
             return
         }
 
         print("[UpdateManager] Fetching appcast from: \(feedURL)")
 
+        // Create a URL request with no caching
+        var request = URLRequest(url: feedURL)
+        request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+        request.timeoutInterval = 15
+
         do {
-            let (data, _) = try await URLSession.shared.data(from: feedURL)
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+            // Log response status
+            if let httpResponse = response as? HTTPURLResponse {
+                print("[UpdateManager] HTTP Response: \(httpResponse.statusCode)")
+                if httpResponse.statusCode != 200 {
+                    print("[UpdateManager] ERROR: Non-200 status code")
+                    return
+                }
+            }
+
+            // Log data size
+            print("[UpdateManager] Received \(data.count) bytes")
+
+            // Parse the appcast
             let parser = AppcastParser()
             if let latestVersion = parser.parseLatestVersion(from: data) {
                 let currentBuildStr = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
                 let currentShortVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
 
-                print("[UpdateManager] Current: \(currentShortVersion) (build \(currentBuildStr)), Latest: \(latestVersion.displayVersion) (build \(latestVersion.buildNumber))")
+                print("[UpdateManager] Current: v\(currentShortVersion) (build \(currentBuildStr))")
+                print("[UpdateManager] Latest:  v\(latestVersion.displayVersion) (build \(latestVersion.buildNumber))")
 
                 // Compare build numbers
                 if let latestBuild = Int(latestVersion.buildNumber),
-                   let currentBuild = Int(currentBuildStr),
-                   latestBuild > currentBuild {
-                    print("[UpdateManager] Update available! Setting updateAvailable = true")
-                    await MainActor.run {
+                   let currentBuild = Int(currentBuildStr) {
+                    print("[UpdateManager] Comparing builds: \(latestBuild) > \(currentBuild) = \(latestBuild > currentBuild)")
+
+                    if latestBuild > currentBuild {
+                        print("[UpdateManager] ✅ UPDATE AVAILABLE! Setting updateAvailable = true")
                         self.availableVersion = latestVersion.displayVersion
                         self.updateAvailable = true
                         self.updateDismissed = false
+                    } else {
+                        print("[UpdateManager] ℹ️ No update available (current >= latest)")
+                        self.updateAvailable = false
                     }
                 } else {
-                    print("[UpdateManager] No update available (current build \(currentBuildStr) >= latest build \(latestVersion.buildNumber))")
+                    print("[UpdateManager] ERROR: Could not parse build numbers as integers")
+                    print("[UpdateManager]   latestBuild: '\(latestVersion.buildNumber)' -> \(Int(latestVersion.buildNumber) as Any)")
+                    print("[UpdateManager]   currentBuild: '\(currentBuildStr)' -> \(Int(currentBuildStr) as Any)")
                 }
             } else {
-                print("[UpdateManager] Failed to parse appcast")
+                print("[UpdateManager] ERROR: Failed to parse appcast XML")
+                // Log first 500 chars of data for debugging
+                if let xmlString = String(data: data.prefix(500), encoding: .utf8) {
+                    print("[UpdateManager] XML preview: \(xmlString)")
+                }
             }
         } catch {
-            print("[UpdateManager] Failed to check for updates: \(error)")
+            print("[UpdateManager] ERROR: Network request failed: \(error.localizedDescription)")
         }
     }
 }
