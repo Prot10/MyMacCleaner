@@ -82,6 +82,19 @@ if [ -z "$VERSION" ]; then
     exit 1
 fi
 
+# Check if release already exists on GitHub
+if gh release view "v${VERSION}" --repo "${REPO}" &>/dev/null; then
+    echo -e "${RED}Error: Release v${VERSION} already exists on GitHub${NC}"
+    echo ""
+    echo "To re-release this version, first delete the existing release:"
+    echo "  gh release delete v${VERSION} --repo ${REPO} --yes"
+    echo "  git tag -d v${VERSION}"
+    echo "  git push origin --delete v${VERSION}"
+    echo ""
+    echo "Then run this script again."
+    exit 1
+fi
+
 # Read changelog from CHANGELOG.md [Unreleased] section
 if [ -f "$CHANGELOG_FILE" ]; then
     # Extract lines between [Unreleased] and the next ## header
