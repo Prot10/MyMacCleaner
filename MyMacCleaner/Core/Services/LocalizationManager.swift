@@ -45,6 +45,7 @@ private let keyPrefixToTable: [(prefix: String, table: String)] = [
     ("privacy.", "DiskCleaner"),
     ("scanResults.", "Home"),
     ("settings.", "Settings"),
+    ("update.", "Settings"),
     ("sidebar.", "Common"),
     ("spaceLens.", "DiskCleaner"),
     ("startupItems.", "StartupItems"),
