@@ -1,9 +1,26 @@
 {
   "releases": [
     {
-      "version": "1.1.5",
+      "version": "1.1.6",
       "date": "2026-01-23",
       "latest": true,
+      "minOS": "macOS 14.0+",
+      "architecture": "Universal (Apple Silicon + Intel)",
+      "downloads": {
+        "dmg": {
+          "url": "https://github.com/Prot10/MyMacCleaner/releases/download/v1.1.6/MyMacCleaner-v1.1.6.dmg",
+          "size": "4.2 MB"
+        }
+      },
+      "changelog": [
+        { "type": "added", "description": "Update notification button in toolbar when updates are available" },
+        { "type": "added", "description": "Update dialog with current/new version comparison and download option" }
+      ]
+    },
+    {
+      "version": "1.1.5",
+      "date": "2026-01-23",
+      "latest": false,
       "minOS": "macOS 14.0+",
       "architecture": "Universal (Apple Silicon + Intel)",
       "downloads": {

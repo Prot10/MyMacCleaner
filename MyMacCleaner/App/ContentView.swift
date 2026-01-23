@@ -287,6 +287,7 @@ struct DetailContentView: View {
 
     // CRITICAL: This makes SwiftUI observe language changes
     @Environment(LocalizationManager.self) var localization
+    @Environment(UpdateManager.self) var updateManager
 
     var body: some View {
         ZStack {
@@ -304,6 +305,12 @@ struct DetailContentView: View {
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Spacer()
+            }
+            // Update available button (only shows when update is available)
+            if updateManager.updateAvailable {
+                ToolbarItem(placement: .automatic) {
+                    UpdateAvailableButton()
+                }
             }
             ToolbarItem(placement: .automatic) {
                 LanguageSwitcherButton()
