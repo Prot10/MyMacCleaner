@@ -1,9 +1,28 @@
 {
   "releases": [
     {
-      "version": "0.1.3",
+      "version": "0.1.4",
       "date": "2026-01-23",
       "latest": true,
+      "minOS": "macOS 14.0+",
+      "architecture": "Universal (Apple Silicon + Intel)",
+      "downloads": {
+        "dmg": {
+          "url": "https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.4/MyMacCleaner-v0.1.4.dmg",
+          "size": "4.6 MB"
+        }
+      },
+      "changelog": [
+        {
+          "type": "changed",
+          "description": "Test release for update button verification"
+        }
+      ]
+    },
+    {
+      "version": "0.1.3",
+      "date": "2026-01-23",
+      "latest": false,
       "minOS": "macOS 14.0+",
       "architecture": "Universal (Apple Silicon + Intel)",
       "downloads": {
