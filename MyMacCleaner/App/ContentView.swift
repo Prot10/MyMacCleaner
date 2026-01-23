@@ -306,12 +306,9 @@ struct DetailContentView: View {
             ToolbarItem(placement: .automatic) {
                 Spacer()
             }
-            // Update available button (always present, visibility controlled by opacity)
+            // Update available button - uses wrapper that handles visibility
             ToolbarItem(placement: .automatic) {
-                UpdateAvailableButton()
-                    .opacity(updateManager.updateAvailable ? 1 : 0)
-                    .frame(width: updateManager.updateAvailable ? nil : 0)
-                    .disabled(!updateManager.updateAvailable)
+                UpdateToolbarItem()
             }
             ToolbarItem(placement: .automatic) {
                 LanguageSwitcherButton()

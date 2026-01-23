@@ -1,5 +1,44 @@
 import SwiftUI
 
+// MARK: - Update Available Toolbar Item
+// This wrapper handles conditional visibility in the toolbar
+
+struct UpdateToolbarItem: View {
+    @Environment(UpdateManager.self) var updateManager
+    @State private var showButton = false
+
+    var body: some View {
+        Group {
+            if showButton {
+                UpdateAvailableButton()
+            }
+        }
+        .onAppear {
+            // Check immediately
+            showButton = updateManager.updateAvailable
+
+            // Also poll periodically in case the state changes
+            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+                let shouldShow = updateManager.updateAvailable
+                if shouldShow != showButton {
+                    withAnimation {
+                        showButton = shouldShow
+                    }
+                }
+                // Stop polling once we find an update
+                if shouldShow {
+                    timer.invalidate()
+                }
+            }
+        }
+        .onChange(of: updateManager.updateAvailable) { _, newValue in
+            withAnimation {
+                showButton = newValue
+            }
+        }
+    }
+}
+
 // MARK: - Update Available Button
 
 struct UpdateAvailableButton: View {
