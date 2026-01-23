@@ -77,9 +77,12 @@ final class UpdateManager: NSObject, SPUUpdaterDelegate {
         // Start the updater
         updaterController.startUpdater()
 
-        // Check for updates immediately on launch
-        print("[UpdateManager] Starting initial update check...")
+        // Check for updates after a brief delay to ensure UI is ready
+        print("[UpdateManager] Scheduling initial update check...")
         Task { @MainActor in
+            // Small delay to ensure app is fully initialized and UI is ready
+            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+            print("[UpdateManager] Running initial update check...")
             await self.checkAppcastForUpdates()
         }
     }
