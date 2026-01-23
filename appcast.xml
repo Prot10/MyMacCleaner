@@ -8,7 +8,7 @@
 
         <item>
             <title>Version 0.1.0</title>
-            <pubDate>Fri, 23 Jan 2026 10:20:26 +0100</pubDate>
+            <pubDate>Thu, 23 Jan 2026 10:50:00 +0100</pubDate>
             <sparkle:version>1</sparkle:version>
             <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
@@ -16,9 +16,10 @@
                 <h2>What's New in Version 0.1.0</h2>
                 <ul>
                     <li>Initial beta release with all core features</li>
+                    <li>Update notification button in toolbar</li>
                 </ul>
             ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.0/MyMacCleaner-v0.1.0.zip" sparkle:edSignature="CBrelHhbYlvzEC7CRa8dtt5Qek2CiIAKcsOsH6ByxDGdT0K013atk/Zs6nFpfgFCe42EAMub9HSm1Hb4UWc7Cw==" length="4452540" type="application/octet-stream"/>
+            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.0/MyMacCleaner-v0.1.0.zip" sparkle:edSignature="+J5deyDoTc2yXmPs5L21J48YvNS1jJnfHkyIdrIC63NWh+WVakRqpoOt1f4akFTREto/3uOvmkXksNQPTP/yDw==" length="4440120" type="application/octet-stream"/>
         </item>
 
     </channel>
