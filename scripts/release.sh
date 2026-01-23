@@ -272,37 +272,46 @@ echo -e "${YELLOW}[8/10] Updating appcast.xml...${NC}"
 # Get current date in RFC 2822 format
 PUB_DATE=$(date -R)
 
-# Create the new item entry
-NEW_ITEM=$(cat << EOF
-        <item>
-            <title>Version ${VERSION}</title>
-            <pubDate>${PUB_DATE}</pubDate>
-            <sparkle:version>${NEW_BUILD}</sparkle:version>
-            <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
+# Use Python to update appcast.xml properly
+python3 << PYEOF
+import re
+
+version = "${VERSION}"
+build = "${NEW_BUILD}"
+pub_date = "${PUB_DATE}"
+changelog = "${CHANGELOG}"
+repo = "${REPO}"
+app_name = "${APP_NAME}"
+ed_signature = "${ED_SIGNATURE}"
+file_size = "${FILE_SIZE}"
+
+new_item = f'''        <item>
+            <title>Version {version}</title>
+            <pubDate>{pub_date}</pubDate>
+            <sparkle:version>{build}</sparkle:version>
+            <sparkle:shortVersionString>{version}</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-                <h2>What's New in Version ${VERSION}</h2>
+                <h2>What's New in Version {version}</h2>
                 <ul>
-                    <li>${CHANGELOG}</li>
+                    <li>{changelog}</li>
                 </ul>
             ]]></description>
-            <enclosure url="https://github.com/${REPO}/releases/download/v${VERSION}/${APP_NAME}-v${VERSION}.zip" sparkle:edSignature="${ED_SIGNATURE}" length="${FILE_SIZE}" type="application/octet-stream"/>
+            <enclosure url="https://github.com/{repo}/releases/download/v{version}/{app_name}-v{version}.zip" sparkle:edSignature="{ed_signature}" length="{file_size}" type="application/octet-stream"/>
         </item>
-EOF
-)
 
-# Insert new item after the comment line
-if grep -q "<!-- Releases will be added here" appcast.xml; then
-    # Fresh appcast, replace the comment
-    sed -i '' "s|<!-- Releases will be added here by the release script -->|${NEW_ITEM}|" appcast.xml
-else
-    # Add new item at the top (after <language>en</language>)
-    ESCAPED_ITEM=$(echo "$NEW_ITEM" | sed 's/[&/\]/\\&/g' | tr '\n' '\r')
-    sed -i '' "/<language>en<\/language>/a\\
-\\
-${NEW_ITEM}
-" appcast.xml
-fi
+'''
+
+with open('appcast.xml', 'r') as f:
+    content = f.read()
+
+# Insert after <language>en</language>
+content = content.replace('<language>en</language>\n', f'<language>en</language>\n\n{new_item}')
+
+with open('appcast.xml', 'w') as f:
+    f.write(content)
+
+PYEOF
 
 echo -e "${GREEN}appcast.xml updated${NC}"
 
