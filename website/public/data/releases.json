@@ -1,28 +1,9 @@
 {
   "releases": [
     {
-      "version": "0.1.1",
-      "date": "2026-01-23",
-      "latest": true,
-      "minOS": "macOS 14.0+",
-      "architecture": "Universal (Apple Silicon + Intel)",
-      "downloads": {
-        "dmg": {
-          "url": "https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.1/MyMacCleaner-v0.1.1.dmg",
-          "size": "4.7 MB"
-        }
-      },
-      "changelog": [
-        {
-          "type": "changed",
-          "description": "- Renamed Home to Homee for testing auto-updates"
-        }
-      ]
-    },
-    {
       "version": "0.1.0",
       "date": "2026-01-23",
-      "latest": false,
+      "latest": true,
       "minOS": "macOS 14.0+",
       "architecture": "Universal (Apple Silicon + Intel)",
       "downloads": {
@@ -33,8 +14,8 @@
       },
       "changelog": [
         {
-          "type": "changed",
-          "description": "- Initial release with auto-update functionality - Sparkle integration for seamless updates - Update notification button in toolbar"
+          "type": "added",
+          "description": "Initial release with auto-update functionality, Sparkle integration, and update notification button"
         }
       ]
     }
