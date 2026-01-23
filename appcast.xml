@@ -7,6 +7,22 @@
         <language>en</language>
 
         <item>
+            <title>Version 0.1.1</title>
+            <pubDate>Fri, 23 Jan 2026 16:16:22 +0100</pubDate>
+            <sparkle:version>3</sparkle:version>
+            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <h2>What's New in Version 0.1.1</h2>
+                <ul>
+                    <li>- Renamed Home to Homee for testing auto-updates</li>
+                </ul>
+            ]]></description>
+            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.1/MyMacCleaner-v0.1.1.zip" sparkle:edSignature="o9m8xwCY2uXerOo6JUmEwW3B/uMne109NUcxo4r/9hJ4N06L2ucOMuq/bZXT/MF1vIM2fePX0fPPZthDY/38BA==" length="4451204" type="application/octet-stream"/>
+        </item>
+
+
+        <item>
             <title>Version 0.1.0</title>
             <pubDate>Fri, 23 Jan 2026 16:10:28 +0100</pubDate>
             <sparkle:version>2</sparkle:version>
