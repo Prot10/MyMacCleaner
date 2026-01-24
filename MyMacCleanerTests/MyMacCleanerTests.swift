@@ -10,14 +10,17 @@ struct NavigationSectionTests {
     @Test("All navigation sections are defined")
     func allSectionsExist() async throws {
         let sections = NavigationSection.allCases
-        #expect(sections.count == 7)
+        #expect(sections.count == 10)
         #expect(sections.contains(.home))
         #expect(sections.contains(.diskCleaner))
+        #expect(sections.contains(.orphanedFiles))
+        #expect(sections.contains(.duplicates))
         #expect(sections.contains(.performance))
         #expect(sections.contains(.applications))
         #expect(sections.contains(.startupItems))
         #expect(sections.contains(.portManagement))
         #expect(sections.contains(.systemHealth))
+        #expect(sections.contains(.permissions))
     }
 
     @Test("Each section has a unique raw value")
