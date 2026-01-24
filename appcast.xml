@@ -6,5 +6,21 @@
         <description>Most recent changes with links to updates.</description>
         <language>en</language>
 
+        <item>
+            <title>Version 0.1.0</title>
+            <pubDate>Sat, 24 Jan 2026 13:11:44 +0100</pubDate>
+            <sparkle:version>2</sparkle:version>
+            <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <h2>What's New in Version 0.1.0</h2>
+                <ul>
+                    <li>- Initial release with full feature set - Sparkle integration for seamless updates</li>
+                </ul>
+            ]]></description>
+            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.0/MyMacCleaner-v0.1.0.zip" sparkle:edSignature="Fj53pJSHj8FM9KjhXmaxXo+2eQr2i4C2NMUtjF8AUUHFGkfbo8X7LzhB5jUWV7Gzg68JJ+xbrNm/Ds2V3NABBQ==" length="4451195" type="application/octet-stream"/>
+        </item>
+
+
     </channel>
 </rss>
