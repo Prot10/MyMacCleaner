@@ -13,3 +13,4 @@ All notable changes to MyMacCleaner will be documented in this file.
 - [fixed] Permissions page now uses consistent header styling (fonts, spacing) matching other views
 - [fixed] Permissions refresh button now uses GlassActionButton component like other pages
 - [fixed] NavigationSectionTests updated to include all 10 navigation sections
+- [fixed] Flaky testSidebarNavigation UI test now checks for correct elements
