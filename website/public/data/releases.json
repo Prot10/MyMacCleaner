@@ -1,9 +1,28 @@
 {
   "releases": [
     {
-      "version": "0.1.0",
+      "version": "0.1.1",
       "date": "2026-01-24",
       "latest": true,
+      "minOS": "macOS 14.0+",
+      "architecture": "Universal (Apple Silicon + Intel)",
+      "downloads": {
+        "dmg": {
+          "url": "https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.1/MyMacCleaner-v0.1.1.dmg",
+          "size": "4.7 MB"
+        }
+      },
+      "changelog": [
+        {
+          "type": "changed",
+          "description": "- `pageTopPadding` theme constant for consistent page layouts - All feature views now use dedicated top padding (32pt) for better visual consistency - Permissions page now uses consistent header styling (fonts, spacing) matching other views - Permissions refresh button now uses GlassActionButton component like other pages - NavigationSectionTests updated to include all 10 navigation sections"
+        }
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "date": "2026-01-24",
+      "latest": false,
       "minOS": "macOS 14.0+",
       "architecture": "Universal (Apple Silicon + Intel)",
       "downloads": {
