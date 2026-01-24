@@ -20,7 +20,9 @@ struct PermissionsView: View {
 
                 Spacer(minLength: Theme.Spacing.xl)
             }
-            .padding(Theme.Spacing.lg)
+            .padding(.horizontal, Theme.Spacing.lg)
+            .padding(.bottom, Theme.Spacing.lg)
+            .padding(.top, Theme.Spacing.pageTopPadding)
         }
         .onAppear {
             withAnimation(Theme.Animation.springSmooth) {
@@ -39,19 +41,18 @@ struct PermissionsView: View {
     // MARK: - Header Section
 
     private var headerSection: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+        HStack {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(L("permissions.title"))
-                    .font(Theme.Typography.largeTitle)
-                    .fontWeight(.bold)
+                    .font(Theme.Typography.size28Bold)
 
                 Text(L("permissions.subtitle"))
-                    .font(Theme.Typography.subheadline)
+                    .font(Theme.Typography.size13)
                     .foregroundStyle(.secondary)
 
                 if let lastChecked = viewModel.lastChecked {
                     Text(LFormat("permissions.lastChecked %@", formatRelativeTime(lastChecked)))
-                        .font(Theme.Typography.caption)
+                        .font(Theme.Typography.size11)
                         .foregroundStyle(.tertiary)
                 }
             }
@@ -59,27 +60,20 @@ struct PermissionsView: View {
             Spacer()
 
             // Refresh button
-            Button(action: {
+            GlassActionButton(
+                L("common.refresh"),
+                icon: viewModel.isLoading ? nil : "arrow.clockwise",
+                color: sectionColor,
+                disabled: viewModel.isLoading
+            ) {
                 viewModel.refreshAllPermissions()
-            }) {
-                HStack(spacing: Theme.Spacing.xxxs) {
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                    } else {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                    Text(L("permissions.action.refresh"))
-                }
-                .font(Theme.Typography.size13Medium)
-                .foregroundStyle(sectionColor)
-                .padding(.horizontal, 14)
-                .padding(.vertical, Theme.Spacing.xs)
-                .background(sectionColor.opacity(0.12))
-                .clipShape(Capsule())
             }
-            .buttonStyle(.plain)
-            .disabled(viewModel.isLoading)
+            .overlay {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+            }
         }
     }
 
