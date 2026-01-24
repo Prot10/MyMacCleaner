@@ -59,6 +59,70 @@ Save the private key to your `.env` file and add the public key to your app's `I
 
 ---
 
+## Release Methods
+
+There are **two ways** to release MyMacCleaner:
+
+| Method | When to Use | Command |
+|--------|-------------|---------|
+| **Local Script** | Default, full control | `./scripts/release.sh 0.1.2` |
+| **GitHub CI** | Remote/backup option | GitHub Actions → "Build and Release" → Run workflow |
+
+### ⚠️ Critical Rule: One Release = One Method
+
+**Never use both methods for the same version.** Here's why:
+
+```
+Local build  →  ZIP bytes: abc123...  →  Signature: XYZ...
+CI build     →  ZIP bytes: def456...  →  Signature: ABC...  (DIFFERENT!)
+```
+
+Even building the **exact same code** twice produces different files because:
+- Compilers embed build timestamps
+- Code signing includes Apple's timestamp
+- Linkers generate unique UUIDs
+
+The Sparkle signature is a hash of the ZIP file. Different bytes = different signature = **"improperly signed" error**.
+
+### Can I Mix Methods Across Releases?
+
+**Yes!** Each release is independent:
+
+| Release | Method | Works? |
+|---------|--------|--------|
+| v0.1.0 | Local | ✅ |
+| v0.1.1 | CI | ✅ |
+| v0.1.2 | Local | ✅ |
+| v0.1.3 | CI | ✅ |
+
+Just pick **one method per release** and stick with it.
+
+### Why CI Doesn't Auto-Trigger
+
+The GitHub workflow is configured to **NOT** trigger automatically on tag push:
+
+```yaml
+on:
+  # push:           # DISABLED - would conflict with local releases
+  #   tags: ['v*']
+  workflow_dispatch:  # Manual trigger only
+```
+
+This prevents CI from overwriting locally-created releases with different builds.
+
+### Using GitHub CI (Manual Trigger)
+
+If you prefer to release via CI instead of locally:
+
+1. Go to **GitHub → Actions → "Build and Release"**
+2. Click **"Run workflow"**
+3. Enter the version (e.g., `0.1.2`)
+4. Click **"Run workflow"**
+
+CI will build, sign, notarize, and create the release automatically.
+
+---
+
 ## Release Process
 
 ### Quick Release (Recommended)
@@ -285,11 +349,28 @@ Follow semantic versioning (MAJOR.MINOR.PATCH):
 2. **Check entitlements**: Ensure hardened runtime is enabled
 3. **Check signing**: Run `codesign -dvvv build/export/MyMacCleaner.app`
 
-### Sparkle signature error
+### Sparkle signature error ("improperly signed")
 
-1. **Check key match**: Public key in Info.plist must match private key used for signing
-2. **Re-sign the ZIP**: `./bin/sign_update build/MyMacCleaner-vX.X.X.zip`
-3. **Update appcast**: Ensure `sparkle:edSignature` matches the new signature
+**Most common cause:** Both local script AND CI ran for the same release.
+
+1. **Check if CI ran**: `gh run list --repo Prot10/MyMacCleaner --limit 5`
+2. **If CI overwrote your release**, delete and re-release:
+   ```bash
+   # Delete the broken release
+   gh release delete vX.X.X --repo Prot10/MyMacCleaner --yes
+   git tag -d vX.X.X
+   git push origin --delete vX.X.X
+
+   # Re-release (CI won't auto-trigger anymore)
+   ./scripts/release.sh X.X.X
+   ```
+
+**Other causes:**
+
+3. **Check key match**: Public key in Info.plist must match private key used for signing
+4. **Re-sign the ZIP**: `./bin/sign_update build/MyMacCleaner-vX.X.X.zip`
+5. **Update appcast**: Ensure `sparkle:edSignature` matches the new signature
+6. **Verify file size**: `appcast.xml` length must match actual ZIP size on GitHub
 
 ### GitHub release issues
 
