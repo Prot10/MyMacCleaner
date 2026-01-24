@@ -8,5 +8,8 @@ All notable changes to MyMacCleaner will be documented in this file.
 <!-- Format: - [type] Description -->
 <!-- Types: added, changed, fixed, removed -->
 
-- [added] Initial release with full feature set
-- [added] Sparkle integration for seamless updates
+- [added] `pageTopPadding` theme constant for consistent page layouts
+- [changed] All feature views now use dedicated top padding (32pt) for better visual consistency
+- [fixed] Permissions page now uses consistent header styling (fonts, spacing) matching other views
+- [fixed] Permissions refresh button now uses GlassActionButton component like other pages
+- [fixed] NavigationSectionTests updated to include all 10 navigation sections
