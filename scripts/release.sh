@@ -435,38 +435,101 @@ gh release create "v${VERSION}" \
 
 echo -e "${GREEN}GitHub release created${NC}"
 
-# CRITICAL: Verify uploaded ZIP and re-sign if needed
-echo "Verifying uploaded ZIP..."
-sleep 3  # Give GitHub time to process
+# CRITICAL: Verify uploaded ZIP and re-sign with the ACTUAL GitHub file
+# This ensures Sparkle signature always matches what users download
+echo "Waiting for GitHub to process upload..."
+sleep 10  # Give GitHub more time to process
 
-curl -L -s -o "/tmp/github-uploaded-${VERSION}.zip" \
-    "https://github.com/${REPO}/releases/download/v${VERSION}/${APP_NAME}-v${VERSION}.zip"
+GITHUB_ZIP_URL="https://github.com/${REPO}/releases/download/v${VERSION}/${APP_NAME}-v${VERSION}.zip"
+GITHUB_ZIP_PATH="/tmp/github-uploaded-${VERSION}.zip"
 
-LOCAL_SHA=$(shasum -a 256 "build/${APP_NAME}-v${VERSION}.zip" | cut -d' ' -f1)
-GITHUB_SHA=$(shasum -a 256 "/tmp/github-uploaded-${VERSION}.zip" | cut -d' ' -f1)
+# Download with retries and verification
+MAX_RETRIES=5
+RETRY_DELAY=5
+for i in $(seq 1 $MAX_RETRIES); do
+    echo "Downloading GitHub ZIP (attempt $i/$MAX_RETRIES)..."
+    curl -L -s -o "$GITHUB_ZIP_PATH" "$GITHUB_ZIP_URL"
 
-if [ "$LOCAL_SHA" != "$GITHUB_SHA" ]; then
-    echo -e "${YELLOW}Warning: GitHub ZIP differs from local! Re-signing with GitHub version...${NC}"
+    # Verify it's actually a ZIP file (not HTML error page)
+    if file "$GITHUB_ZIP_PATH" | grep -q "Zip archive"; then
+        echo -e "${GREEN}Downloaded valid ZIP file${NC}"
+        break
+    else
+        echo -e "${YELLOW}Download failed or not a ZIP file, retrying in ${RETRY_DELAY}s...${NC}"
+        rm -f "$GITHUB_ZIP_PATH"
+        sleep $RETRY_DELAY
+        RETRY_DELAY=$((RETRY_DELAY * 2))
+    fi
 
-    # Re-sign the GitHub version
-    echo "$SPARKLE_PRIVATE_KEY" > /tmp/sparkle_key_verify
-    GITHUB_SIGNATURE_OUTPUT=$("$SPARKLE_SIGN" --ed-key-file /tmp/sparkle_key_verify "/tmp/github-uploaded-${VERSION}.zip")
-    rm -f /tmp/sparkle_key_verify
+    if [ $i -eq $MAX_RETRIES ]; then
+        echo -e "${RED}ERROR: Failed to download valid ZIP from GitHub after $MAX_RETRIES attempts${NC}"
+        echo "Please verify manually and update appcast.xml"
+        exit 1
+    fi
+done
 
-    GITHUB_ED_SIGNATURE=$(echo "$GITHUB_SIGNATURE_OUTPUT" | grep -o 'sparkle:edSignature="[^"]*"' | cut -d'"' -f2)
-    GITHUB_FILE_SIZE=$(stat -f%z "/tmp/github-uploaded-${VERSION}.zip")
+# ALWAYS re-sign with the actual GitHub file to ensure signature matches
+# This is the ONLY way to guarantee the signature is correct
+echo "Signing the actual GitHub ZIP file..."
+GITHUB_FILE_SIZE=$(stat -f%z "$GITHUB_ZIP_PATH")
 
-    # Update appcast.xml with correct signature
-    sed -i '' "s|sparkle:edSignature=\"${ED_SIGNATURE}\"|sparkle:edSignature=\"${GITHUB_ED_SIGNATURE}\"|g" appcast.xml
-    sed -i '' "s|length=\"${FILE_SIZE}\"|length=\"${GITHUB_FILE_SIZE}\"|g" appcast.xml
+echo "$SPARKLE_PRIVATE_KEY" > /tmp/sparkle_key_verify
+GITHUB_SIGNATURE_OUTPUT=$("$SPARKLE_SIGN" --ed-key-file /tmp/sparkle_key_verify "$GITHUB_ZIP_PATH")
+rm -f /tmp/sparkle_key_verify
 
-    ED_SIGNATURE="$GITHUB_ED_SIGNATURE"
-    FILE_SIZE="$GITHUB_FILE_SIZE"
+GITHUB_ED_SIGNATURE=$(echo "$GITHUB_SIGNATURE_OUTPUT" | grep -o 'sparkle:edSignature="[^"]*"' | cut -d'"' -f2)
 
-    echo -e "${GREEN}Appcast updated with correct GitHub signature${NC}"
+if [ -z "$GITHUB_ED_SIGNATURE" ]; then
+    echo -e "${RED}ERROR: Failed to generate signature for GitHub ZIP${NC}"
+    exit 1
 fi
 
-rm -f "/tmp/github-uploaded-${VERSION}.zip"
+echo "GitHub ZIP size: $GITHUB_FILE_SIZE bytes"
+echo "GitHub ZIP signature: ${GITHUB_ED_SIGNATURE:0:30}..."
+
+# Update appcast.xml with the CORRECT signature for the GitHub file
+# Use Python for reliable XML-safe replacement
+python3 << PYEOF
+import re
+
+version = "${VERSION}"
+new_signature = "${GITHUB_ED_SIGNATURE}"
+new_size = "${GITHUB_FILE_SIZE}"
+
+with open('appcast.xml', 'r') as f:
+    content = f.read()
+
+# Find and update the enclosure for this version
+# Match the enclosure line for this specific version
+pattern = r'(download/v' + re.escape(version) + r'/[^"]+\.zip"\s+sparkle:edSignature=")[^"]*("\s+length=")[^"]*(")'
+replacement = r'\g<1>' + new_signature + r'\g<2>' + new_size + r'\g<3>'
+
+new_content, count = re.subn(pattern, replacement, content)
+
+if count == 0:
+    print(f"ERROR: Could not find enclosure for version {version} in appcast.xml")
+    exit(1)
+
+with open('appcast.xml', 'w') as f:
+    f.write(new_content)
+
+print(f"Updated appcast.xml: signature and length for v{version}")
+PYEOF
+
+# Verify the update was successful
+if ! grep -q "sparkle:edSignature=\"${GITHUB_ED_SIGNATURE}\"" appcast.xml; then
+    echo -e "${RED}ERROR: Failed to update appcast.xml with new signature${NC}"
+    exit 1
+fi
+
+if ! grep -q "length=\"${GITHUB_FILE_SIZE}\"" appcast.xml; then
+    echo -e "${RED}ERROR: Failed to update appcast.xml with new file size${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}Appcast verified: signature and size match GitHub ZIP${NC}"
+
+rm -f "$GITHUB_ZIP_PATH"
 
 # Git commit and push
 git add -A
