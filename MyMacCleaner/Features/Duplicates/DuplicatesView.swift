@@ -42,7 +42,9 @@ struct DuplicatesView: View {
                         }
                     }
                 }
-                .padding(Theme.Spacing.lg)
+                .padding(.horizontal, Theme.Spacing.lg)
+                .padding(.bottom, Theme.Spacing.lg)
+                .padding(.top, Theme.Spacing.pageTopPadding)
             }
 
             // Scanning overlay

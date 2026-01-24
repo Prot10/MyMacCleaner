@@ -146,6 +146,9 @@ enum Theme {
         static let xxxl: CGFloat = 40
         static let huge: CGFloat = 48
         static let massive: CGFloat = 64
+
+        /// Top padding for page content (used in all feature views)
+        static let pageTopPadding: CGFloat = 32
     }
 
     // MARK: - Corner Radius

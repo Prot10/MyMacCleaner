@@ -38,7 +38,9 @@ struct HomeView: View {
                     quickActionsSection
                         .staggeredAnimation(index: viewModel.showScanResults ? 4 : 3, isActive: isVisible)
                 }
-                .padding(Theme.Spacing.lg)
+                .padding(.horizontal, Theme.Spacing.lg)
+                .padding(.bottom, Theme.Spacing.lg)
+                .padding(.top, Theme.Spacing.pageTopPadding)
             }
 
             // Permission prompt overlay
