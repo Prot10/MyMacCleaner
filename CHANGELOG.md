@@ -8,8 +8,5 @@ All notable changes to MyMacCleaner will be documented in this file.
 <!-- Format: - [type] Description -->
 <!-- Types: added, changed, fixed, removed -->
 
-## [0.1.0] - 2026-01-23
-
-- [added] Initial release with auto-update functionality
+- [added] Initial release with full feature set
 - [added] Sparkle integration for seamless updates
-- [added] Update notification button in toolbar
