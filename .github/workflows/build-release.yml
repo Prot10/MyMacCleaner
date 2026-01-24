@@ -1,9 +1,12 @@
 name: Build and Release
 
+# DISABLED auto-trigger on tags - use local release.sh script instead
+# This prevents CI from overwriting locally-signed releases with different builds
+# To release via CI instead, use workflow_dispatch manually
 on:
-  push:
-    tags:
-      - 'v*'
+  # push:
+  #   tags:
+  #     - 'v*'
   workflow_dispatch:
     inputs:
       version:
