@@ -62,7 +62,9 @@ struct PerformanceView: View {
                             .staggeredAnimation(index: 2, isActive: isVisible)
                     }
                 }
-                .padding(Theme.Spacing.lg)
+                .padding(.horizontal, Theme.Spacing.lg)
+                .padding(.bottom, Theme.Spacing.lg)
+                .padding(.top, Theme.Spacing.pageTopPadding)
             }
 
             // Toast
