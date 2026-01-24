@@ -435,6 +435,39 @@ gh release create "v${VERSION}" \
 
 echo -e "${GREEN}GitHub release created${NC}"
 
+# CRITICAL: Verify uploaded ZIP and re-sign if needed
+echo "Verifying uploaded ZIP..."
+sleep 3  # Give GitHub time to process
+
+curl -L -s -o "/tmp/github-uploaded-${VERSION}.zip" \
+    "https://github.com/${REPO}/releases/download/v${VERSION}/${APP_NAME}-v${VERSION}.zip"
+
+LOCAL_SHA=$(shasum -a 256 "build/${APP_NAME}-v${VERSION}.zip" | cut -d' ' -f1)
+GITHUB_SHA=$(shasum -a 256 "/tmp/github-uploaded-${VERSION}.zip" | cut -d' ' -f1)
+
+if [ "$LOCAL_SHA" != "$GITHUB_SHA" ]; then
+    echo -e "${YELLOW}Warning: GitHub ZIP differs from local! Re-signing with GitHub version...${NC}"
+
+    # Re-sign the GitHub version
+    echo "$SPARKLE_PRIVATE_KEY" > /tmp/sparkle_key_verify
+    GITHUB_SIGNATURE_OUTPUT=$("$SPARKLE_SIGN" --ed-key-file /tmp/sparkle_key_verify "/tmp/github-uploaded-${VERSION}.zip")
+    rm -f /tmp/sparkle_key_verify
+
+    GITHUB_ED_SIGNATURE=$(echo "$GITHUB_SIGNATURE_OUTPUT" | grep -o 'sparkle:edSignature="[^"]*"' | cut -d'"' -f2)
+    GITHUB_FILE_SIZE=$(stat -f%z "/tmp/github-uploaded-${VERSION}.zip")
+
+    # Update appcast.xml with correct signature
+    sed -i '' "s|sparkle:edSignature=\"${ED_SIGNATURE}\"|sparkle:edSignature=\"${GITHUB_ED_SIGNATURE}\"|g" appcast.xml
+    sed -i '' "s|length=\"${FILE_SIZE}\"|length=\"${GITHUB_FILE_SIZE}\"|g" appcast.xml
+
+    ED_SIGNATURE="$GITHUB_ED_SIGNATURE"
+    FILE_SIZE="$GITHUB_FILE_SIZE"
+
+    echo -e "${GREEN}Appcast updated with correct GitHub signature${NC}"
+fi
+
+rm -f "/tmp/github-uploaded-${VERSION}.zip"
+
 # Git commit and push
 git add -A
 git commit -m "release: v${VERSION}
