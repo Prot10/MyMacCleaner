@@ -116,6 +116,28 @@ if [ -f "$CHANGELOG_FILE" ]; then
     # Keep full changelog for GitHub release
     CHANGELOG_FULL="$CHANGELOG_ITEMS"
 
+    # Create formatted GitHub release notes with proper markdown
+    # Group by type: added, changed, fixed, removed
+    GITHUB_NOTES="## What's New\n\n"
+
+    ADDED_ITEMS=$(echo "$CHANGELOG_ITEMS" | grep '\[added\]' | sed 's/- \[added\] /- /' || true)
+    CHANGED_ITEMS=$(echo "$CHANGELOG_ITEMS" | grep '\[changed\]' | sed 's/- \[changed\] /- /' || true)
+    FIXED_ITEMS=$(echo "$CHANGELOG_ITEMS" | grep '\[fixed\]' | sed 's/- \[fixed\] /- /' || true)
+    REMOVED_ITEMS=$(echo "$CHANGELOG_ITEMS" | grep '\[removed\]' | sed 's/- \[removed\] /- /' || true)
+
+    if [ -n "$ADDED_ITEMS" ]; then
+        GITHUB_NOTES+="### Added\n${ADDED_ITEMS}\n\n"
+    fi
+    if [ -n "$CHANGED_ITEMS" ]; then
+        GITHUB_NOTES+="### Changed\n${CHANGED_ITEMS}\n\n"
+    fi
+    if [ -n "$FIXED_ITEMS" ]; then
+        GITHUB_NOTES+="### Fixed\n${FIXED_ITEMS}\n\n"
+    fi
+    if [ -n "$REMOVED_ITEMS" ]; then
+        GITHUB_NOTES+="### Removed\n${REMOVED_ITEMS}\n\n"
+    fi
+
     echo -e "${GREEN}Found changelog from CHANGELOG.md:${NC}"
     echo "$CHANGELOG_ITEMS"
     echo ""
@@ -425,13 +447,18 @@ echo -e "${GREEN}releases.json updated${NC}"
 echo ""
 echo -e "${YELLOW}[10/11] Creating GitHub release and pushing changes...${NC}"
 
-# Create GitHub release
+# Create GitHub release with properly formatted notes
+# Write notes to temp file to preserve newlines
+echo -e "$GITHUB_NOTES" > /tmp/release_notes.md
+
 gh release create "v${VERSION}" \
     "build/${APP_NAME}-v${VERSION}.dmg" \
     "build/${APP_NAME}-v${VERSION}.zip" \
     --repo "${REPO}" \
     --title "${APP_NAME} v${VERSION}" \
-    --notes "${CHANGELOG}"
+    --notes-file /tmp/release_notes.md
+
+rm -f /tmp/release_notes.md
 
 echo -e "${GREEN}GitHub release created${NC}"
 
