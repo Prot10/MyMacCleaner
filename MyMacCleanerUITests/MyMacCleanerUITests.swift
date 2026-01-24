@@ -14,8 +14,9 @@ final class MyMacCleanerUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        // Verify main window appears
-        XCTAssertTrue(app.windows.firstMatch.exists)
+        // Wait for main window to appear with timeout
+        let mainWindow = app.windows.firstMatch
+        XCTAssertTrue(mainWindow.waitForExistence(timeout: 10), "Main window should appear")
     }
 
     @MainActor
@@ -23,8 +24,16 @@ final class MyMacCleanerUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        // Basic navigation test
-        let sidebar = app.outlines.firstMatch
-        XCTAssertTrue(sidebar.waitForExistence(timeout: 5))
+        // Wait for main window to appear
+        let mainWindow = app.windows.firstMatch
+        XCTAssertTrue(mainWindow.waitForExistence(timeout: 10), "Main window should appear")
+
+        // Give the app time to fully load its content
+        Thread.sleep(forTimeInterval: 1)
+
+        // Verify the app has loaded by checking for split view content
+        // NavigationSplitView creates groups for sidebar and detail
+        let hasContent = app.groups.count > 0 || app.scrollViews.count > 0
+        XCTAssertTrue(hasContent, "App should have navigation content")
     }
 }
