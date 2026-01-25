@@ -15,76 +15,11 @@
             <description><![CDATA[
                 <h2>What's New in Version 0.1.2</h2>
                 <ul>
-                    <li>- Hide toolbar background to prevent visible bar in DetailContentView</li>
+                    <li>Hide toolbar background to prevent visible bar in DetailContentView</li>
                 </ul>
             ]]></description>
             <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.2/MyMacCleaner-v0.1.2.zip" sparkle:edSignature="iCGMCZ1w34lOqCryNiR0PFD+D6raBpPgVTvlB7ohEBqMxN74oe4l8eK8shLUFbSiXZIiYjWvcxlwCGyNzQbpAg==" length="4460212" type="application/octet-stream"/>
         </item>
-
-
-        <item>
-            <title>Version 0.1.1</title>
-            <pubDate>Sun, 25 Jan 2026 00:45:47 +0100</pubDate>
-            <sparkle:version>4</sparkle:version>
-            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <h2>What's New in Version 0.1.1</h2>
-                <ul>
-                    <li>- `pageTopPadding` theme constant for consistent page layouts - All feature views now use dedicated top padding (32pt) for better visual consistency - Permissions page now uses consistent header styling (fonts, spacing) matching other views - Permissions refresh button now uses GlassActionButton component like other pages - NavigationSectionTests updated to include all 10 navigation sections</li>
-                </ul>
-            ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.1/MyMacCleaner-v0.1.1.zip" sparkle:edSignature="Flc1Kr33neyorqp0Wqa7im3iIAJ70FXw7BGI0TN23IoHDUY8xIbXaUzwzasIeKJJ3PJPQ+ZPsUn//7HGSEw9DQ==" length="4458363" type="application/octet-stream"/>
-        </item>
-
-
-        <item>
-            <title>Version 0.1.1</title>
-            <pubDate>Sun, 25 Jan 2026 00:24:47 +0100</pubDate>
-            <sparkle:version>3</sparkle:version>
-            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <h2>What's New in Version 0.1.1</h2>
-                <ul>
-                    <li>- `pageTopPadding` theme constant for consistent page layouts - All feature views now use dedicated top padding (32pt) for better visual consistency - Permissions page now uses consistent header styling (fonts, spacing) matching other views - Permissions refresh button now uses GlassActionButton component like other pages - NavigationSectionTests updated to include all 10 navigation sections</li>
-                </ul>
-            ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.1/MyMacCleaner-v0.1.1.zip" sparkle:edSignature="Flc1Kr33neyorqp0Wqa7im3iIAJ70FXw7BGI0TN23IoHDUY8xIbXaUzwzasIeKJJ3PJPQ+ZPsUn//7HGSEw9DQ==" length="4458363" type="application/octet-stream"/>
-        </item>
-
-
-        <item>
-            <title>Version 0.1.1</title>
-            <pubDate>Sat, 24 Jan 2026 22:42:26 +0100</pubDate>
-            <sparkle:version>2</sparkle:version>
-            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <h2>What's New in Version 0.1.1</h2>
-                <ul>
-                    <li>- `pageTopPadding` theme constant for consistent page layouts - All feature views now use dedicated top padding (32pt) for better visual consistency - Permissions page now uses consistent header styling (fonts, spacing) matching other views - Permissions refresh button now uses GlassActionButton component like other pages - NavigationSectionTests updated to include all 10 navigation sections</li>
-                </ul>
-            ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.1/MyMacCleaner-v0.1.1.zip" sparkle:edSignature="Flc1Kr33neyorqp0Wqa7im3iIAJ70FXw7BGI0TN23IoHDUY8xIbXaUzwzasIeKJJ3PJPQ+ZPsUn//7HGSEw9DQ==" length="4458363" type="application/octet-stream"/>
-        </item>
-
-
-        <item>
-            <title>Version 0.1.0</title>
-            <pubDate>Sat, 24 Jan 2026 13:27:24 +0100</pubDate>
-            <sparkle:version>1</sparkle:version>
-            <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <h2>What's New in Version 0.1.0</h2>
-                <ul>
-                    <li>- Initial release with full feature set - Sparkle integration for seamless updates</li>
-                </ul>
-            ]]></description>
-            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.0/MyMacCleaner-v0.1.0.zip" sparkle:edSignature="Qq6yfmjs4DtgXX2i41Gwl9G8pTArL5clAcLnBofYRiu+19yzmgOhTMFPe/DdK0VFu/GsCHFieaWqTs1dcfr3Ag==" length="4451231" type="application/octet-stream"/>
-        </item>
-
 
     </channel>
 </rss>
