@@ -2,6 +2,9 @@
 
 Visual disk space analyzer with interactive treemap visualization.
 
+![Space Lens](/MyMacCleaner/screenshots/disk_cleaner/space_lens.png)
+*Interactive treemap visualization showing disk usage by folder and file*
+
 ## Overview
 
 Space Lens helps you understand where your disk space is going through an intuitive visual representation. Find large files and folders at a glance.
