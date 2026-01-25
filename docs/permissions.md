@@ -2,6 +2,9 @@
 
 Understanding and managing permissions for MyMacCleaner.
 
+![Permissions](/MyMacCleaner/screenshots/permissions/permissions.png)
+*Permissions management page showing folder access status*
+
 ## Overview
 
 MyMacCleaner needs certain permissions to access system files and perform cleanup operations. This guide explains what permissions are needed, why, and how to grant them.

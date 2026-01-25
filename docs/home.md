@@ -2,6 +2,9 @@
 
 The Home screen is your dashboard for quick system overview and one-click cleanup.
 
+![Home Screen - Before Scan](/MyMacCleaner/screenshots/home/home_base.png)
+*Home screen with Smart Scan ready to analyze your system*
+
 ## Overview
 
 When you open MyMacCleaner, the Home screen provides:
@@ -48,6 +51,9 @@ After scanning, you'll see:
 - Breakdown by category
 - Individual items you can select/deselect
 - Safety indicators for each item
+
+![Home Screen - After Scan](/MyMacCleaner/screenshots/home/home_full.png)
+*Scan results showing cleanable categories and total space to recover*
 
 ## Quick Actions
 

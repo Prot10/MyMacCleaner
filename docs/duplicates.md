@@ -2,9 +2,15 @@
 
 Find and remove duplicate files to reclaim wasted disk space.
 
+![Duplicates - Before Scan](/MyMacCleaner/screenshots/duplicates/duplicates_base.png)
+*Duplicate Finder ready to scan for duplicate files*
+
 ## Overview
 
 The Duplicate Finder scans your folders for exact duplicate files using SHA256 hashing. It identifies files with identical content regardless of their names or locations, helping you safely remove redundant copies.
+
+![Duplicates - Results](/MyMacCleaner/screenshots/duplicates/duplicates_full.png)
+*Scan results showing duplicate file groups with statistics*
 
 ## How It Works
 

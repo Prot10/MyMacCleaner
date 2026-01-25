@@ -2,9 +2,15 @@
 
 Manage applications and services that launch automatically when you log in.
 
+![Startup Items - Before Scan](/MyMacCleaner/screenshots/startup_items/startup_items_base.png)
+*Startup Items ready to discover login items and launch agents*
+
 ## Overview
 
 Startup Items helps you control what runs when your Mac starts, improving boot time and reducing resource usage.
+
+![Startup Items - Full List](/MyMacCleaner/screenshots/startup_items/startup_items_full.png)
+*Complete list of startup items with enable/disable controls*
 
 ## Quick Stats
 

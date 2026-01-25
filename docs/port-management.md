@@ -2,6 +2,9 @@
 
 View and manage processes using network ports.
 
+![Port Management](/MyMacCleaner/screenshots/port_management/port_managment.png)
+*Port Management showing active network connections and listening ports*
+
 ## Overview
 
 Port Management helps developers and power users see what's running on their Mac's network ports and terminate processes when needed.

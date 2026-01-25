@@ -2,9 +2,15 @@
 
 Detect and remove leftover files from applications that have been uninstalled.
 
+![Orphaned Files - Before Scan](/MyMacCleaner/screenshots/orphaned_files/orphaned_files_base.png)
+*Orphaned Files scanner ready to detect leftover files*
+
 ## Overview
 
 When you delete an application by dragging it to the Trash, many associated files remain on your system. These "orphaned files" can accumulate over time, taking up valuable disk space. The Orphaned Files scanner identifies these remnants and helps you safely remove them.
+
+![Orphaned Files - Results](/MyMacCleaner/screenshots/orphaned_files/orphaned_files_full.png)
+*Scan results showing orphaned files grouped by category*
 
 ## What Are Orphaned Files?
 
