@@ -8,6 +8,8 @@ All notable changes to MyMacCleaner will be documented in this file.
 <!-- Format: - [type] Description -->
 <!-- Types: added, changed, fixed, removed -->
 
+## [0.1.2] - 2026-01-25
+
 - [fixed] Hide toolbar background to prevent visible bar in DetailContentView
 
 ## [0.1.1] - 2025-01-24
