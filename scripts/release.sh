@@ -562,9 +562,7 @@ rm -f "$GITHUB_ZIP_PATH"
 git add -A
 git commit -m "release: v${VERSION}
 
-${CHANGELOG}
-
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+${CHANGELOG}"
 
 git push origin main
 
@@ -628,9 +626,7 @@ PYEOF
 
 # Commit changelog update
 git add CHANGELOG.md
-git commit -m "docs: update CHANGELOG.md for v${VERSION}
-
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+git commit -m "docs: reset changelog for next release"
 git push origin main
 
 echo -e "${GREEN}CHANGELOG.md updated${NC}"
