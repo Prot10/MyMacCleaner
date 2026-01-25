@@ -2,6 +2,9 @@
 
 System optimization tools and maintenance tasks.
 
+![Performance](/MyMacCleaner/screenshots/performance/performance.png)
+*Performance dashboard showing memory usage, processes, and maintenance options*
+
 ## Overview
 
 The Performance section provides tools to optimize your Mac's speed and responsiveness through memory management and system maintenance.

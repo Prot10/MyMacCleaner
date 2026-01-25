@@ -2,6 +2,9 @@
 
 Monitor your Mac's overall health with a comprehensive health score and detailed system information.
 
+![System Health](/MyMacCleaner/screenshots/system_health/system_health.png)
+*System Health dashboard showing health score gauge and system information*
+
 ## Overview
 
 System Health provides an at-a-glance view of your Mac's condition through a health score gauge, individual health checks, and detailed system information.

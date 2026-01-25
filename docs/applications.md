@@ -2,6 +2,9 @@
 
 Complete application management: uninstall apps properly and check for updates.
 
+![Applications - Before Analysis](/MyMacCleaner/screenshots/applications/applications_base.png)
+*Applications Manager ready to analyze your installed apps*
+
 ## Overview
 
 The Applications Manager helps you:
@@ -11,6 +14,9 @@ The Applications Manager helps you:
 - Manage Homebrew cask applications
 
 ## Application List
+
+![Applications - Full List](/MyMacCleaner/screenshots/applications/applications_full.png)
+*Grid view showing all installed applications with size and update status*
 
 ### Views
 
@@ -84,6 +90,10 @@ MyMacCleaner scans for all related files before uninstalling.
 - **Recovery period** - Files recoverable for 24 hours
 
 ## Update Checker
+
+### Automatic Update Notifications
+
+MyMacCleaner itself automatically checks for updates in the background using the Sparkle framework. When a new version is available, an update notification button appears next to the language switcher in the app toolbar. This seamless experience lets you update the app without interrupting your workflow - simply click the button to download and install the latest version.
 
 ### Supported Update Sources
 

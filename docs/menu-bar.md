@@ -2,6 +2,9 @@
 
 Monitor your Mac's performance at a glance from the menu bar.
 
+![Menu Bar](/MyMacCleaner/screenshots/menu/menu.png)
+*Menu Bar popover showing CPU, Memory, and Disk stats with quick actions*
+
 ## Overview
 
 The Menu Bar Monitor provides real-time CPU and RAM monitoring directly in your menu bar. Click to see detailed stats and quick actions without opening the full app.
