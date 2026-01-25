@@ -19,14 +19,6 @@ const features = [
     screenshot: '/MyMacCleaner/screenshots/disk_cleaner/disk_cleaner_full.png'
   },
   {
-    title: 'Browser Privacy',
-    description: 'Deep clean browser history, cookies, cache, and passwords for Safari, Chrome, Firefox, and Edge.',
-    icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />`,
-    color: 'from-green-500 to-emerald-500',
-    href: '/MyMacCleaner/docs/disk-cleaner/',
-    screenshot: '/MyMacCleaner/screenshots/disk_cleaner/privacy.png'
-  },
-  {
     title: 'Space Lens',
     description: 'Visual treemap showing exactly where your storage is being used. Find large files instantly.',
     icon: `<path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />`,
@@ -122,7 +114,7 @@ const features = [
     </div>
 
     <!-- Features Grid -->
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
       {features.map((feature, index) => (
         <a href={feature.href} class="block group">
           <GlassCard class="h-full overflow-hidden">
