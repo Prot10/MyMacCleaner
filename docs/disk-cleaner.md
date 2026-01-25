@@ -2,9 +2,15 @@
 
 Deep cleaning functionality to remove junk files and free up disk space.
 
+![Disk Cleaner - Before Scan](/MyMacCleaner/screenshots/disk_cleaner/disk_cleaner_base.png)
+*Disk Cleaner ready to scan for junk files*
+
 ## Overview
 
 Disk Cleaner provides granular control over what gets cleaned, with detailed categories and safe deletion practices.
+
+![Disk Cleaner - Scan Results](/MyMacCleaner/screenshots/disk_cleaner/disk_cleaner_full.png)
+*Detailed scan results showing all cleanable categories*
 
 ## Categories
 
@@ -58,6 +64,9 @@ Web browser caches and data.
 ## Browser Privacy
 
 The Browser Privacy tab provides deep cleaning of browser data for enhanced privacy.
+
+![Browser Privacy](/MyMacCleaner/screenshots/disk_cleaner/privacy.png)
+*Browser Privacy tab for deep cleaning browser data*
 
 ### Supported Browsers
 

@@ -2,6 +2,9 @@
 
 Complete application management: uninstall apps properly and check for updates.
 
+![Applications - Before Analysis](/MyMacCleaner/screenshots/applications/applications_base.png)
+*Applications Manager ready to analyze your installed apps*
+
 ## Overview
 
 The Applications Manager helps you:
@@ -11,6 +14,9 @@ The Applications Manager helps you:
 - Manage Homebrew cask applications
 
 ## Application List
+
+![Applications - Full List](/MyMacCleaner/screenshots/applications/applications_full.png)
+*Grid view showing all installed applications with size and update status*
 
 ### Views
 
