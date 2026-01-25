@@ -91,6 +91,10 @@ MyMacCleaner scans for all related files before uninstalling.
 
 ## Update Checker
 
+### Automatic Update Notifications
+
+MyMacCleaner itself automatically checks for updates in the background using the Sparkle framework. When a new version is available, an update notification button appears next to the language switcher in the app toolbar. This seamless experience lets you update the app without interrupting your workflow - simply click the button to download and install the latest version.
+
 ### Supported Update Sources
 
 | Source | Detection Method |
