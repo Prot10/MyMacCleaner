@@ -300,6 +300,8 @@ struct DetailContentView: View {
                 .padding(.top, isFullScreen ? 28 : 16)
         }
         .ignoresSafeArea(edges: .top)
+        // Hide toolbar background to prevent visible bar
+        .toolbarBackground(.hidden, for: .windowToolbar)
         // CRITICAL: Force complete re-render of ALL child views when language or update status changes
         .id("\(localization.languageCode)-\(updateManager.updateAvailable)")
         .toolbar {
