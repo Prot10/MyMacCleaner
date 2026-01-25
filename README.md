@@ -33,7 +33,46 @@ MyMacCleaner is a free, open-source alternative to commercial Mac cleaning apps 
 
 ## Screenshots
 
-*Coming soon*
+### Home & Smart Scan
+<p align="center">
+  <img src="website/public/screenshots/home/home_base.png" alt="Home Screen" width="45%">
+  <img src="website/public/screenshots/home/home_full.png" alt="Smart Scan Results" width="45%">
+</p>
+
+### Disk Cleaner & Space Lens
+<p align="center">
+  <img src="website/public/screenshots/disk_cleaner/disk_cleaner_full.png" alt="Disk Cleaner" width="45%">
+  <img src="website/public/screenshots/disk_cleaner/space_lens.png" alt="Space Lens" width="45%">
+</p>
+
+### Performance & System Health
+<p align="center">
+  <img src="website/public/screenshots/performance/performance.png" alt="Performance" width="45%">
+  <img src="website/public/screenshots/system_health/system_health.png" alt="System Health" width="45%">
+</p>
+
+### Applications & Port Management
+<p align="center">
+  <img src="website/public/screenshots/applications/applications_full.png" alt="Applications" width="45%">
+  <img src="website/public/screenshots/port_management/port_managment.png" alt="Port Management" width="45%">
+</p>
+
+### Duplicates & Orphaned Files
+<p align="center">
+  <img src="website/public/screenshots/duplicates/duplicates_full.png" alt="Duplicates" width="45%">
+  <img src="website/public/screenshots/orphaned_files/orphaned_files_full.png" alt="Orphaned Files" width="45%">
+</p>
+
+### Startup Items & Permissions
+<p align="center">
+  <img src="website/public/screenshots/startup_items/startup_items_full.png" alt="Startup Items" width="45%">
+  <img src="website/public/screenshots/permissions/permissions.png" alt="Permissions" width="45%">
+</p>
+
+### Menu Bar Monitor
+<p align="center">
+  <img src="website/public/screenshots/menu/menu.png" alt="Menu Bar" width="30%">
+</p>
 
 ## Requirements
 
@@ -104,13 +143,17 @@ See [Permissions Guide](docs/permissions.md) for detailed information.
 - [Menu Bar Monitor](docs/menu-bar.md)
 - [Permissions Guide](docs/permissions.md)
 
+## Automatic Updates
+
+MyMacCleaner includes built-in automatic update checking powered by the Sparkle framework. The app periodically checks for new versions in the background, and when an update is available, a notification button appears next to the language switcher in the app toolbar. This provides a seamless update experience - simply click the button to download and install the latest version without leaving the app.
+
 ## Tech Stack
 
 - **Language**: Swift 5.9+
 - **UI Framework**: SwiftUI
 - **Design**: Apple Liquid Glass (macOS Tahoe style)
 - **Concurrency**: Swift async/await, TaskGroups
-- **Updates**: Sparkle Framework
+- **Updates**: Sparkle Framework (automatic background checks with in-app notification)
 
 ## Attribution
 
