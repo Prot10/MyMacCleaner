@@ -32,6 +32,12 @@ website/.astro/
 *.log
 npm-debug.log*
 
+# Internal planning docs
+plan/
+
+# Build artifacts that shouldn't be committed
+ExportOptions.plist
+
 # Environment
 .env
 .env.local
