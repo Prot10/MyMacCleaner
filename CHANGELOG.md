@@ -4,6 +4,12 @@ All notable changes to MyMacCleaner will be documented in this file.
 
 ## [Unreleased]
 
+<!-- Add your changes here during development. This section will be used for the next release. -->
+<!-- Format: - [type] Description -->
+<!-- Types: added, changed, fixed, removed -->
+
+## [0.1.3] - 2026-01-31
+
 - [fixed] Improve array mutation safety to prevent potential crashes when using Select/Deselect All
 - [fixed] Unsafe ForEach pattern in ScanResultsCard that could cause index out of bounds
 - [fixed] Force unwrap in FileScanner that could crash if categories array was empty
