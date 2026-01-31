@@ -7,6 +7,22 @@
         <language>en</language>
 
         <item>
+            <title>Version 0.1.3</title>
+            <pubDate>Sat, 31 Jan 2026 12:58:27 +0100</pubDate>
+            <sparkle:version>6</sparkle:version>
+            <sparkle:shortVersionString>0.1.3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <h2>What's New in Version 0.1.3</h2>
+                <ul>
+                    <li>- Improve array mutation safety to prevent potential crashes when using Select/Deselect All - Unsafe ForEach pattern in ScanResultsCard that could cause index out of bounds - Force unwrap in FileScanner that could crash if categories array was empty - CGGradient force unwraps in SpaceLensView with fallback rendering - Unsafe direct array index access in PerformanceView</li>
+                </ul>
+            ]]></description>
+            <enclosure url="https://github.com/Prot10/MyMacCleaner/releases/download/v0.1.3/MyMacCleaner-v0.1.3.zip" sparkle:edSignature="f3oNrwFI0ztAFzAogtjvmR37m3/nUw6dY/el+HqIkujg2z5paXuENvMBq1Dxc9uRYp4wRA/XSu9b3IT2b9LfAA==" length="4457253" type="application/octet-stream"/>
+        </item>
+
+
+        <item>
             <title>Version 0.1.2</title>
             <pubDate>Sun, 25 Jan 2026 12:46:51 +0100</pubDate>
             <sparkle:version>5</sparkle:version>
