@@ -206,7 +206,9 @@ struct PerformanceView: View {
                     color: sectionColor,
                     disabled: viewModel.runningTaskId != nil
                 ) {
-                    viewModel.runTask(MaintenanceTask.allTasks[0])
+                    if let purgeTask = MaintenanceTask.allTasks.first(where: { $0.id == "purge_ram" }) {
+                        viewModel.runTask(purgeTask)
+                    }
                 }
                 .overlay {
                     if viewModel.runningTaskId == "purge_ram" {

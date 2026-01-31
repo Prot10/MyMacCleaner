@@ -71,27 +71,39 @@ class BrowserPrivacyViewModel: ObservableObject {
     }
 
     func selectAllForBrowser(_ browser: BrowserType) {
-        for i in items.indices where items[i].browser == browser {
-            items[i].isSelected = true
+        // Create a mutable copy to ensure @Published triggers properly
+        var updatedItems = items
+        for i in updatedItems.indices where updatedItems[i].browser == browser {
+            updatedItems[i].isSelected = true
         }
+        items = updatedItems
     }
 
     func deselectAllForBrowser(_ browser: BrowserType) {
-        for i in items.indices where items[i].browser == browser {
-            items[i].isSelected = false
+        // Create a mutable copy to ensure @Published triggers properly
+        var updatedItems = items
+        for i in updatedItems.indices where updatedItems[i].browser == browser {
+            updatedItems[i].isSelected = false
         }
+        items = updatedItems
     }
 
     func selectAll() {
-        for i in items.indices {
-            items[i].isSelected = true
+        // Create a mutable copy to ensure @Published triggers properly
+        var updatedItems = items
+        for i in updatedItems.indices {
+            updatedItems[i].isSelected = true
         }
+        items = updatedItems
     }
 
     func deselectAll() {
-        for i in items.indices {
-            items[i].isSelected = false
+        // Create a mutable copy to ensure @Published triggers properly
+        var updatedItems = items
+        for i in updatedItems.indices {
+            updatedItems[i].isSelected = false
         }
+        items = updatedItems
     }
 
     func prepareClean() {

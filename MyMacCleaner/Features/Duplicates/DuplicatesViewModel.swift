@@ -263,46 +263,55 @@ class DuplicatesViewModel: ObservableObject {
     }
 
     func selectAllDuplicates() {
-        for groupIndex in duplicateGroups.indices {
-            for fileIndex in duplicateGroups[groupIndex].files.indices {
-                if !duplicateGroups[groupIndex].files[fileIndex].isKept {
-                    duplicateGroups[groupIndex].files[fileIndex].isSelected = true
+        // Create a mutable copy to ensure @Published triggers properly and avoid mutation during iteration
+        var updatedGroups = duplicateGroups
+        for groupIndex in updatedGroups.indices {
+            for fileIndex in updatedGroups[groupIndex].files.indices {
+                if !updatedGroups[groupIndex].files[fileIndex].isKept {
+                    updatedGroups[groupIndex].files[fileIndex].isSelected = true
                 }
             }
         }
+        duplicateGroups = updatedGroups
     }
 
     func deselectAll() {
-        for groupIndex in duplicateGroups.indices {
-            for fileIndex in duplicateGroups[groupIndex].files.indices {
-                duplicateGroups[groupIndex].files[fileIndex].isSelected = false
+        // Create a mutable copy to ensure @Published triggers properly and avoid mutation during iteration
+        var updatedGroups = duplicateGroups
+        for groupIndex in updatedGroups.indices {
+            for fileIndex in updatedGroups[groupIndex].files.indices {
+                updatedGroups[groupIndex].files[fileIndex].isSelected = false
             }
         }
+        duplicateGroups = updatedGroups
     }
 
     func selectOldestInEachGroup() {
-        for groupIndex in duplicateGroups.indices {
+        // Create a mutable copy to ensure @Published triggers properly and avoid mutation during iteration
+        var updatedGroups = duplicateGroups
+        for groupIndex in updatedGroups.indices {
             // First, clear all selections and kept flags
-            for fileIndex in duplicateGroups[groupIndex].files.indices {
-                duplicateGroups[groupIndex].files[fileIndex].isSelected = false
-                duplicateGroups[groupIndex].files[fileIndex].isKept = false
+            for fileIndex in updatedGroups[groupIndex].files.indices {
+                updatedGroups[groupIndex].files[fileIndex].isSelected = false
+                updatedGroups[groupIndex].files[fileIndex].isKept = false
             }
 
             // Find the newest file and mark it as kept
-            if let newestIndex = duplicateGroups[groupIndex].files.indices.max(by: {
-                (duplicateGroups[groupIndex].files[$0].modificationDate ?? .distantPast) <
-                (duplicateGroups[groupIndex].files[$1].modificationDate ?? .distantPast)
+            if let newestIndex = updatedGroups[groupIndex].files.indices.max(by: {
+                (updatedGroups[groupIndex].files[$0].modificationDate ?? .distantPast) <
+                (updatedGroups[groupIndex].files[$1].modificationDate ?? .distantPast)
             }) {
-                duplicateGroups[groupIndex].files[newestIndex].isKept = true
+                updatedGroups[groupIndex].files[newestIndex].isKept = true
             }
 
             // Select all others for deletion
-            for fileIndex in duplicateGroups[groupIndex].files.indices {
-                if !duplicateGroups[groupIndex].files[fileIndex].isKept {
-                    duplicateGroups[groupIndex].files[fileIndex].isSelected = true
+            for fileIndex in updatedGroups[groupIndex].files.indices {
+                if !updatedGroups[groupIndex].files[fileIndex].isKept {
+                    updatedGroups[groupIndex].files[fileIndex].isSelected = true
                 }
             }
         }
+        duplicateGroups = updatedGroups
     }
 
     func prepareClean() {

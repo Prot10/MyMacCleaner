@@ -142,23 +142,32 @@ class OrphanedFilesViewModel: ObservableObject {
         let categoryFiles = orphanedFiles.filter { $0.category == category }
         let allSelected = categoryFiles.allSatisfy { $0.isSelected }
 
-        for i in orphanedFiles.indices {
-            if orphanedFiles[i].category == category {
-                orphanedFiles[i].isSelected = !allSelected
+        // Create a mutable copy to ensure @Published triggers properly
+        var updatedFiles = orphanedFiles
+        for i in updatedFiles.indices {
+            if updatedFiles[i].category == category {
+                updatedFiles[i].isSelected = !allSelected
             }
         }
+        orphanedFiles = updatedFiles
     }
 
     func selectAll() {
-        for i in orphanedFiles.indices {
-            orphanedFiles[i].isSelected = true
+        // Create a mutable copy to ensure @Published triggers properly and avoid mutation during iteration
+        var updatedFiles = orphanedFiles
+        for i in updatedFiles.indices {
+            updatedFiles[i].isSelected = true
         }
+        orphanedFiles = updatedFiles
     }
 
     func deselectAll() {
-        for i in orphanedFiles.indices {
-            orphanedFiles[i].isSelected = false
+        // Create a mutable copy to ensure @Published triggers properly and avoid mutation during iteration
+        var updatedFiles = orphanedFiles
+        for i in updatedFiles.indices {
+            updatedFiles[i].isSelected = false
         }
+        orphanedFiles = updatedFiles
     }
 
     func toggleCategoryExpansion(_ category: OrphanCategory) {

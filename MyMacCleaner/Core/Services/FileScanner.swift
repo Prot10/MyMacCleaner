@@ -173,7 +173,7 @@ actor FileScanner {
         }
 
         await MainActor.run {
-            progress(1.0, categories.last!)
+            progress(1.0, categories.last ?? .userCache)
         }
 
         return results

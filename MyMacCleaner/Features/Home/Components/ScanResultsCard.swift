@@ -78,25 +78,28 @@ struct ScanResultsCard: View {
 
     private var categoryBreakdown: some View {
         VStack(spacing: Theme.Spacing.xs) {
-            ForEach(results.sorted(by: { $0.totalSize > $1.totalSize }).indices, id: \.self) { index in
-                let sortedResults = results.sorted(by: { $0.totalSize > $1.totalSize })
-                if let resultIndex = results.firstIndex(where: { $0.id == sortedResults[index].id }) {
-                    ScanResultRow(
-                        result: $results[resultIndex],
-                        isExpanded: expandedCategories.contains(results[resultIndex].category),
-                        onToggleExpand: {
-                            withAnimation(Theme.Animation.spring) {
-                                if expandedCategories.contains(results[resultIndex].category) {
-                                    expandedCategories.remove(results[resultIndex].category)
-                                } else {
-                                    expandedCategories.insert(results[resultIndex].category)
-                                }
+            // Sort results by size and iterate safely using stable identifiers
+            ForEach(sortedResultIndices, id: \.self) { resultIndex in
+                ScanResultRow(
+                    result: $results[resultIndex],
+                    isExpanded: expandedCategories.contains(results[resultIndex].category),
+                    onToggleExpand: {
+                        withAnimation(Theme.Animation.spring) {
+                            if expandedCategories.contains(results[resultIndex].category) {
+                                expandedCategories.remove(results[resultIndex].category)
+                            } else {
+                                expandedCategories.insert(results[resultIndex].category)
                             }
                         }
-                    )
-                }
+                    }
+                )
             }
         }
+    }
+
+    /// Computed property to get sorted indices safely - avoids re-sorting during iteration
+    private var sortedResultIndices: [Int] {
+        results.indices.sorted { results[$0].totalSize > results[$1].totalSize }
     }
 
     // MARK: - Action Buttons

@@ -727,7 +727,12 @@ class SingleBubbleView: NSView {
             node.color.cgColor?.copy(alpha: isActive ? 0.95 : 0.6) ?? CGColor(gray: 0.5, alpha: 0.6),
             node.color.cgColor?.copy(alpha: isActive ? 0.7 : 0.35) ?? CGColor(gray: 0.5, alpha: 0.35)
         ]
-        let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: [0, 1])!
+        guard let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: [0, 1]) else {
+            // Fallback: draw simple filled ellipse if gradient creation fails
+            ctx.setFillColor(colors.first ?? CGColor(gray: 0.5, alpha: 0.6))
+            ctx.fillEllipse(in: CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
+            return
+        }
 
         ctx.saveGState()
         ctx.addEllipse(in: CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
@@ -741,7 +746,10 @@ class SingleBubbleView: NSView {
             CGColor(gray: 1, alpha: isActive ? 0.5 : 0.25),
             CGColor(gray: 1, alpha: 0)
         ]
-        let shineGradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: shineColors as CFArray, locations: [0, 1])!
+        guard let shineGradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: shineColors as CFArray, locations: [0, 1]) else {
+            ctx.restoreGState()
+            return
+        }
         ctx.addEllipse(in: CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
         ctx.clip()
         ctx.drawLinearGradient(shineGradient, start: CGPoint(x: center.x - r, y: center.y - r), end: center, options: [])

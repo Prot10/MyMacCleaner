@@ -139,25 +139,34 @@ class DiskCleanerViewModel: ObservableObject {
 
         let allSelected = scanResults[resultIndex].items.allSatisfy { $0.isSelected }
 
-        for i in scanResults[resultIndex].items.indices {
-            scanResults[resultIndex].items[i].isSelected = !allSelected
+        // Create a mutable copy to ensure @Published triggers properly
+        var updatedResults = scanResults
+        for i in updatedResults[resultIndex].items.indices {
+            updatedResults[resultIndex].items[i].isSelected = !allSelected
         }
+        scanResults = updatedResults
     }
 
     func selectAll() {
-        for resultIndex in scanResults.indices {
-            for itemIndex in scanResults[resultIndex].items.indices {
-                scanResults[resultIndex].items[itemIndex].isSelected = true
+        // Create a mutable copy to ensure @Published triggers properly and avoid mutation during iteration
+        var updatedResults = scanResults
+        for resultIndex in updatedResults.indices {
+            for itemIndex in updatedResults[resultIndex].items.indices {
+                updatedResults[resultIndex].items[itemIndex].isSelected = true
             }
         }
+        scanResults = updatedResults
     }
 
     func deselectAll() {
-        for resultIndex in scanResults.indices {
-            for itemIndex in scanResults[resultIndex].items.indices {
-                scanResults[resultIndex].items[itemIndex].isSelected = false
+        // Create a mutable copy to ensure @Published triggers properly and avoid mutation during iteration
+        var updatedResults = scanResults
+        for resultIndex in updatedResults.indices {
+            for itemIndex in updatedResults[resultIndex].items.indices {
+                updatedResults[resultIndex].items[itemIndex].isSelected = false
             }
         }
+        scanResults = updatedResults
     }
 
     func prepareClean() {
