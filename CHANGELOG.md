@@ -8,6 +8,14 @@ All notable changes to MyMacCleaner will be documented in this file.
 <!-- Format: - [type] Description -->
 <!-- Types: added, changed, fixed, removed -->
 
+## [0.1.3] - 2026-01-31
+
+- [fixed] Improve array mutation safety to prevent potential crashes when using Select/Deselect All
+- [fixed] Unsafe ForEach pattern in ScanResultsCard that could cause index out of bounds
+- [fixed] Force unwrap in FileScanner that could crash if categories array was empty
+- [fixed] CGGradient force unwraps in SpaceLensView with fallback rendering
+- [fixed] Unsafe direct array index access in PerformanceView
+
 ## [0.1.2] - 2026-01-25
 
 - [fixed] Hide toolbar background to prevent visible bar in DetailContentView
